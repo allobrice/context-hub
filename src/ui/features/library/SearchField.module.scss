@@ -6,6 +6,7 @@
   flex: 0 1 420px;
   align-items: center;
   min-width: 220px;
+  // Ne pas grandir au-delà de 420 px, mais rétrécir avant de forcer un retour à la ligne.
 }
 
 .icon {

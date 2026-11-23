@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
 import { canDeleteCollection, canRenameCollection } from '../../../domain/taxonomy/collections.ts'
 import type { Collection } from '../../../domain/taxonomy/types.ts'
 import { Button } from '../../components/Button/Button.tsx'
@@ -12,6 +11,7 @@ import { Skeleton } from '../../components/Skeleton/Skeleton.tsx'
 import { cx } from '../../lib/cx.ts'
 import { CollectionDialog } from './CollectionDialog.tsx'
 import { DeleteCollectionDialog } from './DeleteCollectionDialog.tsx'
+import { failureOf, technicalCode } from '../../lib/errors.ts'
 import styles from './Taxonomy.module.scss'
 import { useCollections, useTaxonomyActions } from './useTaxonomy.ts'
 
@@ -36,7 +36,7 @@ export function CollectionsTab({ creating, onCreatingChange }: CollectionsTabPro
     return (
       <ErrorState
         title="Impossible de charger les collections"
-        code={isRepositoryUnavailable(error) ? error.summary : undefined}
+        code={technicalCode(error)}
         onRetry={() => void query.refetch()}
       />
     )
@@ -48,7 +48,10 @@ export function CollectionsTab({ creating, onCreatingChange }: CollectionsTabPro
         collection={editing}
         open={creating || editing !== null}
         pending={actions.createCollection.isPending || actions.updateCollection.isPending}
+        error={failureOf(actions.createCollection.error ?? actions.updateCollection.error)}
         onCancel={() => {
+          actions.createCollection.reset()
+          actions.updateCollection.reset()
           setEditing(null)
           onCreatingChange(false)
         }}
@@ -77,7 +80,9 @@ export function CollectionsTab({ creating, onCreatingChange }: CollectionsTabPro
         collection={deleting}
         collections={collections}
         pending={actions.deleteCollection.isPending}
+        error={failureOf(actions.deleteCollection.error)}
         onCancel={() => {
+          actions.deleteCollection.reset()
           setDeleting(null)
         }}
         onConfirm={({ targetId, addFormerNameAsTag }) => {

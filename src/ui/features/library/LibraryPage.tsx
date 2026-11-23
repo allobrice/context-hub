@@ -1,6 +1,5 @@
 import { useDeferredValue, useMemo } from 'react'
 
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
 import type { StatusCounts } from '../../../domain/library/criteria.ts'
 import { paths } from '../../app/paths.ts'
 import { useServices } from '../../app/providers/servicesContext.ts'
@@ -14,6 +13,7 @@ import { ContextTable } from './ContextTable.tsx'
 import { FilterBar } from './FilterBar.tsx'
 import { LibrarySkeleton } from './LibrarySkeleton.tsx'
 import { LibraryEmpty, NoResults } from './LibraryStates.tsx'
+import { technicalCode } from '../../lib/errors.ts'
 import styles from './LibraryPage.module.scss'
 import type { LibraryUrlState } from './libraryParams.ts'
 import { Pagination } from './Pagination.tsx'
@@ -77,7 +77,7 @@ export function LibraryPage() {
       return (
         <ErrorState
           title="Impossible de charger les contextes"
-          code={isRepositoryUnavailable(error) ? error.summary : undefined}
+          code={technicalCode(error)}
           onRetry={() => {
             void search.refetch()
           }}

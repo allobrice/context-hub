@@ -24,6 +24,7 @@ import { TextInput } from '../../components/Field/Field.tsx'
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback.ts'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.ts'
 import { formatRelativeDate } from '../../lib/format.ts'
+import { failureOf } from '../../lib/errors.ts'
 import styles from './Editor.module.scss'
 import { EditorAlert } from './EditorAlert.tsx'
 import { CollectionDialog } from '../taxonomy/CollectionDialog.tsx'
@@ -406,7 +407,9 @@ export function ContextEditor({
         collection={null}
         open={newCollectionOpen}
         pending={createCollection.isPending}
+        error={failureOf(createCollection.error)}
         onCancel={() => {
+          createCollection.reset()
           setNewCollectionOpen(false)
         }}
         onSubmit={(input) => {

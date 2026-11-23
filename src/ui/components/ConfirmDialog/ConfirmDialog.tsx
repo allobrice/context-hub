@@ -12,6 +12,8 @@ export interface ConfirmDialogProps {
   /** `danger` : action destructive → alertdialog et bouton danger. */
   tone?: 'primary' | 'danger'
   pending?: boolean
+  /** Échec de l'action confirmée, affiché dans le dialog (la page derrière est inerte). */
+  error?: string | null | undefined
   /** Bouton de confirmation inactif (saisie requise incomplète). */
   confirmDisabled?: boolean
   className?: string | undefined
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   tone = 'primary',
   pending = false,
   confirmDisabled = false,
+  error = null,
   className,
   onConfirm,
   onCancel,
@@ -58,6 +61,11 @@ export function ConfirmDialog({
       <div id={descriptionId} className={styles.content}>
         {children}
       </div>
+      {error && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      )}
     </Dialog>
   )
 }

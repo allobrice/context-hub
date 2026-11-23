@@ -38,7 +38,7 @@ export function Sidebar() {
 
   return (
     <nav aria-label="Navigation principale" className={styles.sidebar}>
-      <Link to="/" className={styles.brand} aria-label="Context Hub, accueil">
+      <Link to="/" className={styles.brand}>
         <span className={styles.logo} aria-hidden="true">
           ch
         </span>

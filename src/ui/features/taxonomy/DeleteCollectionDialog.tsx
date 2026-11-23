@@ -17,6 +17,7 @@ export interface DeleteCollectionDialogProps {
   collection: Collection | null
   collections: readonly Collection[]
   pending: boolean
+  error?: string | null
   onConfirm: (deletion: CollectionDeletion) => void
   onCancel: () => void
 }
@@ -33,6 +34,7 @@ function DeleteForm({
   collection,
   collections,
   pending,
+  error = null,
   onConfirm,
   onCancel,
 }: DeleteCollectionDialogProps) {
@@ -50,6 +52,7 @@ function DeleteForm({
       title={`Supprimer la collection « ${collection?.name ?? ''} » ?`}
       confirmLabel={count > 0 ? 'Déplacer et supprimer' : 'Supprimer'}
       pending={pending}
+      error={error}
       confirmDisabled={!targets.some((candidate) => candidate.id === target)}
       onConfirm={() => {
         onConfirm({ targetId: target, addFormerNameAsTag: count > 0 && addTag })

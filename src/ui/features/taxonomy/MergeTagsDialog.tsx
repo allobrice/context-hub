@@ -21,6 +21,7 @@ export interface MergeTagsDialogProps {
   request: MergeRequest | null
   tags: readonly TagModel[]
   pending: boolean
+  error?: string | null
   onConfirm: (request: MergeRequest) => void
   onCancel: () => void
 }
@@ -45,7 +46,14 @@ export function MergeTagsDialog(props: MergeTagsDialogProps) {
   return <MergeForm key={key} {...props} />
 }
 
-function MergeForm({ request, tags, pending, onConfirm, onCancel }: MergeTagsDialogProps) {
+function MergeForm({
+  request,
+  tags,
+  pending,
+  error = null,
+  onConfirm,
+  onCancel,
+}: MergeTagsDialogProps) {
   const selectId = useId()
   const newTagId = useId()
   const impactId = useId()
@@ -64,6 +72,7 @@ function MergeForm({ request, tags, pending, onConfirm, onCancel }: MergeTagsDia
       title={`Fusionner ${plural(sources.length, 'tag', 'tags')}`}
       confirmLabel={targetValid ? `Fusionner dans ${target}` : 'Fusionner'}
       pending={pending}
+      error={error}
       confirmDisabled={!targetValid || !preview.data}
       onConfirm={() => {
         onConfirm({ sources, target })

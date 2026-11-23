@@ -1,6 +1,5 @@
 import { useParams, useSearchParams } from 'react-router'
 
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
 import { ContextNotFoundError } from '../../../domain/shared/errors.ts'
 import { useWorkspaceOverview } from '../../app/queries.ts'
 import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
@@ -8,6 +7,7 @@ import { Skeleton } from '../../components/Skeleton/Skeleton.tsx'
 import { ContextNotFound } from '../context-detail/DetailStates.tsx'
 import { useContextDetail } from '../context-detail/useContextDetail.ts'
 import { ContextEditor } from './ContextEditor.tsx'
+import { technicalCode } from '../../lib/errors.ts'
 import styles from './Editor.module.scss'
 import { newEditorState, stateFromDetail } from './editorForm.ts'
 import { useTagSuggestions } from './useEditorPersistence.ts'
@@ -64,7 +64,7 @@ function ExistingContextEditor({ reference }: { reference: string }) {
       <div className={styles.skeleton}>
         <ErrorState
           title="Impossible de charger le contexte"
-          code={isRepositoryUnavailable(error) ? error.summary : undefined}
+          code={technicalCode(error)}
           onRetry={() => void query.refetch()}
         />
       </div>

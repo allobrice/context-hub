@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../../../test/renderApp.tsx'
+import { RepositoryUnavailableError } from '../../../application/errors.ts'
+import { createTestServices, renderApp } from '../../../test/renderApp.tsx'
 
 async function findTagRow(name: string) {
   const table = await screen.findByRole('table', { name: 'Tags' })
@@ -111,6 +112,22 @@ describe('Fusion (maquette 17)', () => {
     expect(dialog).toHaveTextContent('Retiré de 1 contexte (dont 0 publié).')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Supprimer le tag' }))
     expect(await screen.findByRole('tab', { name: 'Tags 33' })).toBeInTheDocument()
+  })
+})
+
+describe('Échec d’une opération (audit phase 7)', () => {
+  it('affiche l’erreur de stockage dans le dialog de fusion, sans le fermer', async () => {
+    const services = createTestServices()
+    vi.spyOn(services.taxonomy, 'mergeTags').mockRejectedValueOnce(
+      new RepositoryUnavailableError('SQLITE_BUSY', 'database is locked', '7f3a91'),
+    )
+    renderApp('/taxonomy', { services })
+    await userEvent.click(await screen.findByRole('button', { name: 'Fusionner…' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Fusionner 2 tags' })
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Fusionner dans vue' }))
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Le stockage n’a pas répondu (SQLITE_BUSY · database is locked · req 7f3a91). Rien n’a été modifié.',
+    )
   })
 })
 

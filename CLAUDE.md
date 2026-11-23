@@ -89,6 +89,16 @@ La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`library
 - Avec `exactOptionalPropertyTypes`, une prop qui reçoit une classe de module se type `className?: string | undefined`.
 - Galerie de développement : `src/ui/app/dev/ComponentGallery.tsx`.
 
+### Performance (audit phase 7)
+
+- CLS : un en-tête dont le contenu change au chargement ne doit pas passer à la ligne (`flex-wrap: nowrap` en desktop, contenus compressibles) ; `scrollbar-gutter: stable` sur `html`. Mesurer avec un `PerformanceObserver('layout-shift')` sur le build (`npm run build && npx vite preview`), pas en dev.
+- Ne pas mémoïser sans mesure : une mémoïsation de la gouttière de l'Éditeur n'apportait rien (12,5 ms par frappe à 400 lignes avec ou sans) et a été retirée.
+- Le parser Markdown doit rester hors du bundle principal (chunk partagé Détail / Éditeur).
+
+### Erreurs
+
+- `technicalCode(error)` pour le code mono d'une erreur de stockage ; `failureOf(mutation.error)` pour le message d'échec d'une mutation, affiché dans le dialog qui l'a déclenchée (`ConfirmDialog error`).
+
 ### Code
 
 - TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`). Exports nommés uniquement. Imports relatifs avec extension `.ts` / `.tsx`.

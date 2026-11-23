@@ -7,6 +7,9 @@
 }
 
 html {
+  // Réserve la place de la barre de défilement : son apparition quand une liste se charge
+  // décalait la mise en page de 15 px (mesuré en phase 7).
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }

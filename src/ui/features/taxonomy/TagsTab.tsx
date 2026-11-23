@@ -1,10 +1,6 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
-import {
-  findSimilarTags,
-  planTagRename,
-  preferredMergeTarget,
-} from '../../../domain/taxonomy/tags.ts'
+import { findSimilarTags, preferredMergeTarget } from '../../../domain/taxonomy/tags.ts'
 import type { Tag as TagModel } from '../../../domain/taxonomy/types.ts'
 import { paths } from '../../app/paths.ts'
 import { useServices } from '../../app/providers/servicesContext.ts'
@@ -20,8 +16,9 @@ import { Skeleton } from '../../components/Skeleton/Skeleton.tsx'
 import { Tag } from '../../components/Tag/Tag.tsx'
 import { cx } from '../../lib/cx.ts'
 import { formatRelativeDate, plural } from '../../lib/format.ts'
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
+import { InlineRename } from './InlineRename.tsx'
 import { MergeTagsDialog, type MergeRequest } from './MergeTagsDialog.tsx'
+import { failureOf, technicalCode } from '../../lib/errors.ts'
 import styles from './Taxonomy.module.scss'
 import { useTaxonomyActions, useTags } from './useTaxonomy.ts'
 
@@ -99,7 +96,7 @@ export function TagsTab({ tagNames }: { tagNames: readonly string[] }) {
     return (
       <ErrorState
         title="Impossible de charger les tags"
-        code={isRepositoryUnavailable(error) ? error.summary : undefined}
+        code={technicalCode(error)}
         onRetry={() => void query.refetch()}
       />
     )
@@ -266,7 +263,9 @@ export function TagsTab({ tagNames }: { tagNames: readonly string[] }) {
                           tag={tag}
                           tags={tags}
                           pending={actions.renameTag.isPending}
+                          error={failureOf(actions.renameTag.error)}
                           onCancel={() => {
+                            actions.renameTag.reset()
                             stopRenaming(tag.name)
                           }}
                           onSubmit={(to, isMerge) => {
@@ -340,7 +339,9 @@ export function TagsTab({ tagNames }: { tagNames: readonly string[] }) {
         request={merge}
         tags={tags}
         pending={actions.mergeTags.isPending}
+        error={failureOf(actions.mergeTags.error)}
         onCancel={() => {
+          actions.mergeTags.reset()
           setMerge(null)
         }}
         onConfirm={({ sources, target }) => {
@@ -367,7 +368,9 @@ export function TagsTab({ tagNames }: { tagNames: readonly string[] }) {
         }
         confirmLabel={toDelete?.length === 1 ? 'Supprimer le tag' : 'Supprimer les tags'}
         pending={actions.deleteTags.isPending}
+        error={failureOf(actions.deleteTags.error)}
         onCancel={() => {
+          actions.deleteTags.reset()
           setToDelete(null)
         }}
         onConfirm={() => {
@@ -409,77 +412,5 @@ function DeleteTagsImpact({
         : `Retiré de ${plural(contexts, unit[0], unit[1])} (dont ${plural(published, unit[2], unit[3])}).`}{' '}
       Aucune version n’est créée, les URI ne changent pas.
     </p>
-  )
-}
-
-interface InlineRenameProps {
-  tag: TagModel
-  tags: readonly TagModel[]
-  pending: boolean
-  onSubmit: (to: string, isMerge: boolean) => void
-  onCancel: () => void
-}
-
-/** Renommage en ligne (maquette 16) : vers un nom existant, l'action devient « Fusionner ». */
-function InlineRename({ tag, tags, pending, onSubmit, onCancel }: InlineRenameProps) {
-  const [value, setValue] = useState(tag.name)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const messageId = useId()
-  const plan = planTagRename(tags, tag.name, value)
-
-  useEffect(() => {
-    inputRef.current?.select()
-  }, [])
-
-  function submit() {
-    if (plan.kind === 'rename') onSubmit(plan.to, false)
-    else if (plan.kind === 'merge') onSubmit(plan.into.name, true)
-    else if (plan.kind === 'unchanged') onCancel()
-  }
-
-  return (
-    <div className={styles.rename}>
-      <div className={styles.renameRow}>
-        <label htmlFor={`${messageId}-input`} className="visually-hidden">
-          Nouveau nom de {tag.name}
-        </label>
-        <input
-          ref={inputRef}
-          id={`${messageId}-input`}
-          className={styles.renameInput}
-          value={value}
-          aria-describedby={messageId}
-          aria-invalid={plan.kind === 'invalid'}
-          spellCheck={false}
-          onChange={(event) => {
-            setValue(event.target.value)
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') submit()
-            if (event.key === 'Escape') onCancel()
-          }}
-        />
-        <Button
-          size="sm"
-          variant="primary"
-          disabled={pending || plan.kind === 'invalid'}
-          onClick={submit}
-        >
-          {plan.kind === 'merge' ? 'Fusionner' : 'Renommer'}
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
-          Annuler
-        </Button>
-      </div>
-      <span
-        id={messageId}
-        className={plan.kind === 'invalid' ? styles.renameError : styles.renameWarning}
-        aria-live="polite"
-      >
-        {plan.kind === 'merge' &&
-          `« ${plan.into.name} » existe déjà (${plural(plan.into.contextCount, 'contexte', 'contextes')}) : renommer revient à fusionner.`}
-        {plan.kind === 'invalid' && 'Minuscules, chiffres et tirets uniquement.'}
-      </span>
-    </div>
   )
 }

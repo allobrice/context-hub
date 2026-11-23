@@ -104,6 +104,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  // Hauteur réservée (statut MCP + utilisateur) : pas de saut quand la navigation se charge.
+  min-height: 75px;
   margin-top: auto;
   padding: 10px var(--space-2) 0;
   border-top: 1px solid var(--border);

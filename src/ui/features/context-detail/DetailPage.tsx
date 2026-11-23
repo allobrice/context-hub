@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
 
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
 import type { ContextVersion } from '../../../domain/context/types.ts'
 import { resourceUri } from '../../../domain/context/uri.ts'
 import { ContextNotFoundError } from '../../../domain/shared/errors.ts'
@@ -10,6 +9,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog.tsx'
 import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard.ts'
 import { ContentPanel } from './ContentPanel.tsx'
+import { technicalCode } from '../../lib/errors.ts'
 import styles from './Detail.module.scss'
 import { DetailHeader } from './DetailHeader.tsx'
 import { ContextNotFound, DetailSkeleton } from './DetailStates.tsx'
@@ -42,7 +42,7 @@ export function DetailPage() {
         <title>Erreur · Context Hub</title>
         <ErrorState
           title="Impossible de charger le contexte"
-          code={isRepositoryUnavailable(error) ? error.summary : undefined}
+          code={technicalCode(error)}
           onRetry={() => void query.refetch()}
         >
           Le stockage n’a pas répondu. Les sessions Claude Code déjà connectées continuent de servir

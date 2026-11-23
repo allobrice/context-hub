@@ -10,6 +10,7 @@ export interface CollectionDialogProps {
   collection: Collection | null
   open: boolean
   pending: boolean
+  error?: string | null
   onSubmit: (input: NewCollection) => void
   onCancel: () => void
 }
@@ -21,7 +22,14 @@ export function CollectionDialog(props: CollectionDialogProps) {
   return <CollectionForm key={props.collection?.id ?? 'new'} {...props} />
 }
 
-function CollectionForm({ collection, open, pending, onSubmit, onCancel }: CollectionDialogProps) {
+function CollectionForm({
+  collection,
+  open,
+  pending,
+  error = null,
+  onSubmit,
+  onCancel,
+}: CollectionDialogProps) {
   const [name, setName] = useState(collection?.name ?? '')
   const [description, setDescription] = useState(collection?.description ?? '')
   const nameId = useId()
@@ -37,6 +45,7 @@ function CollectionForm({ collection, open, pending, onSubmit, onCancel }: Colle
       title={isNew ? 'Nouvelle collection' : `Modifier « ${collection.name} »`}
       confirmLabel={isNew ? 'Créer la collection' : 'Enregistrer'}
       pending={pending}
+      error={error}
       confirmDisabled={name.trim() === ''}
       onConfirm={() => {
         onSubmit({ name, description })
