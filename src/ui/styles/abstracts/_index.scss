@@ -1,0 +1,3 @@
+// Barrel sans sortie CSS : à charger dans chaque module avec `@use 'abstracts' as *;`.
+@forward 'breakpoints';
+@forward 'mixins';

@@ -54,6 +54,24 @@ Cette règle est appliquée par `eslint-plugin-boundaries` (`LAYER_ELEMENTS` / `
 
 ## Conventions
 
+### Styles
+
+- SCSS Modules par composant (`Composant.module.scss`), classes en camelCase, nesting ≤ 3 niveaux, `@use` uniquement.
+- Chaque module commence par `@use 'abstracts' as *;` (résolu via `css.preprocessorOptions.scss.loadPaths`) : mixins `focus-ring`, `control`, `panel`, `truncate`, `mono`, `visually-hidden`, `reset-button`, `stack-below`.
+- Couleurs, rayons, tailles de texte et hauteurs de contrôle : toujours `var(--…)`. Les couleurs littérales n'existent que dans `src/ui/styles/base/_tokens.scss` (vérifié par `tests/architecture/no-hardcoded-colors.test.ts`).
+- Les espacements hors échelle des maquettes (6, 10, 14, 18 px) restent en px pour reproduire les maquettes au pixel.
+- Thème : `ThemeProvider` (`src/ui/app/theme/`) pilote `<html data-theme>` ; même clé localStorage que le script inline d'`index.html`.
+- Polices : sous-ensemble `latin` de `@fontsource` uniquement (`src/ui/styles/index.ts`).
+
+### Composants
+
+- Génériques dans `src/ui/components/<Nom>/` : `Button`/`ButtonLink`, `IconButton`, `Icon` (tracés des maquettes dans `icons.ts`), `Badge`, `StatusBadge`, `Tag`, `Segmented` (radiogroup), `Tabs`/`TabPanel`, `Dialog` (`<dialog>` natif), `Menu`, `Tooltip`, `Field`/`TextInput`/`Select`, `CopyField`, `Skeleton`, `EmptyState`, `ErrorState`, `VisuallyHidden`.
+- Navigation clavier itinérante : `rovingIndex` (`src/ui/lib/`). Bouton indisponible avec info-bulle : `aria-disabled`, pas `disabled`.
+- Avec `exactOptionalPropertyTypes`, une prop qui reçoit une classe de module se type `className?: string | undefined`.
+- Galerie de développement : `src/ui/app/dev/ComponentGallery.tsx`.
+
+### Code
+
 - TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`). Exports nommés uniquement. Imports relatifs avec extension `.ts` / `.tsx`.
 - Prettier : sans point-virgule, guillemets simples, 100 colonnes.
 - Le scan de contenu côté UI (`domain/context/scan.ts`) est indicatif : le serveur fera autorité.

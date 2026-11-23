@@ -1,0 +1,83 @@
+// Transcription de design-kit/tokens/tokens.css (v1). Seul endroit où des couleurs littérales sont autorisées
+// (tests/architecture/no-hardcoded-colors.test.ts). Thème par [data-theme] sur <html>.
+
+:root {
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --control-h: 32px;
+  --control-h-sm: 26px;
+  --sidebar-w: 232px;
+  --focus-ring: 2px solid var(--accent);
+  --focus-offset: 2px;
+}
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --surface-2: #edeff3;
+  --border: #e3e6ea;
+  --border-strong: #cdd2d9;
+  --fg: #15181d;
+  --fg-2: #4a5260;
+  --fg-3: #606875;
+  --accent: #3557d4;
+  --accent-fg: #ffffff;
+  --accent-soft: #eaf0ff;
+  --accent-text: #2b48b8;
+  --ok: #13703a;
+  --ok-soft: #e3f5ea;
+  --warn: #8a4b00;
+  --warn-soft: #fff1db;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  // Absent de tokens.css : texte des boutons danger (#FFFFFF / #0E1014 en dur dans les maquettes).
+  --danger-fg: #ffffff;
+  --code-bg: #f3f4f6;
+  --shadow: 0 12px 32px rgba(16, 24, 40, 0.14);
+  --backdrop: rgba(10, 12, 16, 0.45);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0e1014;
+  --surface: #15181e;
+  --surface-2: #1d2129;
+  --border: #272c35;
+  --border-strong: #3a404c;
+  --fg: #e7e9ee;
+  --fg-2: #aeb5c0;
+  --fg-3: #959ca8;
+  --accent: #7393ff;
+  --accent-fg: #0e1014;
+  --accent-soft: #1b2440;
+  --accent-text: #a9bcff;
+  --ok: #5fd08a;
+  --ok-soft: #12291c;
+  --warn: #f2b35b;
+  --warn-soft: #2e2210;
+  --danger: #ff8a80;
+  --danger-soft: #33171a;
+  --danger-fg: #0e1014;
+  --code-bg: #12151a;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --backdrop: rgba(10, 12, 16, 0.45);
+}

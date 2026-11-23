@@ -1,0 +1,43 @@
+@use 'abstracts' as *;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.label {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.aside {
+  @include mono(var(--text-xs), 400);
+
+  color: var(--fg-3);
+}
+
+.hint {
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+}
+
+.control {
+  @include control;
+
+  width: 100%;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}

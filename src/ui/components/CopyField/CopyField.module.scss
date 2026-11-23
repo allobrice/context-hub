@@ -1,0 +1,35 @@
+@use 'abstracts' as *;
+
+.copyField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--code-bg);
+}
+
+.value {
+  @include mono;
+  @include truncate;
+
+  flex-grow: 1;
+  min-width: 0;
+  color: var(--fg);
+}
+
+.multiline {
+  align-items: flex-start;
+
+  .value {
+    overflow: visible;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+}
+
+.copied {
+  color: var(--ok);
+}

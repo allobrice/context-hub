@@ -1,0 +1,52 @@
+@use 'abstracts' as *;
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.option {
+  @include reset-button;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  background: var(--bg);
+  color: var(--fg-2);
+  font: 500 var(--text-sm) var(--font-sans);
+
+  &:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: var(--focus-ring);
+    outline-offset: calc(-1 * var(--focus-offset));
+  }
+
+  &[aria-checked='true'] {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+}
+
+.sm .option {
+  height: 28px;
+}
+
+// Variante « choix de valeur » (portée de l'éditeur) : séparateurs et sélection en accent.
+.accent .option {
+  padding: 0 var(--space-3);
+  border-right: 1px solid var(--border);
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  &[aria-checked='true'] {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+}

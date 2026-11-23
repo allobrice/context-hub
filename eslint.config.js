@@ -116,6 +116,11 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.flatConfigs.strict.rules,
+      // Pattern APG : un tabpanel est focusable pour être atteint au clavier.
+      'jsx-a11y/no-noninteractive-tabindex': [
+        'error',
+        { tags: [], roles: ['tabpanel'], allowExpressionValues: true },
+      ],
       'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
       'boundaries/dependencies': ['error', LAYER_POLICIES],
     },

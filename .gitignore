@@ -8,3 +8,6 @@ coverage/
 
 # Métadonnées Windows (Zone.Identifier) des fichiers téléchargés
 *:Zone.Identifier
+
+# Captures du MCP Playwright
+.playwright-mcp/

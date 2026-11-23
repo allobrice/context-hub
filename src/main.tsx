@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './ui/app/App.tsx'
+import './ui/styles/index.ts'
 
 /**
  * Point d'assemblage : seul fichier autorisé à importer à la fois `infrastructure` et `ui`

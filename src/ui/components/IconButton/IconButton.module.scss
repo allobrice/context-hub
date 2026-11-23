@@ -1,0 +1,25 @@
+@use 'abstracts' as *;
+
+.iconButton {
+  @include reset-button;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-2);
+
+  @include focus-ring;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

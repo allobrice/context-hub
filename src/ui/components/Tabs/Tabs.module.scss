@@ -1,0 +1,38 @@
+@use 'abstracts' as *;
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  @include reset-button;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  margin-bottom: -1px;
+  padding: 0 var(--space-3);
+  border-bottom: 2px solid transparent;
+  color: var(--fg-2);
+  font: 600 var(--text-base) var(--font-sans);
+
+  @include focus-ring;
+
+  &[aria-selected='true'] {
+    border-bottom-color: var(--accent);
+    color: var(--fg);
+  }
+}
+
+.count {
+  @include mono(var(--text-xs));
+
+  color: var(--fg-3);
+}
+
+.panel {
+  @include focus-ring;
+}

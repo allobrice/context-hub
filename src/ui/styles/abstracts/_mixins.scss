@@ -1,0 +1,81 @@
+@use 'breakpoints' as bp;
+
+/// Contour de focus commun (SPEC §3) : 2 px accent, décalé de 2 px.
+@mixin focus-ring {
+  &:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin mono($size: var(--text-sm), $weight: 500) {
+  font-family: var(--font-mono);
+  font-size: $size;
+  font-weight: $weight;
+}
+
+/// Bouton sans style natif, pour les composants qui dessinent leur propre apparence.
+@mixin reset-button {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/// Champ de saisie (.inp des maquettes).
+@mixin control {
+  height: var(--control-h);
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 var(--text-base) var(--font-sans);
+
+  &::placeholder {
+    color: var(--fg-3);
+  }
+
+  &:disabled {
+    background: var(--surface);
+    color: var(--fg-3);
+    cursor: not-allowed;
+  }
+
+  @include focus-ring;
+}
+
+/// Panneau bordé (.panel des maquettes).
+@mixin panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+
+@mixin stack-below {
+  @media (max-width: bp.$stack-below) {
+    @content;
+  }
+}

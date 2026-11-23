@@ -1,0 +1,44 @@
+@use 'abstracts' as *;
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font: 500 var(--text-xs) / 1 var(--font-mono);
+  white-space: nowrap;
+}
+
+// Taxonomie : tag mis en avant dans sa ligne.
+.lg {
+  height: 22px;
+  padding: 0 7px;
+  color: var(--fg);
+  font-size: var(--text-sm);
+}
+
+// Chip supprimable (combobox de l'éditeur).
+.removable {
+  height: 22px;
+  padding: 0 var(--space-1) 0 7px;
+}
+
+.remove {
+  @include reset-button;
+
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 3px;
+  color: var(--fg-3);
+
+  @include focus-ring;
+
+  &:hover {
+    background: var(--border);
+    color: var(--fg);
+  }
+}

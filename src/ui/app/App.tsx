@@ -1,8 +1,15 @@
-/** Coquille provisoire : remplacée par le router et le layout en phase 3. */
+import { MemoryRouter } from 'react-router'
+
+import { ComponentGallery } from './dev/ComponentGallery.tsx'
+import { ThemeProvider } from './theme/ThemeProvider.tsx'
+
+/** Coquille provisoire (phase 2) : galerie des composants. Remplacée par le router en phase 3. */
 export function App() {
   return (
-    <main>
-      <h1>Context Hub</h1>
-    </main>
+    <ThemeProvider>
+      <MemoryRouter>
+        <ComponentGallery />
+      </MemoryRouter>
+    </ThemeProvider>
   )
 }

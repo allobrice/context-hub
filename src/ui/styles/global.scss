@@ -1,0 +1,8 @@
+// Point d'entrée des styles globaux. Les composants utilisent des SCSS Modules.
+@use 'base/tokens';
+@use 'base/reset';
+@use 'abstracts' as *;
+
+.visually-hidden {
+  @include visually-hidden;
+}

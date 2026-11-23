@@ -1,0 +1,40 @@
+.errorState {
+  display: flex;
+  gap: var(--space-3);
+  padding: 14px var(--space-4);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-lg);
+  background: var(--danger-soft);
+}
+
+.icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--danger);
+}
+
+.content {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  color: var(--fg);
+  font-size: var(--text-base);
+}
+
+.message {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.code {
+  color: var(--fg-2);
+  font-size: var(--text-xs);
+}
+
+.retry {
+  align-self: center;
+}
