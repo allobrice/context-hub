@@ -1,0 +1,72 @@
+@use 'abstracts' as *;
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+// Filtre actif : accent-soft + croix pour le retirer (SPEC §5.1).
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h-sm);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.chipTrigger {
+  height: calc(var(--control-h-sm) - 2px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background: transparent;
+    text-decoration: underline;
+  }
+
+  // Le chevron disparaît : la croix prend sa place (maquette 07).
+  svg {
+    display: none;
+  }
+}
+
+.clear {
+  @include reset-button;
+
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 var(--space-2) 0 2px;
+  color: inherit;
+
+  @include focus-ring;
+}
+
+.count {
+  margin-left: auto;
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.sortSelect {
+  @include control;
+
+  height: 28px;
+  padding: 0 6px;
+  font-size: var(--text-sm);
+}

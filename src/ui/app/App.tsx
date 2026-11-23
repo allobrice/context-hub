@@ -1,15 +1,21 @@
-import { MemoryRouter } from 'react-router'
+import type { QueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { createBrowserRouter, RouterProvider } from 'react-router'
 
-import { ComponentGallery } from './dev/ComponentGallery.tsx'
-import { ThemeProvider } from './theme/ThemeProvider.tsx'
+import type { AppServices } from '../../application/services.ts'
+import { AppProviders } from './providers/AppProviders.tsx'
+import { appRoutes } from './routes.tsx'
 
-/** Coquille provisoire (phase 2) : galerie des composants. Remplacée par le router en phase 3. */
-export function App() {
+export interface AppProps {
+  services: AppServices
+  queryClient: QueryClient
+}
+
+export function App({ services, queryClient }: AppProps) {
+  const [router] = useState(() => createBrowserRouter(appRoutes))
   return (
-    <ThemeProvider>
-      <MemoryRouter>
-        <ComponentGallery />
-      </MemoryRouter>
-    </ThemeProvider>
+    <AppProviders services={services} queryClient={queryClient}>
+      <RouterProvider router={router} />
+    </AppProviders>
   )
 }

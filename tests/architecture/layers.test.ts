@@ -41,6 +41,12 @@ describe('règle de dépendance entre couches', () => {
     ['application → ui', 'src/application/probe.ts', '../ui/app/App.tsx'],
     ['infrastructure → ui', 'src/infrastructure/probe.ts', '../ui/app/App.tsx'],
     ['ui → point d’assemblage', 'src/ui/probe.ts', '../main.tsx'],
+    [
+      'test de ui → infrastructure',
+      'src/ui/probe.test.tsx',
+      '../infrastructure/createInMemoryServices.ts',
+    ],
+    ['code de ui → support de test', 'src/ui/probe.ts', '../test/renderApp.tsx'],
     // Prouve que main.tsx est bien classé : un fichier non classé ne serait pas contrôlé.
     ['point d’assemblage → support de test', 'src/main.tsx', './test/setup.ts'],
   ])('interdit %s', async (_, file, target) => {
@@ -51,6 +57,7 @@ describe('règle de dépendance entre couches', () => {
     ['ui → domain', 'src/ui/probe.ts', '../domain/context/types.ts'],
     ['domain → domain', 'src/domain/probe.ts', './context/types.ts'],
     ['point d’assemblage → ui', 'src/main.tsx', './ui/app/App.tsx'],
+    ['test de ui → support de test', 'src/ui/probe.test.tsx', '../test/renderApp.tsx'],
   ])('autorise %s', async (_, file, target) => {
     expect(await violations(file, target)).toEqual([])
   })

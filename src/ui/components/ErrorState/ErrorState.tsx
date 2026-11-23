@@ -8,7 +8,7 @@ export interface ErrorStateProps {
   title: string
   children?: ReactNode
   /** Code technique affiché en mono (ex. « SQLITE_BUSY · database is locked · req 7f3a91 »). */
-  code?: string
+  code?: string | undefined
   onRetry?: () => void
 }
 

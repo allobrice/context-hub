@@ -71,6 +71,11 @@ export function scopeTarget(scope: Scope): string {
   }
 }
 
+/** Version affichée dans les listes : la version publiée (celle que lisent les sessions), sinon le brouillon. */
+export function listedVersion(context: Context): ContextVersion | null {
+  return context.publishedVersion ?? context.draft
+}
+
 /** Version courante d'un contexte : le brouillon s'il existe, sinon la version publiée. */
 export function currentVersion(context: Context): ContextVersion | null {
   return context.draft ?? context.publishedVersion

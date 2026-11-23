@@ -43,6 +43,19 @@ tests/architecture # garde-fous d'architecture (règle de couches)
 
 `ui → application → domain` ; `infrastructure → application → domain`. Seul `src/main.tsx` importe à la fois `infrastructure` et `ui`.
 Cette règle est appliquée par `eslint-plugin-boundaries` (`LAYER_ELEMENTS` / `LAYER_POLICIES` dans `eslint.config.js`) et vérifiée par `tests/architecture/layers.test.ts`. Ne jamais l'assouplir pour faire passer un import : déplacer le code dans la bonne couche.
+Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` assemble l'infrastructure in-memory pour les tests (`renderApp`, `createTestServices`).
+
+## Données et états simulés
+
+- Ports dans `src/application/ports/` (`ContextRepository`, `WorkspaceRepository`, `Clock`) ; l'UI les reçoit via `useServices()`, jamais en import direct.
+- Fixtures dans `src/infrastructure/fixtures/` : les textes et compteurs des maquettes **sont** les fixtures. `contexts.test.ts` vérifie chaque compteur visible (statuts, collections, portées, tags, fusion) : le mettre à jour avec toute modification des fixtures.
+- Horloge figée au 23/11/2026 11:12 (`demoClock`) pour que « il y a 2 h », « hier »… correspondent aux maquettes. Les tests tournent en `TZ=Europe/Paris`.
+- `?mock=empty|loading|error|slow|conflict` : relu à chaque appel. Il ne touche que la requête **principale** de l'écran ; la navigation (sidebar) reste disponible (maquettes 05 et 06).
+
+## Routes
+
+`/` Bibliothèque · `/contexts/new` · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/mcp` · `/__components` (dev uniquement). Chemins centralisés dans `src/ui/app/paths.ts`, routes lazy dans `src/ui/app/routes.tsx`.
+La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`libraryParams.ts`) ; les paramètres inconnus (`mock`) sont conservés.
 
 ## Interdits
 

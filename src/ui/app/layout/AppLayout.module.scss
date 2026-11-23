@@ -1,0 +1,35 @@
+@use 'abstracts' as *;
+
+// Sous 900 px, la sidebar passe au-dessus du contenu par simple retour à la ligne (SPEC §4).
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.main {
+  display: flex;
+  flex: 999 1 560px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.skipLink {
+  @include visually-hidden;
+
+  &:focus {
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 100;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    clip: auto;
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    box-shadow: var(--shadow);
+  }
+}

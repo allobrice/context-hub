@@ -1,0 +1,40 @@
+@use 'abstracts' as *;
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 0 1 420px;
+  align-items: center;
+  min-width: 220px;
+}
+
+.icon {
+  position: absolute;
+  left: 10px;
+  color: var(--fg-3);
+  pointer-events: none;
+}
+
+.input {
+  @include control;
+
+  width: 100%;
+  padding-right: 52px;
+  padding-left: 34px;
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.kbd {
+  @include mono(var(--text-xs));
+
+  position: absolute;
+  right: var(--space-2);
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-3);
+  pointer-events: none;
+}

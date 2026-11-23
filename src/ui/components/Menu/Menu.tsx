@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 
+import { cx } from '../../lib/cx.ts'
 import { rovingIndex } from '../../lib/rovingIndex.ts'
 import { Button } from '../Button/Button.tsx'
 import { Icon } from '../Icon/Icon.tsx'
@@ -11,17 +12,42 @@ export interface MenuItem {
   label: string
   icon?: IconName
   disabled?: boolean
+  /** État coché (menus de sélection). */
+  checked?: boolean
+  /** Contenu secondaire aligné à droite (ex. compteur). */
+  meta?: ReactNode
   onSelect: () => void
 }
 
+/** `none` : actions ; `single` : menuitemradio, se ferme ; `multiple` : menuitemcheckbox, reste ouvert. */
+export type MenuSelection = 'none' | 'single' | 'multiple'
+
 export interface MenuProps {
-  /** Nom accessible du bouton déclencheur (ex. « Plus d’actions »). */
+  /** Nom accessible du menu (et du déclencheur s'il n'a pas de contenu visible). */
   label: string
   items: readonly MenuItem[]
+  selection?: MenuSelection
+  /** Contenu visible du déclencheur. Absent : bouton icône « … » nommé par `label`. */
+  trigger?: ReactNode
+  triggerClassName?: string | undefined
+  align?: 'start' | 'end'
 }
 
-/** Bouton de menu ARIA (menu button) : flèches, Début/Fin, Échap rend le focus au déclencheur. */
-export function Menu({ label, items }: MenuProps) {
+const ITEM_ROLES = {
+  none: 'menuitem',
+  single: 'menuitemradio',
+  multiple: 'menuitemcheckbox',
+} as const
+
+/** Bouton de menu ARIA (APG menu button) : flèches, Début/Fin, Échap rend le focus au déclencheur. */
+export function Menu({
+  label,
+  items,
+  selection = 'none',
+  trigger,
+  triggerClassName,
+  align = 'end',
+}: MenuProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -37,7 +63,8 @@ export function Menu({ label, items }: MenuProps) {
 
   useEffect(() => {
     if (!open) return
-    focusItem(0)
+    const checkedIndex = enabledIndexes.findIndex((index) => items[index]?.checked)
+    focusItem(Math.max(0, checkedIndex))
     function closeOnOutsideClick(event: PointerEvent) {
       if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false)
     }
@@ -45,7 +72,7 @@ export function Menu({ label, items }: MenuProps) {
     return () => {
       document.removeEventListener('pointerdown', closeOnOutsideClick)
     }
-    // focusItem ne dépend que des refs et de items : seul `open` doit relancer l'effet.
+    // Le focus initial ne doit être posé qu'à l'ouverture, pas à chaque changement de `items`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
@@ -55,10 +82,13 @@ export function Menu({ label, items }: MenuProps) {
   }
 
   function handleMenuKeyDown(event: KeyboardEvent) {
-    const current = enabledIndexes.indexOf(
-      itemRefs.current.findIndex((item) => item === document.activeElement),
+    const focused = itemRefs.current.findIndex((item) => item === document.activeElement)
+    const target = rovingIndex(
+      event.key,
+      enabledIndexes.indexOf(focused),
+      enabledIndexes.length,
+      'vertical',
     )
-    const target = rovingIndex(event.key, current, enabledIndexes.length, 'vertical')
     if (target !== null) {
       event.preventDefault()
       focusItem(target)
@@ -70,32 +100,44 @@ export function Menu({ label, items }: MenuProps) {
     }
   }
 
+  const triggerProps = {
+    ref: triggerRef,
+    'aria-haspopup': 'menu' as const,
+    'aria-expanded': open,
+    'aria-controls': open ? menuId : undefined,
+    onClick: () => {
+      setOpen((value) => !value)
+    },
+    onKeyDown: (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setOpen(true)
+      }
+    },
+  }
+
   return (
     <div ref={rootRef} className={styles.menu}>
-      <Button
-        ref={triggerRef}
-        icon="more"
-        aria-label={label}
-        title={label}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => {
-          setOpen((value) => !value)
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowDown') {
-            event.preventDefault()
-            setOpen(true)
-          }
-        }}
-      />
+      {trigger === undefined ? (
+        <Button
+          icon="more"
+          aria-label={label}
+          title={label}
+          className={triggerClassName}
+          {...triggerProps}
+        />
+      ) : (
+        <Button size="sm" className={triggerClassName} {...triggerProps}>
+          {trigger}
+          <Icon name="chevronDown" size={14} />
+        </Button>
+      )}
       {open && (
         <div
           id={menuId}
           role="menu"
           aria-label={label}
-          className={styles.list}
+          className={cx(styles.list, align === 'start' && styles.alignStart)}
           onKeyDown={handleMenuKeyDown}
           tabIndex={-1}
         >
@@ -106,17 +148,24 @@ export function Menu({ label, items }: MenuProps) {
                 itemRefs.current[index] = element
               }}
               type="button"
-              role="menuitem"
+              role={ITEM_ROLES[selection]}
+              aria-checked={selection === 'none' ? undefined : Boolean(item.checked)}
               tabIndex={-1}
               disabled={item.disabled}
               className={styles.item}
               onClick={() => {
-                close({ restoreFocus: true })
+                if (selection !== 'multiple') close({ restoreFocus: true })
                 item.onSelect()
               }}
             >
+              {selection !== 'none' && (
+                <span className={styles.check} aria-hidden="true">
+                  {item.checked && <Icon name="check" size={14} />}
+                </span>
+              )}
               {item.icon && <Icon name={item.icon} size={14} />}
-              {item.label}
+              <span className={styles.itemLabel}>{item.label}</span>
+              {item.meta !== undefined && <span className={styles.meta}>{item.meta}</span>}
             </button>
           ))}
         </div>

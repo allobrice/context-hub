@@ -54,3 +54,43 @@ describe('Menu', () => {
     expect(trigger).toHaveFocus()
   })
 })
+
+describe('Menu de sélection', () => {
+  it('multiple : menuitemcheckbox, reste ouvert et reflète l’état coché', async () => {
+    const onSelect = vi.fn()
+    render(
+      <Menu
+        label="Filtrer par tag"
+        selection="multiple"
+        trigger="Tags"
+        items={[
+          { id: 'vue', label: 'vue', checked: true, onSelect },
+          { id: 'nuxt', label: 'nuxt', checked: false, onSelect },
+        ]}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Tags' }))
+    expect(screen.getByRole('menuitemcheckbox', { name: 'vue' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    expect(screen.getByRole('menuitemcheckbox', { name: 'vue' })).toHaveFocus()
+    await userEvent.click(screen.getByRole('menuitemcheckbox', { name: 'nuxt' }))
+    expect(onSelect).toHaveBeenCalledOnce()
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+  })
+
+  it('single : menuitemradio, se ferme après le choix', async () => {
+    render(
+      <Menu
+        label="Filtrer par portée"
+        selection="single"
+        trigger="Portée"
+        items={[{ id: 'team', label: 'Équipe', onSelect: vi.fn() }]}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Portée' }))
+    await userEvent.click(screen.getByRole('menuitemradio', { name: 'Équipe' }))
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+})

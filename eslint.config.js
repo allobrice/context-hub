@@ -20,7 +20,10 @@ export const LAYER_ELEMENTS = [
 ]
 
 /** `src/main.tsx` est un fichier, pas un dossier : il est classé par un file descriptor. */
-export const LAYER_FILES = [{ pattern: 'src/main.tsx', category: 'composition-root' }]
+export const LAYER_FILES = [
+  { pattern: 'src/main.tsx', category: 'composition-root' },
+  { pattern: 'src/**/*.test.{ts,tsx}', category: 'test' },
+]
 
 export const LAYER_POLICIES = {
   default: 'disallow',
@@ -45,6 +48,11 @@ export const LAYER_POLICIES = {
           element: { types: ['test-support', 'ui', 'application', 'domain', 'infrastructure'] },
         },
       },
+    },
+    // Un test peut utiliser le support de test (src/test/), qui seul assemble l'infrastructure in-memory.
+    {
+      from: { file: { categories: 'test' } },
+      allow: { to: { element: { type: 'test-support' } } },
     },
     {
       from: { file: { categories: 'composition-root' } },

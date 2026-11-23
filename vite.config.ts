@@ -22,5 +22,7 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.ts'],
     css: { modules: { classNameStrategy: 'non-scoped' } },
     restoreMocks: true,
+    // Dates des fixtures et formats relatifs calculés en heure de Paris, comme les maquettes.
+    env: { TZ: 'Europe/Paris' },
   },
 })

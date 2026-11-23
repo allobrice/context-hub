@@ -5,6 +5,7 @@ import {
   canDeleteCollection,
   canRenameCollection,
   deletionTargets,
+  isCollectionListed,
   planCollectionDeletion,
 } from './collections.ts'
 import { UNCATEGORIZED_COLLECTION_ID, type Collection } from './types.ts'
@@ -29,6 +30,14 @@ describe('collection système', () => {
     expect(canDeleteCollection(NONE)).toBe(false)
     expect(canRenameCollection(NUXT)).toBe(true)
     expect(canDeleteCollection(NUXT)).toBe(true)
+  })
+})
+
+describe('isCollectionListed', () => {
+  it('masque « Sans collection » quand elle est vide, jamais les autres', () => {
+    expect(isCollectionListed(NONE)).toBe(false)
+    expect(isCollectionListed({ ...NONE, contextCount: 8 })).toBe(true)
+    expect(isCollectionListed(NUXT)).toBe(true)
   })
 })
 

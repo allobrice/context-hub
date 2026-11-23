@@ -1,0 +1,161 @@
+@use 'abstracts' as *;
+
+.wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--text-sm);
+}
+
+// Colonnes de la maquette : minmax(0, 3fr) 160 190 132 100 52 64 108 (+ gap 12, padding 14).
+.colTitle {
+  width: auto;
+}
+.colCollection {
+  width: 172px;
+}
+.colTags {
+  width: 202px;
+}
+.colScope {
+  width: 144px;
+}
+.colStatus {
+  width: 112px;
+}
+.colVersion {
+  width: 64px;
+}
+.colTokens {
+  width: 76px;
+}
+.colUpdated {
+  width: 128px;
+}
+
+.head abbr {
+  text-decoration: none;
+}
+
+.head th {
+  height: 34px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 14px;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 14px;
+}
+
+.table .right {
+  text-align: right;
+}
+
+// La ligne entière est un lien : le lien du titre s'étend sur toute la ligne (::after).
+.row {
+  position: relative;
+  height: 56px;
+
+  td {
+    padding: var(--space-2) 6px;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg-2);
+    vertical-align: middle;
+  }
+
+  &:last-child td {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: var(--surface);
+  }
+
+  &:focus-within {
+    outline: var(--focus-ring);
+    outline-offset: -2px;
+  }
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.titleLink {
+  @include truncate;
+
+  color: var(--fg);
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.description {
+  @include truncate;
+
+  color: var(--fg-3);
+}
+
+.ellipsis {
+  @include truncate;
+}
+
+// Les tags qui ne tiennent pas passent à la ligne et sont masqués entiers, jamais coupés au milieu.
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  height: 20px;
+  overflow: hidden;
+}
+
+.scope {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scopeTarget {
+  @include mono(10px, 400);
+  @include truncate;
+
+  color: var(--fg-3);
+}
+
+.mono {
+  @include mono(var(--text-sm), 400);
+}

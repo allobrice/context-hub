@@ -1,0 +1,39 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+// Nouvelle recherche en cours, anciens résultats encore affichés.
+.stale {
+  opacity: 0.6;
+  transition: opacity 150ms;
+}

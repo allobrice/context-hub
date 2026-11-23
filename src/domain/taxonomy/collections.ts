@@ -15,6 +15,13 @@ export function canDeleteCollection(collection: Pick<Collection, 'system'>): boo
   return !isSystemCollection(collection)
 }
 
+/** Une collection apparaît dans la navigation et les filtres ; « Sans collection » seulement si elle n'est pas vide. */
+export function isCollectionListed(
+  collection: Pick<Collection, 'system' | 'contextCount'>,
+): boolean {
+  return !isSystemCollection(collection) || collection.contextCount > 0
+}
+
 /** Cibles possibles pour reclasser les contextes d'une collection supprimée (la système comprise). */
 export function deletionTargets(
   collections: readonly Collection[],
