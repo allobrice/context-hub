@@ -22,7 +22,7 @@ design-kit/        # référence de design, lecture seule (SPEC.md = source de v
 | `pnpm -r test`      | Vitest de chaque paquet                                      |
 | `pnpm format`       | Prettier sur tout le dépôt                                   |
 
-Un script d'un seul paquet : `pnpm --filter @context-hub/<paquet> <script>`.
+Un script d'un seul paquet : `pnpm --filter @context-hub/<paquet> <script>` (ex. `pnpm --filter @context-hub/server db:seed`).
 **Fin de chaque tâche : `pnpm -r typecheck && pnpm -r lint && pnpm -r test` au vert.**
 
 ## Règle de dépendance entre paquets
@@ -39,7 +39,8 @@ Appliquée par `no-restricted-imports` et `eslint-plugin-boundaries` dans `eslin
 - `tsconfig.base.json` : TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`…), étendu par chaque paquet. Chaque paquet a un `tsconfig.json` de solution (références) que lit le project service d'ESLint.
 - `eslint.config.js` (racine) : une seule config ; ses motifs sont relatifs à la racine, quel que soit le dossier d'où l'on lance `eslint`.
 - `.prettierrc.json` : sans point-virgule, guillemets simples, 100 colonnes.
-- pnpm refuse les scripts de build non approuvés : `allowBuilds` dans `pnpm-workspace.yaml`.
+- pnpm refuse les scripts de build non approuvés : `allowBuilds` dans `pnpm-workspace.yaml` (`better-sqlite3` et `esbuild` autorisés).
+- Les fixtures de démo (`packages/domain/src/fixtures/`) sont partagées par le front (in-memory) et le seed du serveur.
 
 ## Interdits communs
 

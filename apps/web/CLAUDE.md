@@ -29,7 +29,7 @@ Formatage : `pnpm format` à la racine. Fin de chaque tâche : la gate du `CLAUD
 src/
   main.tsx         # point d'assemblage : instancie l'infrastructure et l'injecte dans l'UI
   application/     # ports (interfaces) + cas d'usage
-  infrastructure/  # InMemory*Repository, fixtures (SPEC §6), latence simulée, ?mock=empty|loading|error|slow|conflict
+  infrastructure/  # InMemory*Repository, horloge de démo, latence simulée, ?mock=empty|loading|error|slow|conflict
   ui/
     app/           # router (lazy), providers, layout
     components/    # composants génériques
@@ -50,8 +50,8 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 ## Données et états simulés
 
 - Ports dans `src/application/ports/` (`ContextRepository`, `WorkspaceRepository`, `Clock`) ; l'UI les reçoit via `useServices()`, jamais en import direct.
-- Fixtures dans `src/infrastructure/fixtures/` : les textes et compteurs des maquettes **sont** les fixtures. `contexts.test.ts` vérifie chaque compteur visible (statuts, collections, portées, tags, fusion) : le mettre à jour avec toute modification des fixtures.
-- Horloge figée au 23/11/2026 11:12 (`demoClock`) pour que « il y a 2 h », « hier »… correspondent aux maquettes. Les tests tournent en `TZ=Europe/Paris`.
+- Fixtures dans `packages/domain/src/fixtures/` (partagées avec le seed du serveur) : les textes et compteurs des maquettes **sont** les fixtures. `contexts.test.ts` (à côté) vérifie chaque compteur visible (statuts, collections, portées, tags, fusion) : le mettre à jour avec toute modification des fixtures.
+- Horloge figée au 23/11/2026 11:12 (`demoClock`, sur `DEMO_NOW` du domaine) pour que « il y a 2 h », « hier »… correspondent aux maquettes. Les tests tournent en `TZ=Europe/Paris`.
 - Le repository in-memory joue le rôle du serveur : il revalide le brouillon (`draftRejections`) et rescanne le contenu à la publication (`publishRejections`) ; l'UI n'est jamais seule juge.
 - Copie locale des brouillons (`DraftStorage`, `localStorage` validé par garde de type) : autosave 2 s, conservée sur conflit, effacée après enregistrement serveur.
 - `?mock=conflict` : à l'enregistrement d'un contexte publié, « Camille » publie la version suivante juste avant → `VersionConflictError` ; « Repartir de la vN » débloque.

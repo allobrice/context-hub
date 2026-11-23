@@ -10,6 +10,7 @@ import tseslint from 'typescript-eslint'
 /** Racine du monorepo : les motifs ci-dessous sont relatifs à ce dossier, quel que soit le cwd du lint. */
 const ROOT = import.meta.dirname
 const WEB = 'apps/web'
+const SERVER = 'apps/server'
 
 /**
  * Couches du front (voir CLAUDE.md) : ui → application → domain ; infrastructure implémente les ports
@@ -22,18 +23,26 @@ export const LAYER_ELEMENTS = [
   { type: 'infrastructure', pattern: `${WEB}/src/infrastructure` },
   { type: 'ui', pattern: `${WEB}/src/ui` },
   { type: 'test-support', pattern: `${WEB}/src/test` },
+  // Serveur : interfaces (http, mcp) → application → domain ; infrastructure implémente les ports.
+  { type: 'server-application', pattern: `${SERVER}/src/application` },
+  { type: 'server-infrastructure', pattern: `${SERVER}/src/infrastructure` },
+  { type: 'server-interfaces', pattern: `${SERVER}/src/interfaces` },
+  { type: 'server-test-support', pattern: `${SERVER}/src/test` },
 ]
 
 /** `main.tsx` est un fichier, pas un dossier : il est classé par un file descriptor. */
 export const LAYER_FILES = [
   { pattern: `${WEB}/src/main.tsx`, category: 'composition-root' },
   { pattern: `${WEB}/src/**/*.test.{ts,tsx}`, category: 'test' },
+  { pattern: `${SERVER}/src/main.ts`, category: 'server-composition-root' },
+  { pattern: `${SERVER}/src/**/*.test.ts`, category: 'server-test' },
 ]
 
 /** Fichiers soumis à la règle de couches, et tsconfig servant à résoudre leurs imports. */
-export const LAYER_INCLUDE = [`${WEB}/src/**/*`, 'packages/domain/src/**/*']
+export const LAYER_INCLUDE = [`${WEB}/src/**/*`, `${SERVER}/src/**/*`, 'packages/domain/src/**/*']
 export const LAYER_TSCONFIGS = [
   `${ROOT}/${WEB}/tsconfig.app.json`,
+  `${ROOT}/${SERVER}/tsconfig.app.json`,
   `${ROOT}/packages/domain/tsconfig.lib.json`,
 ]
 
@@ -78,6 +87,13 @@ const COMMON_RESTRICTED_IMPORTS = {
   patterns: [{ group: ['**/design-kit/**'], message: 'design-kit/ ne doit pas être importé.' }],
 }
 
+const SERVER_LAYERS = [
+  'server-application',
+  'server-infrastructure',
+  'server-interfaces',
+  'server-test-support',
+]
+
 export const LAYER_POLICIES = {
   default: 'disallow',
   policies: [
@@ -106,6 +122,33 @@ export const LAYER_POLICIES = {
     {
       from: { file: { categories: 'test' } },
       allow: { to: { element: { type: 'test-support' } } },
+    },
+    {
+      from: { element: { type: 'server-application' } },
+      allow: { to: { element: { types: ['server-application', 'domain'] } } },
+    },
+    {
+      from: { element: { type: 'server-infrastructure' } },
+      allow: {
+        to: { element: { types: ['server-infrastructure', 'server-application', 'domain'] } },
+      },
+    },
+    {
+      from: { element: { type: 'server-interfaces' } },
+      allow: { to: { element: { types: ['server-interfaces', 'server-application', 'domain'] } } },
+    },
+    {
+      from: { element: { type: 'server-test-support' } },
+      allow: { to: { element: { types: [...SERVER_LAYERS, 'domain'] } } },
+    },
+    // Un test serveur peut utiliser src/test/, qui seul assemble l'infrastructure (base en mémoire).
+    {
+      from: { file: { categories: 'server-test' } },
+      allow: { to: { element: { type: 'server-test-support' } } },
+    },
+    {
+      from: { file: { categories: 'server-composition-root' } },
+      allow: { to: { element: { types: [...SERVER_LAYERS, 'domain'] } } },
     },
     {
       from: { file: { categories: 'composition-root' } },
@@ -152,7 +195,7 @@ export default tseslint.config(
   },
 
   {
-    files: [`${WEB}/src/**/*.{ts,tsx}`, 'packages/domain/src/**/*.ts'],
+    files: [`${WEB}/src/**/*.{ts,tsx}`, `${SERVER}/src/**/*.ts`, 'packages/domain/src/**/*.ts'],
     plugins: { boundaries },
     settings: {
       'boundaries/root-path': ROOT,
@@ -169,7 +212,7 @@ export default tseslint.config(
   },
 
   {
-    files: [`${WEB}/**/*.{ts,tsx}`],
+    files: ['apps/*/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -215,7 +258,12 @@ export default tseslint.config(
   },
 
   {
-    files: ['*.{js,ts}', '{apps,packages}/*/*.{js,ts}', '{apps,packages}/*/tests/**/*.ts'],
+    files: [
+      '*.{js,ts}',
+      '{apps,packages}/*/*.{js,ts}',
+      '{apps,packages}/*/tests/**/*.ts',
+      `${SERVER}/src/**/*.ts`,
+    ],
     languageOptions: { globals: globals.node },
   },
 

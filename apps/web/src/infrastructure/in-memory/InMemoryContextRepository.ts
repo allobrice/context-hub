@@ -36,7 +36,7 @@ import {
   VersionConflictError,
 } from '@context-hub/domain/shared/errors.ts'
 import type { Clock } from '../../application/ports/Clock.ts'
-import type { ContextRecord } from '../fixtures/contexts.ts'
+import type { ContextRecord } from '@context-hub/domain/fixtures/contexts.ts'
 import type { InMemoryState } from './InMemoryStore.ts'
 import { visibleState } from './InMemoryStore.ts'
 import { simulateMutation, simulatePrimary, type SimulationOptions } from './simulation.ts'

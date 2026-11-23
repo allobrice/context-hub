@@ -1,4 +1,4 @@
-import { UNCATEGORIZED_COLLECTION_ID } from '@context-hub/domain/taxonomy/types.ts'
+import { UNCATEGORIZED_COLLECTION_ID } from '../taxonomy/types.ts'
 
 /** Collections de démo (maquette 21). Les compteurs sont calculés à partir des contextes. */
 export interface CollectionRecord {

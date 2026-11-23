@@ -6,7 +6,7 @@ import type { Context } from '@context-hub/domain/context/types.ts'
 import { countBy } from '@context-hub/domain/library/criteria.ts'
 import type { Collection } from '@context-hub/domain/taxonomy/types.ts'
 import { UNCATEGORIZED_COLLECTION_ID } from '@context-hub/domain/taxonomy/types.ts'
-import type { CollectionRecord } from '../fixtures/collections.ts'
+import type { CollectionRecord } from '@context-hub/domain/fixtures/collections.ts'
 import { visibleState, type InMemoryState } from './InMemoryStore.ts'
 import { simulateSecondary, type SimulationOptions } from './simulation.ts'
 

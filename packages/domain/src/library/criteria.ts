@@ -50,9 +50,19 @@ function fold(text: string): string {
     .toLowerCase()
 }
 
+/** Termes d'une recherche, sans casse ni accents (« Conventions  Nuxt » → ["conventions", "nuxt"]). */
+export function queryTerms(query: string): string[] {
+  return fold(query).split(/\s+/).filter(Boolean)
+}
+
+/** Clé de tri d'un titre pour un stockage : sans casse ni accents (« Écrire » se range avec « ecrire »). */
+export function titleSortKey(title: string): string {
+  return fold(title).trim()
+}
+
 /** Recherche plein texte : titre, description, tags et contenu (insensible à la casse et aux accents). */
 export function matchesQuery(context: Context, query: string): boolean {
-  const terms = fold(query).split(/\s+/).filter(Boolean)
+  const terms = queryTerms(query)
   if (terms.length === 0) return true
   const haystack = fold(
     [
@@ -105,25 +115,43 @@ export function sortContexts(contexts: readonly Context[], sort: LibrarySort): C
   }
 }
 
+/** Fenêtre d'une page dans une liste de `total` éléments. */
+export interface PageWindow {
+  /** Page effective : une page hors bornes est ramenée à la dernière page valide. */
+  readonly page: number
+  readonly pageCount: number
+  /** Index (base 0) du premier élément de la page. */
+  readonly offset: number
+  readonly pageSize: number
+}
+
+/** Calcule la page effective (pour paginer côté stockage, par LIMIT / OFFSET). */
+export function pageWindow(total: number, page: number, pageSize: number = PAGE_SIZE): PageWindow {
+  const pageCount = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(Math.max(1, Math.trunc(page) || 1), pageCount)
+  return { page: safePage, pageCount, offset: (safePage - 1) * pageSize, pageSize }
+}
+
+/** Assemble une page à partir des éléments déjà découpés selon `window`. */
+export function toPage<T>(items: readonly T[], total: number, window: PageWindow): Page<T> {
+  return {
+    items,
+    total,
+    page: window.page,
+    pageCount: window.pageCount,
+    from: total === 0 ? 0 : window.offset + 1,
+    to: window.offset + items.length,
+  }
+}
+
 /** Découpe en pages ; une page hors bornes est ramenée à la dernière page valide. */
 export function paginate<T>(
   items: readonly T[],
   page: number,
   pageSize: number = PAGE_SIZE,
 ): Page<T> {
-  const total = items.length
-  const pageCount = Math.max(1, Math.ceil(total / pageSize))
-  const safePage = Math.min(Math.max(1, Math.trunc(page) || 1), pageCount)
-  const start = (safePage - 1) * pageSize
-  const pageItems = items.slice(start, start + pageSize)
-  return {
-    items: pageItems,
-    total,
-    page: safePage,
-    pageCount,
-    from: total === 0 ? 0 : start + 1,
-    to: start + pageItems.length,
-  }
+  const window = pageWindow(items.length, page, pageSize)
+  return toPage(items.slice(window.offset, window.offset + pageSize), items.length, window)
 }
 
 export type StatusCounts = Readonly<Record<ContextStatus, number>> & { readonly total: number }

@@ -10,8 +10,11 @@ import {
   DEFAULT_LIBRARY_CRITERIA,
   filterContexts,
   matchesQuery,
+  pageWindow,
   paginate,
+  queryTerms,
   sortContexts,
+  titleSortKey,
 } from './criteria.ts'
 
 const nuxt = aContext({
@@ -144,5 +147,33 @@ describe('compteurs', () => {
     expect(byScope.get('team')).toBe(2)
     expect(byScope.get('personal')).toBe(1)
     expect(byScope.get('project')).toBeUndefined()
+  })
+})
+
+describe('queryTerms', () => {
+  it('découpe sur les espaces, sans casse ni accents', () => {
+    expect(queryTerms('  Écrire   des Tests ')).toEqual(['ecrire', 'des', 'tests'])
+  })
+
+  it('renvoie une liste vide pour une recherche blanche', () => {
+    expect(queryTerms('   ')).toEqual([])
+  })
+})
+
+describe('titleSortKey', () => {
+  it('range les titres sans casse ni accents', () => {
+    expect(titleSortKey(' Écrire des tests ')).toBe('ecrire des tests')
+    expect(titleSortKey('Écrire') < titleSortKey('Fixer')).toBe(true)
+  })
+})
+
+describe('pageWindow', () => {
+  it('calcule l’offset de la page demandée', () => {
+    expect(pageWindow(42, 2)).toEqual({ page: 2, pageCount: 2, offset: 25, pageSize: 25 })
+  })
+
+  it('ramène une page hors bornes à la dernière page valide, et un total nul à la page 1', () => {
+    expect(pageWindow(42, 9).page).toBe(2)
+    expect(pageWindow(0, 3)).toEqual({ page: 1, pageCount: 1, offset: 0, pageSize: 25 })
   })
 })

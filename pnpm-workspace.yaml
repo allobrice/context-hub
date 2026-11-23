@@ -3,6 +3,8 @@ packages:
   - packages/*
 allowBuilds:
   '@parcel/watcher': false
+  better-sqlite3: true
+  esbuild: true
 minimumReleaseAgeExclude:
   - '@tanstack/query-core@5.108.3'
   - '@tanstack/query-devtools@5.108.3'

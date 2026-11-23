@@ -1,10 +1,5 @@
-import type {
-  Context,
-  ContextStatus,
-  ContextVersion,
-  Scope,
-} from '@context-hub/domain/context/types.ts'
-import { toContextId } from '@context-hub/domain/context/types.ts'
+import type { Context, ContextStatus, ContextVersion, Scope } from '../context/types.ts'
+import { toContextId } from '../context/types.ts'
 
 /**
  * Données de démo (SPEC §6). Les 8 premiers contextes sont ceux des maquettes, repris tels quels ;
