@@ -1,0 +1,103 @@
+// Rendu Markdown (maquettes 08 et 12). Les titres du contenu sont décalés d'un niveau :
+// le titre de la page reste le seul h1.
+.markdown {
+  color: var(--fg);
+  font-size: var(--text-md);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+
+  h2 {
+    margin: 0 0 var(--space-3);
+    font-size: 22px;
+  }
+
+  h3 {
+    margin: 22px 0 var(--space-2);
+    font-size: 15px;
+  }
+
+  h4,
+  h5,
+  h6 {
+    margin: var(--space-4) 0 6px;
+    font-size: var(--text-md);
+  }
+
+  p {
+    margin: 0 0 var(--space-1);
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-left: var(--space-5);
+  }
+
+  code {
+    padding: 1px var(--space-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--code-bg);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  pre {
+    margin: 10px 0;
+    padding: var(--space-3) 14px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--code-bg);
+
+    code {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      line-height: 1.6;
+    }
+  }
+
+  blockquote {
+    margin: var(--space-2) 0;
+    padding-left: var(--space-3);
+    border-left: 3px solid var(--border-strong);
+    color: var(--fg-2);
+  }
+
+  table {
+    border-collapse: collapse;
+    font-size: var(--text-base);
+  }
+
+  th,
+  td {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--border);
+  }
+}
+
+// Éditeur : aperçu plus compact (maquette 12).
+.compact {
+  font-size: var(--text-base);
+  line-height: 1.6;
+
+  h2 {
+    margin-bottom: 10px;
+    font-size: var(--text-xl);
+  }
+
+  h3 {
+    margin: var(--space-4) 0 6px;
+    font-size: var(--text-md);
+  }
+
+  code {
+    font-size: var(--text-sm);
+  }
+}
+
+.blockedImage {
+  color: var(--fg-3);
+  font-style: italic;
+}

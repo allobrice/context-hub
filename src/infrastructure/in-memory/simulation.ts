@@ -43,3 +43,9 @@ export async function simulateSecondary<T>(options: SimulationOptions, run: () =
   await delay(options.latencyMs)
   return run()
 }
+
+/** Écriture : latence normale (ou lente), jamais d'attente infinie ni d'erreur de lecture simulée. */
+export async function simulateMutation<T>(options: SimulationOptions, run: () => T): Promise<T> {
+  await delay(options.mode() === 'slow' ? options.slowLatencyMs : options.latencyMs)
+  return run()
+}

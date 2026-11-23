@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { RepositoryUnavailableError } from '../../application/errors.ts'
+import { toContextId } from '../../domain/context/types.ts'
 import { DEFAULT_LIBRARY_CRITERIA } from '../../domain/library/criteria.ts'
 import { createInMemoryServices } from '../createInMemoryServices.ts'
 import type { MockMode } from './mockMode.ts'
@@ -94,5 +95,44 @@ describe('parseMockMode', () => {
     expect(parseMockMode('?view=cards&mock=slow')).toBe('slow')
     expect(parseMockMode('?mock=nimporte')).toBe('normal')
     expect(parseMockMode('')).toBe('normal')
+  })
+})
+
+describe('InMemoryContextRepository — Détail et cycle de vie', () => {
+  it('trouve un contexte par identifiant ou par slug, avec historique et collection', async () => {
+    const { contexts } = servicesIn('normal')
+    const byId = await contexts.get('ctx-nuxt-conventions')
+    const bySlug = await contexts.get('nuxt/conventions-nuxt-4')
+    expect(bySlug).toEqual(byId)
+    expect(byId.collectionName).toBe('Nuxt')
+    expect(byId.history.map((version) => version.number)).toEqual([4, 3, 2, 1])
+    expect(byId.context.draft?.number).toBe(5)
+  })
+
+  it('404 : ContextNotFoundError avec la référence et un identifiant de requête (maquette 11)', async () => {
+    await expect(
+      servicesIn('normal').contexts.get('nuxt/conventions-nuxt-5'),
+    ).rejects.toMatchObject({
+      code: 'CONTEXT_NOT_FOUND',
+      reference: 'nuxt/conventions-nuxt-5',
+      requestId: '2c81d0',
+    })
+  })
+
+  it('archive puis désarchive, la Bibliothèque reflète le changement', async () => {
+    const { contexts } = servicesIn('normal')
+    const id = toContextId('ctx-nuxt-conventions')
+    expect((await contexts.archive(id)).context.status).toBe('archived')
+    expect(
+      (await contexts.search({ ...DEFAULT_LIBRARY_CRITERIA, status: 'archived' })).page.total,
+    ).toBe(4)
+    expect((await contexts.unarchive(id)).context.status).toBe('published')
+  })
+
+  it('restaure une version dans le brouillon, sans publier', async () => {
+    const { contexts } = servicesIn('normal')
+    const { context } = await contexts.restoreVersion(toContextId('ctx-nuxt-conventions'), 2)
+    expect(context.draft).toMatchObject({ number: 5, note: 'Restauration de la v2' })
+    expect(context.publishedVersion?.number).toBe(4)
   })
 })

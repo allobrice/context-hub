@@ -26,10 +26,18 @@ export const appRoutes: RouteObject[] = [
         }),
       },
       { path: 'contexts/new', lazy: comingSoon('Nouveau contexte') },
-      { path: 'contexts/:id', lazy: comingSoon('Détail du contexte') },
+      {
+        path: 'contexts/:id',
+        lazy: async () => ({
+          Component: (await import('../features/context-detail/DetailPage.tsx')).DetailPage,
+        }),
+      },
       { path: 'contexts/:id/edit', lazy: comingSoon('Modifier le contexte') },
       { path: 'taxonomy', lazy: comingSoon('Tags & collections') },
-      { path: 'mcp', lazy: comingSoon('Connexion MCP') },
+      {
+        path: 'mcp',
+        lazy: async () => ({ Component: (await import('../features/mcp/McpPage.tsx')).McpPage }),
+      },
       ...(import.meta.env.DEV
         ? [
             {

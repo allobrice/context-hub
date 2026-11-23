@@ -1,0 +1,373 @@
+@use 'abstracts' as *;
+
+// ── En-tête (maquette 08) ──────────────────────────────────────────────────────
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  li + li::before {
+    content: '/';
+  }
+}
+
+.slug {
+  @include mono(var(--text-xs), 400);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin-right: auto;
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.description {
+  color: var(--fg-2);
+  font-size: var(--text-base);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.badgeMono {
+  font-family: var(--font-mono);
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tokens {
+  @include mono(var(--text-sm), 400);
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.warn {
+  color: var(--warn);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.bannerWarn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.bannerNeutral {
+  background: var(--surface-2);
+  color: var(--fg-2);
+}
+
+.bannerText {
+  flex-grow: 1;
+}
+
+.bannerAction {
+  color: inherit;
+  font-weight: 600;
+}
+
+.bannerButton {
+  @include reset-button;
+
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+
+  @include focus-ring;
+}
+
+// ── Corps : colonne principale + colonne latérale (360–460 px) ────────────────
+.body {
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) 28px;
+}
+
+.main {
+  @include panel;
+
+  display: flex;
+  flex: 999 1 520px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.aside {
+  display: flex;
+  flex: 1 1 360px;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: 460px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.versionInfo {
+  margin-left: auto;
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+}
+
+.content {
+  padding: var(--space-6) 28px;
+}
+
+.source {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+// ── Panneaux latéraux ─────────────────────────────────────────────────────────
+.panel {
+  @include panel;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 14px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.groupLabel {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.help {
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.note {
+  display: flex;
+  gap: var(--space-2);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.metadata {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: var(--text-sm);
+
+  dt {
+    color: var(--fg-3);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+// ── Historique ────────────────────────────────────────────────────────────────
+.history {
+  @include panel;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.historyHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 14px;
+  border-bottom: 1px solid var(--border);
+
+  .panelTitle {
+    margin-right: auto;
+  }
+}
+
+.versions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.version {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.versionNumber {
+  @include mono(var(--text-sm));
+
+  flex: none;
+  width: 28px;
+  color: var(--fg-2);
+}
+
+.versionBody {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.versionNote {
+  @include truncate;
+
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.versionMeta {
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+}
+
+.versionAside {
+  align-self: center;
+}
+
+// ── Chargement (maquette 10) ──────────────────────────────────────────────────
+.skeletonHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.skeletonBadges {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.skeletonMain {
+  @include panel;
+
+  display: flex;
+  flex: 999 1 520px;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 516px;
+  padding: var(--space-6) 28px;
+}
+
+.skeletonPanel {
+  @include panel;
+
+  min-height: 300px;
+
+  & + & {
+    min-height: 200px;
+  }
+}
+
+.notFound {
+  padding: var(--space-6);
+}

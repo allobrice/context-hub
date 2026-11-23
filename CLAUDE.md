@@ -55,11 +55,13 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 ## Routes
 
 `/` Bibliothèque · `/contexts/new` · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/mcp` · `/__components` (dev uniquement). Chemins centralisés dans `src/ui/app/paths.ts`, routes lazy dans `src/ui/app/routes.tsx`.
+`/contexts/:id` accepte un identifiant ou un slug encodé (`nuxt%2Fconventions-nuxt-4`) ; une référence inconnue donne la 404 de la maquette 11.
 La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`libraryParams.ts`) ; les paramètres inconnus (`mock`) sont conservés.
 
 ## Interdits
 
 - `rehype-raw` et `dangerouslySetInnerHTML` : le contenu d'un contexte est une **donnée non fiable**. Le Markdown passe par `react-markdown` + `remark-gfm` + `rehype-sanitize` (ESLint bloque les deux interdits).
+- Rendu Markdown ailleurs que par `MarkdownView` (`src/ui/components/Markdown/`) : HTML brut ignoré (`skipHtml`), arbre assaini, titres décalés d'un niveau, images distantes jamais chargées (exfiltration possible par URL), liens `noopener noreferrer`, secrets masqués.
 - Couleurs en dur hors tokens : toute couleur passe par une custom property de `src/ui/styles/` (`var(--…)`).
 - Le jeton MCP n'est jamais lu ni affiché par l'UI : la config affichée référence `$CONTEXT_HUB_TOKEN`.
 - Pas de lib de composants UI, pas de Tailwind, pas d'emoji dans l'UI (icônes SVG inline).

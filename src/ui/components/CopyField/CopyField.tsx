@@ -32,7 +32,7 @@ export function CopyField({ value, copyLabel, multiline = false, className }: Co
         size="sm"
         aria-label={copyLabel}
         icon={copied ? 'check' : undefined}
-        className={cx(copied && styles.copied)}
+        className={cx(styles.button, copied && styles.copied)}
         onClick={() => {
           void copy(value)
         }}

@@ -101,6 +101,13 @@ describe('sortContexts', () => {
     expect(sortContexts(ALL, 'title-desc')[0]).toBe(review)
   })
 
+  it('compare des instants, pas des chaînes (fuseaux différents)', () => {
+    // 10:30Z est postérieur à 11:00+02:00 (= 09:00Z), alors que la chaîne « 10:30 » est plus petite.
+    const utc = aContext({ id: toContextId('utc'), updatedAt: '2026-09-01T10:30:00Z' })
+    const paris = aContext({ id: toContextId('paris'), updatedAt: '2026-09-01T11:00:00+02:00' })
+    expect(sortContexts([paris, utc], 'updated-desc')).toEqual([utc, paris])
+  })
+
   it('ne modifie pas le tableau d’origine', () => {
     const input = [...ALL]
     sortContexts(input, 'title-asc')

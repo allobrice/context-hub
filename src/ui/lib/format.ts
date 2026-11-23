@@ -31,6 +31,25 @@ export function formatRelativeDate(iso: string, now: Date): string {
   return (date.getFullYear() === now.getFullYear() ? dayMonth : dayMonthYear).format(date)
 }
 
+const time = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' })
+
+/** « 3 sept. 2026 » */
+export function formatDate(iso: string): string {
+  return dayMonthYear.format(new Date(iso))
+}
+
+/** « 23 nov. 2026, 09:12 » */
+export function formatDateTime(iso: string): string {
+  const date = new Date(iso)
+  return `${dayMonthYear.format(date)}, ${time.format(date)}`
+}
+
+/** « 23 nov. 09:12 » (historique des versions) */
+export function formatShortDateTime(iso: string): string {
+  const date = new Date(iso)
+  return `${dayMonth.format(date)} ${time.format(date)}`
+}
+
 const thousands = new Intl.NumberFormat('fr-FR', {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,

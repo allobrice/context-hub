@@ -20,13 +20,23 @@
 }
 
 .multiline {
-  align-items: flex-start;
+  position: relative;
+  display: block;
+  padding: 10px 74px 10px var(--space-3);
 
   .value {
+    display: block;
     overflow: visible;
+    font-size: 11.5px;
+    line-height: 1.6;
     white-space: pre-wrap;
     word-break: break-all;
-    line-height: 1.6;
+  }
+
+  .button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
   }
 }
 

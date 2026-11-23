@@ -30,7 +30,10 @@ function initials(name: string): string {
 export function Sidebar() {
   const { data: overview } = useWorkspaceOverview()
   const { theme, toggleTheme } = useTheme()
-  const onLibrary = useLocation().pathname === '/'
+  const { pathname } = useLocation()
+  const onLibrary = pathname === '/'
+  /** La Bibliothèque reste l'entrée active sur le Détail et l'Éditeur d'un contexte (maquettes 08, 12). */
+  const inLibrary = onLibrary || pathname.startsWith('/contexts/')
   const collections = overview?.collections.filter(isCollectionListed)
 
   return (
@@ -46,11 +49,11 @@ export function Sidebar() {
       </Link>
 
       <div className={styles.group}>
-        <NavLink to="/" end className={linkClassName}>
+        <Link to="/" className={linkClassName} aria-current={inLibrary ? 'page' : undefined}>
           <Icon name="book" />
           <span className={styles.label}>Bibliothèque</span>
           {overview && <span className={styles.count}>{overview.contextCount}</span>}
-        </NavLink>
+        </Link>
         <NavLink to="/taxonomy" className={linkClassName}>
           <Icon name="tag" />
           <span className={styles.label}>Tags &amp; collections</span>

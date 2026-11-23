@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatInteger, formatRelativeDate, formatTokensCompact, plural } from './format.ts'
+import {
+  formatDate,
+  formatDateTime,
+  formatInteger,
+  formatRelativeDate,
+  formatShortDateTime,
+  formatTokensCompact,
+  plural,
+} from './format.ts'
 
 // Horloge des fixtures : 23 nov. 2026, 11:12 (Europe/Paris, TZ fixé par vite.config.ts).
 const NOW = new Date('2026-11-23T11:12:00+01:00')
@@ -17,6 +25,14 @@ describe('formatRelativeDate (maquette 01)', () => {
     ['2025-10-02T17:20:00+02:00', '2 oct. 2025'],
   ])('%s → %s', (iso, expected) => {
     expect(formatRelativeDate(iso, NOW)).toBe(expected)
+  })
+})
+
+describe('dates absolues (maquette 08)', () => {
+  it('formate date, date-heure et date courte', () => {
+    expect(formatDate('2026-09-03T10:21:00+02:00')).toBe('3 sept. 2026')
+    expect(formatDateTime('2026-11-23T09:12:00+01:00')).toBe('23 nov. 2026, 09:12')
+    expect(formatShortDateTime('2026-11-14T16:40:00+01:00')).toBe('14 nov. 16:40')
   })
 })
 

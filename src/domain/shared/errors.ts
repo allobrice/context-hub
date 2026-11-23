@@ -10,7 +10,12 @@ export abstract class DomainError extends Error {
 
 export class ContextNotFoundError extends DomainError {
   readonly code = 'CONTEXT_NOT_FOUND'
-  constructor(readonly reference: string) {
+  constructor(
+    /** Identifiant ou slug demandé. */
+    readonly reference: string,
+    /** Identifiant de requête pour le support, si l'adapter en fournit un. */
+    readonly requestId?: string,
+  ) {
     super(`Contexte introuvable : ${reference}`)
     this.name = 'ContextNotFoundError'
   }

@@ -95,9 +95,9 @@ export function sortContexts(contexts: readonly Context[], sort: LibrarySort): C
   const sorted = [...contexts]
   switch (sort) {
     case 'updated-desc':
-      return sorted.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      return sorted.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
     case 'updated-asc':
-      return sorted.sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
+      return sorted.sort((a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt))
     case 'title-asc':
       return sorted.sort((a, b) => titleCollator.compare(a.title, b.title))
     case 'title-desc':
