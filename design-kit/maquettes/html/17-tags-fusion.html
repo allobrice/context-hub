@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Tags — dialog de fusion</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 16px 48px rgba(16,24,40,.22);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 16px 48px rgba(0,0,0,.6)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.ch .btn-danger{background:var(--danger);border-color:var(--danger);color:#FFFFFF}
+.ch.dark .btn-danger{color:#0E1014}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:4px;background:transparent;color:var(--fg2);cursor:pointer}
+.icon-btn:hover{background:var(--surface2);color:var(--fg)}
+.btn:focus-visible,.inp:focus-visible,.icon-btn:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-warn{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:4px;background:var(--surface2);color:var(--fg);font:500 12px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif}
+.lbl{font-size:12px;font-weight:600;color:var(--fg2)}
+.help{font-size:11px;color:var(--fg3)}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border)}
+.tabs button{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--fg2);font:600 13px Inter,sans-serif;cursor:pointer;margin-bottom:-1px}
+.tabs button.on{color:var(--fg);border-bottom-color:var(--accent)}
+.trow:hover{background:var(--surface)}
+.skel{background:var(--surface2);border-radius:4px}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);margin:0}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Taxonomy.dc.html, props {"dialogue": "fusion"} -->
+
+
+<DIV class="ch " style="position: relative; min-height: 860px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav on" href="Taxonomy.dc.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="icon-btn" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<HEADER style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 24px 0">
+<DIV style="display: flex; flex-direction: column; gap: 2px; margin-right: auto">
+<H1 style="margin: 0; font-size: 18px; font-weight: 700">Tags &amp; collections</H1>
+<SPAN style="font-size: 12px; color: var(--fg3)">Renommer ou fusionner met à jour tous les contextes. Les URI des contextes ne changent pas.</SPAN>
+</DIV>
+
+</HEADER>
+<DIV class="tabs" role="tablist" style="padding: 12px 24px 0">
+<BUTTON type="button" role="tab" class="on" aria-selected="true">Tags <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">34</SPAN></BUTTON>
+<BUTTON type="button" role="tab" class="" aria-selected="false">Collections <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">6</SPAN></BUTTON>
+</DIV>
+
+<DIV style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px 24px 24px">
+
+
+<DIV role="status" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg>
+<SPAN style="flex-grow: 1">3 tags proches détectés : <SPAN class="mono">vue</SPAN>, <SPAN class="mono">vue3</SPAN>, <SPAN class="mono">vuejs</SPAN>. Les fusionner améliore la recherche MCP.</SPAN>
+<BUTTON class="btn btn-sm" type="button">Fusionner…</BUTTON>
+</DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<LABEL style="position: relative; display: flex; align-items: center; flex: 0 1 320px">
+<SPAN style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Filtrer les tags</SPAN>
+<svg style="position: absolute; left: 10px; color: var(--fg3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<INPUT class="inp" type="search" placeholder="Filtrer les tags…" style="width: 100%; padding-left: 30px; height: 30px"></INPUT>
+</LABEL>
+<SPAN style="margin-left: auto; font-size: 12px; color: var(--fg2)">2 sélectionnés</SPAN>
+<BUTTON class="btn btn-sm" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg>Fusionner la sélection</BUTTON>
+<BUTTON class="btn btn-sm" type="button" style="color: var(--danger)">Supprimer</BUTTON>
+</DIV>
+<DIV style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px">
+<DIV role="table" aria-label="Tags" style="min-width: 760px">
+<DIV role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; height: 34px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--fg3)">
+<SPAN role="columnheader"><INPUT type="checkbox" aria-label="Tout sélectionner"></INPUT></SPAN><SPAN role="columnheader">Tag</SPAN><SPAN role="columnheader" style="text-align: right">Contextes ↓</SPAN><SPAN role="columnheader" style="text-align: right">Publiés</SPAN><SPAN role="columnheader">Dernier usage</SPAN><SPAN role="columnheader" style="text-align: right">Actions</SPAN>
+</DIV>
+
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner conventions"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">conventions</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">11</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">9</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">il y a 2 h</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer conventions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner conventions dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer conventions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner nuxt"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">nuxt</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">9</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">8</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">il y a 2 h</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer nuxt"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner nuxt dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer nuxt"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner vue"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">vue</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">8</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">7</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">hier</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer vue"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner vue dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer vue"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner data-fetching"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">data-fetching</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">6</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">5</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">il y a 2 h</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer data-fetching"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner data-fetching dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer data-fetching"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner review"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">review</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">6</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">6</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">hier</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer review"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner review dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer review"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--accent-soft)">
+<SPAN role="cell"><INPUT type="checkbox" checked="" aria-label="Sélectionner vue3"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">vue3</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">5</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">3</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">17 nov.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer vue3"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner vue3 dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer vue3"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner pinia"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">pinia</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">4</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">4</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">17 nov.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer pinia"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner pinia dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer pinia"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner ci"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">ci</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">4</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">3</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">2 oct.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer ci"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner ci dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer ci"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner a11y"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">a11y</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">3</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">3</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">12 nov.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer a11y"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner a11y dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer a11y"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--accent-soft)">
+<SPAN role="cell"><INPUT type="checkbox" checked="" aria-label="Sélectionner vuejs"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">vuejs</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">2</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">2</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">4 oct.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer vuejs"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner vuejs dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer vuejs"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner debug"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">debug</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">1</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">0</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">8 nov.</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer debug"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner debug dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer debug"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+<DIV class="trow" role="row" style="display: grid; grid-template-columns: 32px minmax(0, 2fr) 110px 110px 150px 120px; gap: 12px; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: transparent">
+<SPAN role="cell"><INPUT type="checkbox" aria-label="Sélectionner legacy-webpack"></INPUT></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+
+
+<SPAN style="display: flex; align-items: center; gap: 8px"><SPAN class="tag">legacy-webpack</SPAN><SPAN class="badge b-arch">Inutilisé</SPAN></SPAN>
+
+</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right">0</SPAN>
+<SPAN role="cell" class="mono" style="font-size: 12px; text-align: right; color: var(--fg2)">0</SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">—</SPAN>
+<SPAN role="cell" style="display: flex; justify-content: flex-end; gap: 2px">
+<BUTTON class="icon-btn" type="button" aria-label="Renommer legacy-webpack"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Fusionner legacy-webpack dans un autre tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 6 6h6M15 12l3 3-3 3"></path></svg></BUTTON>
+<BUTTON class="icon-btn" type="button" aria-label="Supprimer legacy-webpack"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></BUTTON>
+</SPAN>
+</DIV>
+
+</DIV>
+</DIV>
+
+
+
+
+
+
+</DIV>
+</MAIN>
+
+
+<DIV style="position: absolute; inset: 0; z-index: 10; background: rgba(10, 12, 16, .45); display: flex; align-items: flex-start; justify-content: center; padding-top: 140px">
+<DIV role="dialog" aria-modal="true" aria-labelledby="dlg-merge" style="width: 520px; max-width: calc(100% - 32px); display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); box-shadow: var(--shadow)">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 16px 18px 0">
+<H2 id="dlg-merge" style="margin: 0; font-size: 15px; font-weight: 700; flex-grow: 1">Fusionner 2 tags</H2>
+<BUTTON class="icon-btn" type="button" aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></BUTTON>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 14px; padding: 14px 18px 18px">
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<SPAN class="lbl">Tags à fusionner</SPAN>
+<DIV style="display: flex; gap: 6px; flex-wrap: wrap"><SPAN class="tag">vue3 · 5</SPAN><SPAN class="tag">vuejs · 2</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<LABEL class="lbl" for="merge-target">Dans le tag</LABEL>
+<SELECT class="inp mono" id="merge-target" style="font-size: 12px"><OPTION>vue · 8 contextes</OPTION><OPTION>Nouveau tag…</OPTION></SELECT>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 6px; background: var(--surface); font-size: 12px; color: var(--fg2)">
+<SPAN><STRONG style="color: var(--fg)">7 contextes</STRONG> reçoivent le tag <SPAN class="mono">vue</SPAN> (dont 5 publiés).</SPAN>
+<SPAN>2 contextes avaient déjà <SPAN class="mono">vue</SPAN> : pas de doublon créé.</SPAN>
+<SPAN><SPAN class="mono">vue3</SPAN> et <SPAN class="mono">vuejs</SPAN> sont supprimés. Aucune version n’est créée, les URI ne changent pas.</SPAN>
+</DIV>
+</DIV>
+<DIV style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border)">
+<BUTTON class="btn" type="button">Annuler</BUTTON>
+<BUTTON class="btn btn-primary" type="button">Fusionner dans vue</BUTTON>
+</DIV>
+</DIV>
+</DIV>
+
+
+
+
+</DIV>
+
+</body>
+</html>

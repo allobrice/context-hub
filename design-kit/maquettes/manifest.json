@@ -1,0 +1,242 @@
+[
+  {
+    "id": "01-bibliotheque",
+    "titre": "Bibliothèque",
+    "ecran": "Main",
+    "props": {},
+    "html": "maquettes/html/01-bibliotheque.html",
+    "png": "maquettes/png/01-bibliotheque.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "02-bibliotheque-cartes",
+    "titre": "Bibliothèque — vue cartes",
+    "ecran": "Main",
+    "props": {
+      "vue": "cartes"
+    },
+    "html": "maquettes/html/02-bibliotheque-cartes.html",
+    "png": "maquettes/png/02-bibliotheque-cartes.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "03-bibliotheque-sombre",
+    "titre": "Bibliothèque — thème sombre",
+    "ecran": "Main",
+    "props": {
+      "theme": "dark"
+    },
+    "html": "maquettes/html/03-bibliotheque-sombre.html",
+    "png": "maquettes/png/03-bibliotheque-sombre.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "04-bibliotheque-vide",
+    "titre": "Bibliothèque — état vide",
+    "ecran": "Main",
+    "props": {
+      "etat": "vide"
+    },
+    "html": "maquettes/html/04-bibliotheque-vide.html",
+    "png": "maquettes/png/04-bibliotheque-vide.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "05-bibliotheque-chargement",
+    "titre": "Bibliothèque — chargement",
+    "ecran": "Main",
+    "props": {
+      "etat": "chargement"
+    },
+    "html": "maquettes/html/05-bibliotheque-chargement.html",
+    "png": "maquettes/png/05-bibliotheque-chargement.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "06-bibliotheque-erreur",
+    "titre": "Bibliothèque — erreur",
+    "ecran": "Main",
+    "props": {
+      "etat": "erreur"
+    },
+    "html": "maquettes/html/06-bibliotheque-erreur.html",
+    "png": "maquettes/png/06-bibliotheque-erreur.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "07-bibliotheque-aucun-resultat",
+    "titre": "Bibliothèque — aucun résultat",
+    "ecran": "Main",
+    "props": {
+      "etat": "aucun-resultat"
+    },
+    "html": "maquettes/html/07-bibliotheque-aucun-resultat.html",
+    "png": "maquettes/png/07-bibliotheque-aucun-resultat.png",
+    "source": "sources/Main.dc.html"
+  },
+  {
+    "id": "08-detail",
+    "titre": "Détail",
+    "ecran": "Detail",
+    "props": {},
+    "html": "maquettes/html/08-detail.html",
+    "png": "maquettes/png/08-detail.png",
+    "source": "sources/Detail.dc.html"
+  },
+  {
+    "id": "09-detail-sombre",
+    "titre": "Détail — thème sombre",
+    "ecran": "Detail",
+    "props": {
+      "theme": "dark"
+    },
+    "html": "maquettes/html/09-detail-sombre.html",
+    "png": "maquettes/png/09-detail-sombre.png",
+    "source": "sources/Detail.dc.html"
+  },
+  {
+    "id": "10-detail-chargement",
+    "titre": "Détail — chargement",
+    "ecran": "Detail",
+    "props": {
+      "etat": "chargement"
+    },
+    "html": "maquettes/html/10-detail-chargement.html",
+    "png": "maquettes/png/10-detail-chargement.png",
+    "source": "sources/Detail.dc.html"
+  },
+  {
+    "id": "11-detail-introuvable",
+    "titre": "Détail — introuvable (404)",
+    "ecran": "Detail",
+    "props": {
+      "etat": "erreur"
+    },
+    "html": "maquettes/html/11-detail-introuvable.html",
+    "png": "maquettes/png/11-detail-introuvable.png",
+    "source": "sources/Detail.dc.html"
+  },
+  {
+    "id": "12-edition-secret-detecte",
+    "titre": "Édition — secret détecté, autocomplétion tags ouverte",
+    "ecran": "Editor",
+    "props": {},
+    "html": "maquettes/html/12-edition-secret-detecte.html",
+    "png": "maquettes/png/12-edition-secret-detecte.png",
+    "source": "sources/Editor.dc.html"
+  },
+  {
+    "id": "13-edition-sombre-scan-ok",
+    "titre": "Édition — thème sombre, scan OK",
+    "ecran": "Editor",
+    "props": {
+      "theme": "dark",
+      "scan": "ok",
+      "tagsOuverts": false
+    },
+    "html": "maquettes/html/13-edition-sombre-scan-ok.html",
+    "png": "maquettes/png/13-edition-sombre-scan-ok.png",
+    "source": "sources/Editor.dc.html"
+  },
+  {
+    "id": "14-creation-vide",
+    "titre": "Création — formulaire vide",
+    "ecran": "Editor",
+    "props": {
+      "etat": "creation"
+    },
+    "html": "maquettes/html/14-creation-vide.html",
+    "png": "maquettes/png/14-creation-vide.png",
+    "source": "sources/Editor.dc.html"
+  },
+  {
+    "id": "15-edition-conflit-version",
+    "titre": "Édition — échec d'enregistrement (conflit de version)",
+    "ecran": "Editor",
+    "props": {
+      "etat": "erreur-enregistrement",
+      "scan": "ok",
+      "tagsOuverts": false
+    },
+    "html": "maquettes/html/15-edition-conflit-version.html",
+    "png": "maquettes/png/15-edition-conflit-version.png",
+    "source": "sources/Editor.dc.html"
+  },
+  {
+    "id": "16-tags",
+    "titre": "Tags — liste, renommage inline",
+    "ecran": "Taxonomy",
+    "props": {},
+    "html": "maquettes/html/16-tags.html",
+    "png": "maquettes/png/16-tags.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "17-tags-fusion",
+    "titre": "Tags — dialog de fusion",
+    "ecran": "Taxonomy",
+    "props": {
+      "dialogue": "fusion"
+    },
+    "html": "maquettes/html/17-tags-fusion.html",
+    "png": "maquettes/png/17-tags-fusion.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "18-tags-sombre",
+    "titre": "Tags — thème sombre",
+    "ecran": "Taxonomy",
+    "props": {
+      "theme": "dark",
+      "dialogue": "fusion"
+    },
+    "html": "maquettes/html/18-tags-sombre.html",
+    "png": "maquettes/png/18-tags-sombre.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "19-tags-chargement",
+    "titre": "Tags — chargement",
+    "ecran": "Taxonomy",
+    "props": {
+      "etat": "chargement"
+    },
+    "html": "maquettes/html/19-tags-chargement.html",
+    "png": "maquettes/png/19-tags-chargement.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "20-tags-vide",
+    "titre": "Tags — état vide",
+    "ecran": "Taxonomy",
+    "props": {
+      "etat": "vide"
+    },
+    "html": "maquettes/html/20-tags-vide.html",
+    "png": "maquettes/png/20-tags-vide.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "21-collections",
+    "titre": "Collections — liste",
+    "ecran": "Taxonomy",
+    "props": {
+      "onglet": "collections"
+    },
+    "html": "maquettes/html/21-collections.html",
+    "png": "maquettes/png/21-collections.png",
+    "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "22-collections-suppression",
+    "titre": "Collections — dialog de suppression",
+    "ecran": "Taxonomy",
+    "props": {
+      "onglet": "collections",
+      "dialogue": "suppression"
+    },
+    "html": "maquettes/html/22-collections-suppression.html",
+    "png": "maquettes/png/22-collections-suppression.png",
+    "source": "sources/Taxonomy.dc.html"
+  }
+]

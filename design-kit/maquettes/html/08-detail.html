@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Détail</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 12px 32px rgba(16,24,40,.14);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 12px 32px rgba(0,0,0,.55)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary,.ch a.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.inp:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.skel{background:var(--surface2);border-radius:4px}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--surface2);color:var(--fg)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.md h2{font-size:22px;margin:0 0 12px}
+.md h3{font-size:15px;margin:22px 0 8px}
+.md p,.md li{font-size:14px;line-height:1.65;color:var(--fg)}
+.md ul{margin:0;padding-left:20px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 4px}
+.md pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:10px 0}
+.md pre code{border:0;padding:0;background:transparent;font-size:12.5px;line-height:1.6}
+.snip{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px}
+.snip code{flex-grow:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px 'JetBrains Mono',monospace;color:var(--fg)}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Detail.dc.html, props {} -->
+
+
+<DIV class="ch " style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav on" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+
+
+<HEADER style="display: flex; flex-direction: column; gap: 10px; padding: 14px 24px 16px; border-bottom: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><A href="Main.dc.html">Bibliothèque</A><SPAN aria-hidden="true">/</SPAN><SPAN>Nuxt</SPAN><SPAN aria-hidden="true">/</SPAN><SPAN class="mono" style="font-size: 11px">nuxt/conventions-nuxt-4</SPAN></DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px">
+<DIV style="display: flex; flex-direction: column; gap: 8px; margin-right: auto; min-width: 0">
+<H1 style="margin: 0; font-size: 20px; font-weight: 700">Conventions Nuxt 4 — composables &amp; auto-imports</H1>
+<P style="margin: 0; font-size: 13px; color: var(--fg2)">Structure app/, useAsyncData vs useFetch, règles de nommage des composables.</P>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<SPAN class="badge b-pub"><SPAN class="dot"></SPAN>Publié</SPAN>
+<SPAN class="badge b-arch mono">v4</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--fg2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"></path></svg>Équipe · allovoisins</SPAN>
+<SPAN class="mono" style="font-size: 12px; color: var(--fg2)">≈ 2 140 tokens</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ok)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg>Aucun secret détecté (scan v4)</SPAN>
+</DIV>
+</DIV>
+<DIV style="display: flex; gap: 8px">
+<BUTTON class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v12h14V8M10 12h4"></path></svg>Archiver</BUTTON>
+<A class="btn btn-primary" href="Editor.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>Éditer</A>
+<BUTTON class="btn" type="button" aria-label="Plus d’actions"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></BUTTON>
+</DIV>
+</DIV>
+<DIV role="status" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-size: 12px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>
+<SPAN style="flex-grow: 1">Brouillon <STRONG>v5</STRONG> en cours (Brice, il y a 20 min). Les sessions Claude Code lisent toujours la <STRONG>v4 publiée</STRONG>.</SPAN>
+<A href="Editor.dc.html" style="color: var(--warn); font-weight: 600">Reprendre le brouillon</A>
+</DIV>
+</HEADER>
+
+<DIV style="flex-grow: 1; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; padding: 20px 24px 28px">
+
+<ARTICLE class="panel" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border)">
+<DIV class="seg" role="group" aria-label="Mode d’affichage du contenu">
+<BUTTON type="button" class="on" aria-pressed="true">Aperçu</BUTTON>
+<BUTTON type="button" class="" aria-pressed="false">Markdown</BUTTON>
+</DIV>
+<SPAN style="margin-left: auto; font-size: 12px; color: var(--fg3)">v4 · publiée le 23 nov. 2026, 09:12</SPAN>
+</DIV>
+
+<DIV class="md" style="padding: 24px 28px">
+<H2>Conventions Nuxt 4</H2>
+<P style="margin: 0 0 4px">Règles appliquées sur les projets Nuxt 4 d’AlloVoisins. À suivre pour tout nouveau code ; le code existant est migré au fil de l’eau.</P>
+<H3>Structure</H3>
+<UL>
+<LI>Le code applicatif vit dans <CODE>app/</CODE> : <CODE>pages/</CODE>, <CODE>components/</CODE>, <CODE>composables/</CODE>, <CODE>layouts/</CODE>.</LI>
+<LI>Le code partagé client/serveur va dans <CODE>shared/</CODE>, jamais dans <CODE>server/</CODE>.</LI>
+<LI>Pas d’import explicite de ce qui est auto-importé (<CODE>ref</CODE>, <CODE>computed</CODE>, composables).</LI>
+</UL>
+<H3>Data fetching</H3>
+<UL>
+<LI><CODE>useFetch</CODE> pour un appel simple à une route <CODE>server/api</CODE>.</LI>
+<LI><CODE>useAsyncData</CODE> avec une <STRONG>clé explicite et stable</STRONG> dès qu’on compose plusieurs appels.</LI>
+</UL>
+<PRE><CODE class="mono">const { data: offers, status } = await useAsyncData(
+  `offers:${categoryId}`,
+  () =&gt; $fetch('/api/offers', { query: { categoryId } })
+)</CODE></PRE>
+<H3>Composables</H3>
+<UL>
+<LI>Préfixe <CODE>use</CODE>, un composable par fichier, retour typé explicitement.</LI>
+<LI>Aucun accès à <CODE>window</CODE> hors <CODE>onMounted</CODE> ou garde <CODE>import.meta.client</CODE>.</LI>
+</UL>
+</DIV>
+
+
+</ARTICLE>
+
+<ASIDE style="flex: 1 1 360px; max-width: 460px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+<SECTION class="panel" aria-labelledby="use-cc" style="display: flex; flex-direction: column; gap: 12px; padding: 14px">
+<DIV style="display: flex; align-items: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 17 6-5-6-5M12 19h8"></path></svg>
+<H2 id="use-cc" style="margin: 0; font-size: 14px; font-weight: 700">Utiliser dans Claude Code</H2>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<SPAN style="font-size: 12px; font-weight: 600; color: var(--fg2)">Mention dans un prompt</SPAN>
+<DIV class="snip"><CODE>@context-hub:context://nuxt/conventions-nuxt-4</CODE><BUTTON class="btn btn-sm" type="button" aria-label="Copier la mention">Copier</BUTTON></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<SPAN style="font-size: 12px; font-weight: 600; color: var(--fg2)">URI de la resource</SPAN>
+<DIV class="snip"><CODE>context://nuxt/conventions-nuxt-4</CODE><BUTTON class="btn btn-sm" type="button" aria-label="Copier l’URI">Copier</BUTTON></DIV>
+<DIV class="snip"><CODE>context://nuxt/conventions-nuxt-4@4</CODE><BUTTON class="btn btn-sm" type="button" aria-label="Copier l’URI figée en v4">Copier</BUTTON></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Sans suffixe : toujours la dernière version publiée. Avec <SPAN class="mono">@4</SPAN> : figée sur la v4.</SPAN>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; align-items: center; gap: 8px">
+<SPAN style="font-size: 12px; font-weight: 600; color: var(--fg2); margin-right: auto">Connecter le serveur</SPAN>
+<DIV class="seg" role="group" aria-label="Format de configuration">
+<BUTTON type="button" class="on" aria-pressed="true" style="white-space: nowrap">CLI</BUTTON>
+<BUTTON type="button" class="" aria-pressed="false" style="white-space: nowrap">.mcp.json</BUTTON>
+</DIV>
+</DIV>
+<DIV style="position: relative">
+<PRE class="mono" style="margin: 0; padding: 10px 12px 10px 12px; padding-right: 74px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: var(--fg)">claude mcp add --transport http --scope user \
+  context-hub https://[HÔTE]/mcp \
+  --header "Authorization: Bearer $CONTEXT_HUB_TOKEN"</PRE>
+<BUTTON class="btn btn-sm" type="button" style="position: absolute; top: 6px; right: 6px" aria-label="Copier la configuration">Copier</BUTTON>
+</DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Transport Streamable HTTP. CLI : scope user (toutes vos sessions) ; .mcp.json : scope project (versionné dans le repo). Remplacez [HÔTE] ; le jeton se lit depuis la variable d’environnement, jamais en clair dans le fichier versionné.</SPAN>
+</DIV>
+<DIV style="display: flex; gap: 8px; padding: 10px; border-radius: 6px; background: var(--surface); font-size: 12px; line-height: 1.5; color: var(--fg2)">
+<svg style="flex: none; margin-top: 1px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path></svg>
+<SPAN>Ce contenu est injecté tel quel dans les sessions de l’équipe. Il est traité comme une donnée, pas comme une instruction de confiance : relisez-le avant publication.</SPAN>
+</DIV>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="meta" style="padding: 14px; display: flex; flex-direction: column; gap: 10px">
+<H2 id="meta" style="margin: 0; font-size: 14px; font-weight: 700">Métadonnées</H2>
+<DL style="margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); row-gap: 8px; column-gap: 12px; font-size: 12px">
+<DT style="color: var(--fg3)">Collection</DT><DD style="margin: 0">Nuxt</DD>
+<DT style="color: var(--fg3)">Tags</DT><DD style="margin: 0; display: flex; gap: 4px; flex-wrap: wrap"><SPAN class="tag">nuxt</SPAN><SPAN class="tag">conventions</SPAN><SPAN class="tag">data-fetching</SPAN></DD>
+<DT style="color: var(--fg3)">Portée</DT><DD style="margin: 0">Équipe · allovoisins</DD>
+<DT style="color: var(--fg3)">Auteur</DT><DD style="margin: 0">Brice</DD>
+<DT style="color: var(--fg3)">Créé</DT><DD style="margin: 0">3 sept. 2026</DD>
+<DT style="color: var(--fg3)">Mis à jour</DT><DD style="margin: 0">23 nov. 2026, 09:12</DD>
+<DT style="color: var(--fg3)">Lectures MCP</DT><DD style="margin: 0">38 sur 7 jours</DD>
+<DT style="color: var(--fg3)">Slug</DT><DD class="mono" style="margin: 0; font-size: 11px">nuxt/conventions-nuxt-4</DD>
+</DL>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="hist" style="display: flex; flex-direction: column">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border)">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<H2 id="hist" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Historique des versions</H2>
+<BUTTON class="btn btn-sm" type="button">Comparer…</BUTTON>
+</DIV>
+<OL style="list-style: none; margin: 0; padding: 0">
+
+<LI style="display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="mono" style="flex: none; width: 28px; font-size: 12px; font-weight: 500; color: var(--fg2)">v5</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<DIV style="display: flex; align-items: center; gap: 6px"><SPAN style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Ajout section routes server/</SPAN></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · il y a 20 min</SPAN>
+</DIV>
+<SPAN class="badge b-draft" style="align-self: center">Brouillon</SPAN>
+
+</LI>
+
+<LI style="display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="mono" style="flex: none; width: 28px; font-size: 12px; font-weight: 500; color: var(--fg2)">v4</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<DIV style="display: flex; align-items: center; gap: 6px"><SPAN style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">useAsyncData : clés explicites</SPAN></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · 23 nov. 09:12</SPAN>
+</DIV>
+<SPAN class="badge b-pub" style="align-self: center">Courante</SPAN>
+
+</LI>
+
+<LI style="display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="mono" style="flex: none; width: 28px; font-size: 12px; font-weight: 500; color: var(--fg2)">v3</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<DIV style="display: flex; align-items: center; gap: 6px"><SPAN style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Dossier shared/ pour le code isomorphe</SPAN></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Camille · 14 nov. 16:40</SPAN>
+</DIV>
+
+<BUTTON class="btn btn-sm btn-ghost" type="button" style="align-self: center">Restaurer</BUTTON>
+</LI>
+
+<LI style="display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="mono" style="flex: none; width: 28px; font-size: 12px; font-weight: 500; color: var(--fg2)">v2</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<DIV style="display: flex; align-items: center; gap: 6px"><SPAN style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Règles de nommage des composables</SPAN></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · 2 oct. 11:05</SPAN>
+</DIV>
+
+<BUTTON class="btn btn-sm btn-ghost" type="button" style="align-self: center">Restaurer</BUTTON>
+</LI>
+
+<LI style="display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="mono" style="flex: none; width: 28px; font-size: 12px; font-weight: 500; color: var(--fg2)">v1</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<DIV style="display: flex; align-items: center; gap: 6px"><SPAN style="font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Version initiale</SPAN></DIV>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · 3 sept. 10:21</SPAN>
+</DIV>
+
+<BUTTON class="btn btn-sm btn-ghost" type="button" style="align-self: center">Restaurer</BUTTON>
+</LI>
+
+</OL>
+</SECTION>
+</ASIDE>
+</DIV>
+
+
+
+
+
+
+</MAIN>
+</DIV>
+
+</body>
+</html>

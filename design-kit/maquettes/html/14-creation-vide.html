@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Création — formulaire vide</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 12px 32px rgba(16,24,40,.14);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 12px 32px rgba(0,0,0,.55)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary,.ch a.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.inp:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 4px 0 7px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.tag button{display:inline-flex;border:0;background:transparent;color:var(--fg3);cursor:pointer;padding:2px;border-radius:3px}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif;width:100%}
+.inp::placeholder{color:var(--fg3)}
+.lbl{font-size:12px;font-weight:600;color:var(--fg2)}
+.help{font-size:11px;color:var(--fg3)}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent-soft);color:var(--accent-text)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.opt{display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;border-radius:4px;font-size:12px;color:var(--fg);cursor:pointer}
+.opt:hover,.opt.on{background:var(--surface2)}
+.tb{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:4px;background:transparent;color:var(--fg2);cursor:pointer;font:600 12px Inter,sans-serif}
+.tb:hover{background:var(--surface2)}
+.md h2{font-size:18px;margin:0 0 10px}
+.md h3{font-size:14px;margin:16px 0 6px}
+.md p,.md li{font-size:13px;line-height:1.6}
+.md ul{margin:0;padding-left:18px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 4px}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Editor.dc.html, props {"etat": "creation"} -->
+
+
+<DIV class="ch " style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav on" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<HEADER style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--border)">
+<DIV style="display: flex; flex-direction: column; gap: 4px; margin-right: auto">
+<DIV style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><A href="Main.dc.html">Bibliothèque</A><SPAN aria-hidden="true">/</SPAN><SPAN>Nouveau contexte</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 10px">
+<H1 style="margin: 0; font-size: 18px; font-weight: 700">Nouveau contexte</H1>
+<SPAN class="badge b-draft"><SPAN class="dot"></SPAN>Brouillon</SPAN>
+</DIV>
+</DIV>
+<SPAN style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)">Pas encore enregistré</SPAN>
+<A class="btn btn-ghost" href="Main.dc.html">Annuler</A>
+<BUTTON class="btn" type="button">Enregistrer le brouillon</BUTTON>
+<BUTTON class="btn btn-primary" type="button" disabled="">Publier</BUTTON>
+</HEADER>
+
+
+
+<DIV style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px 24px 24px">
+
+<SECTION aria-label="Métadonnées" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px">
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<LABEL class="lbl" for="f-title">Titre</LABEL>
+<INPUT class="inp" id="f-title" type="text" value="" placeholder="Ex. Conventions Nuxt 4 — data fetching"></INPUT>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<LABEL class="lbl" for="f-slug">Identifiant (URI MCP)</LABEL>
+<DIV style="display: flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 6px; overflow: hidden">
+<SPAN class="mono" style="padding: 0 8px; height: 30px; display: flex; align-items: center; background: var(--surface); border-right: 1px solid var(--border); font-size: 12px; color: var(--fg3)">context://</SPAN>
+<INPUT class="inp mono" id="f-slug" type="text" value="" placeholder="collection/nom-du-contexte" style="border: 0; border-radius: 0; height: 30px; font-size: 12px"></INPUT>
+</DIV>
+<SPAN class="help">Généré depuis le titre, modifiable avant la première publication.</SPAN>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1">
+<DIV style="display: flex"><LABEL class="lbl" for="f-desc" style="margin-right: auto">Description courte</LABEL><SPAN class="help mono">0 / 160</SPAN></DIV>
+<INPUT class="inp" id="f-desc" type="text" value="" placeholder="Une phrase : quand une session doit-elle lire ce contexte ?"></INPUT>
+<SPAN class="help">Renvoyée par le tool <SPAN class="mono">search_contexts</SPAN> : c’est elle qui aide Claude à choisir le bon contexte.</SPAN>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 6px">
+<LABEL class="lbl" for="f-coll">Collection</LABEL>
+<SELECT class="inp" id="f-coll">
+<OPTION>Choisir une collection…</OPTION>
+<OPTION>Vue</OPTION><OPTION>Conventions AlloVoisins</OPTION><OPTION>Review</OPTION><OPTION>CI/CD</OPTION><OPTION>+ Nouvelle collection…</OPTION>
+</SELECT>
+</DIV>
+<FIELDSET style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px">
+<LEGEND class="lbl" style="padding: 0; margin-bottom: 6px">Portée</LEGEND>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+<DIV class="seg" role="group" aria-label="Portée">
+<BUTTON type="button" class="on" aria-pressed="true">Personnel</BUTTON>
+<BUTTON type="button" class="" aria-pressed="false">Projet</BUTTON>
+<BUTTON type="button" class="" aria-pressed="false">Équipe</BUTTON>
+</DIV>
+
+</DIV>
+<SPAN class="help">Visible par vous seul, dans toutes vos sessions.</SPAN>
+</FIELDSET>
+<DIV style="display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1; position: relative">
+<LABEL class="lbl" for="f-tags">Tags</LABEL>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 34px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px">
+
+<INPUT id="f-tags" class="mono" type="text" value="" placeholder="Ajouter un tag…" style="flex: 1 1 120px; min-width: 100px; border: 0; outline: 0; background: transparent; color: var(--fg); font-size: 12px; height: 22px" role="combobox" aria-expanded="false" aria-controls="tag-list"></INPUT>
+</DIV>
+
+</DIV>
+</SECTION>
+
+<SECTION class="panel" aria-label="Contenu Markdown" style="display: flex; flex-direction: column; min-height: 440px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--border)">
+<BUTTON class="tb" type="button" aria-label="Titre">H</BUTTON>
+<BUTTON class="tb" type="button" aria-label="Gras" style="font-weight: 800">B</BUTTON>
+<BUTTON class="tb" type="button" aria-label="Italique" style="font-style: italic; font-family: Georgia, serif">I</BUTTON>
+<BUTTON class="tb" type="button" aria-label="Code" style="font-family: 'JetBrains Mono', monospace; font-size: 11px">&lt;/&gt;</BUTTON>
+<BUTTON class="tb" type="button" aria-label="Liste"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></BUTTON>
+<BUTTON class="tb" type="button" aria-label="Lien"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></BUTTON>
+<SPAN style="margin-left: auto; display: flex; gap: 14px; font-size: 11px; color: var(--fg3)" class="mono"><SPAN>0 lignes</SPAN><SPAN>≈ 0 tokens</SPAN></SPAN>
+</DIV>
+<DIV style="flex-grow: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<DIV style="border-right: 1px solid var(--border); background: var(--code-bg); padding: 10px 0; overflow-x: auto">
+
+<DIV class="mono" style="padding: 4px 16px; font-size: 12px; line-height: 1.7; color: var(--fg3); white-space: pre-line"># Titre du contexte
+
+Décrivez une règle, une convention ou une décision.
+Écrivez pour un agent : impératif, concis, avec exemples.</DIV>
+
+
+</DIV>
+<DIV class="md" style="padding: 16px 20px; overflow: auto">
+<P style="margin: 0; color: var(--fg3)">L’aperçu s’affiche ici.</P>
+
+</DIV>
+</DIV>
+</SECTION>
+
+<SECTION style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 16px">
+
+
+
+<DIV role="status" style="flex: 2 1 480px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: 8px; color: var(--fg3); font-size: 12px">
+<svg style="flex: none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path></svg>
+<SPAN>Scan de sécurité lancé à l’enregistrement : secrets et instructions suspectes.</SPAN>
+</DIV>
+
+<DIV style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 6px">
+<LABEL class="lbl" for="f-note">Note de version <SPAN style="font-weight: 400; color: var(--fg3)">(requise pour publier)</SPAN></LABEL>
+<INPUT class="inp" id="f-note" type="text" value="" placeholder="Ce qui change pour les sessions qui lisent ce contexte"></INPUT>
+</DIV>
+</SECTION>
+
+</DIV>
+</MAIN>
+</DIV>
+
+</body>
+</html>

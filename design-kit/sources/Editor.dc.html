@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Context Hub — Édition d’un contexte</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 12px 32px rgba(16,24,40,.14);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 12px 32px rgba(0,0,0,.55)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary,.ch a.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.inp:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 4px 0 7px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.tag button{display:inline-flex;border:0;background:transparent;color:var(--fg3);cursor:pointer;padding:2px;border-radius:3px}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif;width:100%}
+.inp::placeholder{color:var(--fg3)}
+.lbl{font-size:12px;font-weight:600;color:var(--fg2)}
+.help{font-size:11px;color:var(--fg3)}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent-soft);color:var(--accent-text)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.opt{display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;border-radius:4px;font-size:12px;color:var(--fg);cursor:pointer}
+.opt:hover,.opt.on{background:var(--surface2)}
+.tb{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:4px;background:transparent;color:var(--fg2);cursor:pointer;font:600 12px Inter,sans-serif}
+.tb:hover{background:var(--surface2)}
+.md h2{font-size:18px;margin:0 0 10px}
+.md h3{font-size:14px;margin:16px 0 6px}
+.md p,.md li{font-size:13px;line-height:1.6}
+.md ul{margin:0;padding-left:18px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 4px}
+</style>
+</helmet>
+<div class="ch {{themeClass}}" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<div style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Context Hub</span><span style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<a class="nav on" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><span style="flex-grow: 1">Bibliothèque</span><span class="mono" style="font-size: 11px">42</span></a>
+<a class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span style="flex-grow: 1">Tags &amp; collections</span></a>
+<a class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg><span style="flex-grow: 1">Connexion MCP</span></a>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><span class="dot" style="color: var(--ok)"></span><span style="flex-grow: 1">Serveur MCP en ligne</span><span class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</span></div>
+<div style="display: flex; align-items: center; gap: 8px">
+<div style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</div>
+<span style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</span>
+<button class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre" onClick="{{toggleTheme}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></button>
+</div>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--border)">
+<div style="display: flex; flex-direction: column; gap: 4px; margin-right: auto">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><a href="Main.dc.html">Bibliothèque</a><span aria-hidden="true">/</span><span>{{crumb}}</span></div>
+<div style="display: flex; align-items: center; gap: 10px">
+<h1 style="margin: 0; font-size: 18px; font-weight: 700">{{heading}}</h1>
+<span class="badge b-draft"><span class="dot"></span>{{draftLabel}}</span>
+</div>
+</div>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)">{{saveStatus}}</span>
+<a class="btn btn-ghost" href="{{cancelHref}}">Annuler</a>
+<button class="btn" type="button">Enregistrer le brouillon</button>
+<button class="btn btn-primary" type="button" disabled="{{publishDisabled}}">{{publishLabel}}</button>
+</header>
+
+<sc-if value="{{isSaveError}}" hint-placeholder-val="{{ false }}">
+<div role="alert" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 24px 0; padding: 12px 14px; border: 1px solid var(--danger); background: var(--danger-soft); border-radius: 8px">
+<svg style="flex: none; color: var(--danger)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
+<div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 3px">
+<strong style="font-size: 13px">Enregistrement refusé : conflit de version</strong>
+<span style="font-size: 12px; color: var(--fg2)">Camille a publié la v5 il y a 2 min pendant votre édition. Votre brouillon est conservé localement, rien n’est perdu.</span>
+</div>
+<button class="btn btn-sm" type="button">Voir les différences</button>
+<button class="btn btn-sm" type="button">Repartir de la v5</button>
+</div>
+</sc-if>
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px 24px 24px">
+
+<section aria-label="Métadonnées" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label class="lbl" for="f-title">Titre</label>
+<input class="inp" id="f-title" type="text" value="{{v.title}}" placeholder="Ex. Conventions Nuxt 4 — data fetching">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label class="lbl" for="f-slug">Identifiant (URI MCP)</label>
+<div style="display: flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 6px; overflow: hidden">
+<span class="mono" style="padding: 0 8px; height: 30px; display: flex; align-items: center; background: var(--surface); border-right: 1px solid var(--border); font-size: 12px; color: var(--fg3)">context://</span>
+<input class="inp mono" id="f-slug" type="text" value="{{v.slug}}" placeholder="collection/nom-du-contexte" style="border: 0; border-radius: 0; height: 30px; font-size: 12px">
+</div>
+<span class="help">{{v.slugHelp}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1">
+<div style="display: flex"><label class="lbl" for="f-desc" style="margin-right: auto">Description courte</label><span class="help mono">{{v.descCount}} / 160</span></div>
+<input class="inp" id="f-desc" type="text" value="{{v.desc}}" placeholder="Une phrase : quand une session doit-elle lire ce contexte ?">
+<span class="help">Renvoyée par le tool <span class="mono">search_contexts</span> : c’est elle qui aide Claude à choisir le bon contexte.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label class="lbl" for="f-coll">Collection</label>
+<select class="inp" id="f-coll">
+<option>{{v.collection}}</option>
+<option>Vue</option><option>Conventions AlloVoisins</option><option>Review</option><option>CI/CD</option><option>+ Nouvelle collection…</option>
+</select>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px">
+<legend class="lbl" style="padding: 0; margin-bottom: 6px">Portée</legend>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+<div class="seg" role="group" aria-label="Portée">
+<button type="button" class="{{scP}}" aria-pressed="{{scPp}}" onClick="{{setPerso}}">Personnel</button>
+<button type="button" class="{{scR}}" aria-pressed="{{scRp}}" onClick="{{setProjet}}">Projet</button>
+<button type="button" class="{{scE}}" aria-pressed="{{scEp}}" onClick="{{setEquipe}}">Équipe</button>
+</div>
+<sc-if value="{{isProjet}}" hint-placeholder-val="{{ false }}">
+<label style="display: flex; align-items: center; gap: 6px; flex: 1 1 200px"><span class="help">Repo</span><input class="inp mono" type="text" value="allovoisins/front" style="height: 30px; font-size: 12px"></label>
+</sc-if>
+</div>
+<span class="help">{{scopeHelp}}</span>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1; position: relative">
+<label class="lbl" for="f-tags">Tags</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 34px; padding: 5px 8px; border: 1px solid {{tagBorder}}; border-radius: 6px">
+<sc-for list="{{v.tags}}" as="t" hint-placeholder-count="3"><span class="tag">{{t}}<button type="button" aria-label="Retirer le tag {{t}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span></sc-for>
+<input id="f-tags" class="mono" type="text" value="{{v.tagQuery}}" placeholder="Ajouter un tag…" style="flex: 1 1 120px; min-width: 100px; border: 0; outline: 0; background: transparent; color: var(--fg); font-size: 12px; height: 22px" role="combobox" aria-expanded="{{acOpen}}" aria-controls="tag-list">
+</div>
+<sc-if value="{{showAc}}" hint-placeholder-val="{{ false }}">
+<div id="tag-list" role="listbox" aria-label="Suggestions de tags" style="position: absolute; top: 64px; left: 0; z-index: 5; width: 340px; padding: 4px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg); box-shadow: var(--shadow)">
+<div class="opt on" role="option" aria-selected="true"><span class="mono" style="flex-grow: 1">data-fetching</span><span class="help">6 contextes</span></div>
+<div class="opt" role="option" aria-selected="false"><span class="mono" style="flex-grow: 1">database</span><span class="help">2 contextes</span></div>
+<div class="opt" role="option" aria-selected="false"><span class="mono" style="flex-grow: 1">data-viz</span><span class="help">1 contexte</span></div>
+<div style="height: 1px; margin: 4px 0; background: var(--border)"></div>
+<div class="opt" role="option" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Créer le tag <span class="mono">« data »</span></span></div>
+<div class="help" style="padding: 6px 10px 4px">↑↓ naviguer · Entrée valider · Échap fermer</div>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section class="panel" aria-label="Contenu Markdown" style="display: flex; flex-direction: column; min-height: 440px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--border)">
+<button class="tb" type="button" aria-label="Titre">H</button>
+<button class="tb" type="button" aria-label="Gras" style="font-weight: 800">B</button>
+<button class="tb" type="button" aria-label="Italique" style="font-style: italic; font-family: Georgia, serif">I</button>
+<button class="tb" type="button" aria-label="Code" style="font-family: 'JetBrains Mono', monospace; font-size: 11px">&lt;/&gt;</button>
+<button class="tb" type="button" aria-label="Liste"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+<button class="tb" type="button" aria-label="Lien"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+<span style="margin-left: auto; display: flex; gap: 14px; font-size: 11px; color: var(--fg3)" class="mono"><span>{{v.lines}} lignes</span><span>≈ {{v.tokens}} tokens</span></span>
+</div>
+<div style="flex-grow: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<div style="border-right: 1px solid var(--border); background: var(--code-bg); padding: 10px 0; overflow-x: auto">
+<sc-if value="{{isEmptyDoc}}" hint-placeholder-val="{{ false }}">
+<div class="mono" style="padding: 4px 16px; font-size: 12px; line-height: 1.7; color: var(--fg3); white-space: pre-line">{{emptyHint}}</div>
+</sc-if>
+<sc-for list="{{v.src}}" as="l" hint-placeholder-count="18">
+<div class="mono" style="display: flex; font-size: 12px; line-height: 20px; background: {{l.bg}}; border-left: 2px solid {{l.bar}}">
+<span style="flex: none; width: 40px; padding-right: 10px; text-align: right; color: var(--fg3); user-select: none">{{l.n}}</span>
+<span style="white-space: pre; color: var(--fg)">{{l.t}}</span>
+</div>
+</sc-for>
+</div>
+<div class="md" style="padding: 16px 20px; overflow: auto">
+<sc-if value="{{isEmptyDoc}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; color: var(--fg3)">L’aperçu s’affiche ici.</p></sc-if>
+<sc-if value="{{hasDoc}}" hint-placeholder-val="{{ true }}">
+<h2>Conventions Nuxt 4</h2>
+<p style="margin: 0">Règles appliquées sur les projets Nuxt 4 d’AlloVoisins.</p>
+<h3>Data fetching</h3>
+<ul><li><code>useFetch</code> pour un appel simple à une route <code>server/api</code>.</li><li><code>useAsyncData</code> avec une <strong>clé explicite et stable</strong>.</li></ul>
+<h3>Routes server/</h3>
+<ul><li>Une route par fichier, validation des entrées avec <code>zod</code>.</li><li>Les clés d’API se lisent via <code>useRuntimeConfig()</code>.</li></ul>
+<h3>Composables</h3>
+<ul><li>Préfixe <code>use</code>, un composable par fichier, retour typé.</li></ul>
+</sc-if>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 16px">
+<sc-if value="{{scanSecret}}" hint-placeholder-val="{{ true }}">
+<div role="alert" style="flex: 2 1 480px; display: flex; gap: 12px; padding: 12px 14px; border: 1px solid var(--danger); background: var(--danger-soft); border-radius: 8px">
+<svg style="flex: none; color: var(--danger); margin-top: 1px" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="M12 9v4M12 16h.01"/></svg>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+<strong style="font-size: 13px">1 secret potentiel détecté : publication bloquée</strong>
+<span style="font-size: 12px; color: var(--fg2)">Ligne 15 · clé d’API (motif <span class="mono">sk_live_</span>). Un contexte publié est lu par toutes les sessions de sa portée.</span>
+<div style="display: flex; gap: 8px; margin-top: 2px"><button class="btn btn-sm" type="button">Remplacer par <span class="mono">${NUXT_API_KEY}</span></button><button class="btn btn-sm btn-ghost" type="button">Faux positif…</button></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{scanOk}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex: 2 1 480px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--border); background: var(--ok-soft); border-radius: 8px; color: var(--ok); font-size: 12px">
+<svg style="flex: none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+<span><strong>Aucun secret détecté</strong> · aucune instruction suspecte (« ignore previous… », exfiltration d’URL)</span>
+</div>
+</sc-if>
+<sc-if value="{{scanPending}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex: 2 1 480px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: 8px; color: var(--fg3); font-size: 12px">
+<svg style="flex: none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>
+<span>Scan de sécurité lancé à l’enregistrement : secrets et instructions suspectes.</span>
+</div>
+</sc-if>
+<div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 6px">
+<label class="lbl" for="f-note">Note de version <span style="font-weight: 400; color: var(--fg3)">(requise pour publier)</span></label>
+<input class="inp" id="f-note" type="text" value="{{v.note}}" placeholder="Ce qui change pour les sessions qui lisent ce contexte">
+</div>
+</section>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"etat":{"editor":"enum","options":["edition","creation","erreur-enregistrement"],"default":"edition"},"scan":{"editor":"enum","options":["secret","ok"],"default":"secret"},"tagsOuverts":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const theme = s.theme || this.props.theme || 'light';
+    const etat = this.props.etat || 'edition';
+    const isNew = etat === 'creation';
+    const scan = isNew ? 'pending' : (this.props.scan || 'secret');
+    const acOpen = !isNew && (this.props.tagsOuverts ?? true);
+    const scope = s.scope || (isNew ? 'perso' : 'equipe');
+    const raw = [
+      '# Conventions Nuxt 4', '', 'Règles appliquées sur les projets Nuxt 4 d’AlloVoisins.', '',
+      '## Data fetching', '', '- `useFetch` pour un appel simple à une route `server/api`.',
+      '- `useAsyncData` avec une **clé explicite et stable**.', '',
+      '## Routes server/', '', '- Une route par fichier, validation des entrées avec `zod`.',
+      '- Les clés d’API se lisent via `useRuntimeConfig()`.', '',
+      '  NUXT_API_KEY=sk_live_51Hx••••••••••••3kQ', '',
+      '## Composables', '', '- Préfixe `use`, un composable par fichier, retour typé.'
+    ];
+    const flag = scan === 'secret';
+    const src = isNew ? [] : raw.map((t, i) => ({
+      n: i + 1, t: t || ' ',
+      bg: flag && i === 14 ? 'var(--danger-soft)' : 'transparent',
+      bar: flag && i === 14 ? 'var(--danger)' : 'transparent'
+    }));
+    const v = isNew
+      ? { title: '', slug: '', slugHelp: 'Généré depuis le titre, modifiable avant la première publication.', desc: '', descCount: 0, collection: 'Choisir une collection…', tags: [], tagQuery: '', lines: 0, tokens: 0, src, note: '' }
+      : { title: 'Conventions Nuxt 4 — composables & auto-imports', slug: 'nuxt/conventions-nuxt-4', slugHelp: 'Figé depuis la v1 : le changer casserait les mentions existantes.', desc: 'Structure app/, useAsyncData vs useFetch, règles de nommage des composables', descCount: 76, collection: 'Nuxt', tags: ['nuxt', 'conventions'], tagQuery: 'data', lines: 214, tokens: '2 310', src, note: 'Ajout section routes server/' };
+    const scopeHelp = scope === 'perso' ? 'Visible par vous seul, dans toutes vos sessions.' : scope === 'projet' ? 'Servi aux sessions ouvertes dans ce repo.' : 'Servi à toute l’équipe AlloVoisins : publication vérifiée par le scan.';
+    return {
+      themeClass: theme === 'dark' ? 'dark' : '',
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      v,
+      crumb: isNew ? 'Nouveau contexte' : 'Conventions Nuxt 4 / Édition',
+      heading: isNew ? 'Nouveau contexte' : 'Modifier le contexte',
+      draftLabel: isNew ? 'Brouillon' : 'Brouillon v5',
+      saveStatus: isNew ? 'Pas encore enregistré' : etat === 'erreur-enregistrement' ? 'Non enregistré' : 'Brouillon enregistré il y a 12 s',
+      cancelHref: isNew ? 'Main.dc.html' : 'Detail.dc.html',
+      publishDisabled: isNew || flag || etat === 'erreur-enregistrement',
+      publishLabel: isNew ? 'Publier' : 'Publier la v5',
+      isSaveError: etat === 'erreur-enregistrement',
+      isEmptyDoc: isNew, hasDoc: !isNew,
+      emptyHint: '# Titre du contexte\n\nDécrivez une règle, une convention ou une décision.\nÉcrivez pour un agent : impératif, concis, avec exemples.',
+      acOpen: acOpen ? 'true' : 'false', showAc: acOpen,
+      tagBorder: acOpen ? 'var(--accent)' : 'var(--border-strong)',
+      scanSecret: scan === 'secret', scanOk: scan === 'ok', scanPending: scan === 'pending',
+      isProjet: scope === 'projet', scopeHelp,
+      scP: scope === 'perso' ? 'on' : '', scR: scope === 'projet' ? 'on' : '', scE: scope === 'equipe' ? 'on' : '',
+      scPp: scope === 'perso' ? 'true' : 'false', scRp: scope === 'projet' ? 'true' : 'false', scEp: scope === 'equipe' ? 'true' : 'false',
+      setPerso: () => this.setState({ scope: 'perso' }), setProjet: () => this.setState({ scope: 'projet' }), setEquipe: () => this.setState({ scope: 'equipe' })
+    };
+  }
+}
+</script>
+</body>
+</html>

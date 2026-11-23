@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Détail — chargement</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 12px 32px rgba(16,24,40,.14);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 12px 32px rgba(0,0,0,.55)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary,.ch a.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.inp:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.skel{background:var(--surface2);border-radius:4px}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--surface2);color:var(--fg)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.md h2{font-size:22px;margin:0 0 12px}
+.md h3{font-size:15px;margin:22px 0 8px}
+.md p,.md li{font-size:14px;line-height:1.65;color:var(--fg)}
+.md ul{margin:0;padding-left:20px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 4px}
+.md pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:10px 0}
+.md pre code{border:0;padding:0;background:transparent;font-size:12.5px;line-height:1.6}
+.snip{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px}
+.snip code{flex-grow:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px 'JetBrains Mono',monospace;color:var(--fg)}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Detail.dc.html, props {"etat": "chargement"} -->
+
+
+<DIV class="ch " style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav on" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+
+
+
+
+<DIV aria-busy="true" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 24px; border-bottom: 1px solid var(--border)">
+<DIV class="skel" style="height: 10px; width: 240px"></DIV>
+<DIV class="skel" style="height: 20px; width: 480px"></DIV>
+<DIV class="skel" style="height: 12px; width: 360px"></DIV>
+<DIV style="display: flex; gap: 8px"><DIV class="skel" style="height: 20px; width: 64px"></DIV><DIV class="skel" style="height: 20px; width: 40px"></DIV><DIV class="skel" style="height: 20px; width: 120px"></DIV></DIV>
+</DIV>
+<DIV style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px 24px">
+<DIV class="panel" style="flex: 999 1 520px; min-width: 0; padding: 24px 28px; display: flex; flex-direction: column; gap: 12px">
+<DIV class="skel" style="height: 22px; width: 50%"></DIV><DIV class="skel" style="height: 12px; width: 92%"></DIV><DIV class="skel" style="height: 12px; width: 86%"></DIV><DIV class="skel" style="height: 12px; width: 70%"></DIV><DIV class="skel" style="height: 96px; width: 100%"></DIV><DIV class="skel" style="height: 12px; width: 80%"></DIV><DIV class="skel" style="height: 12px; width: 64%"></DIV>
+</DIV>
+<DIV style="flex: 1 1 360px; max-width: 460px; display: flex; flex-direction: column; gap: 16px">
+<DIV class="panel skel" style="height: 300px"></DIV><DIV class="panel skel" style="height: 200px"></DIV>
+</DIV>
+</DIV>
+
+
+
+
+</MAIN>
+</DIV>
+
+</body>
+</html>
