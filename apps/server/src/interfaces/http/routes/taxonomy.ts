@@ -34,7 +34,11 @@ const listTagsRoute = createRoute({
   path: '/api/tags',
   tags: [TAGS],
   summary: 'Registre des tags, avec compteurs (contextes visibles) et dernier usage',
-  responses: { 200: json(TagListSchema, 'Tous les tags'), 401: unauthorized },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    200: json(TagListSchema, 'Tous les tags'),
+    401: unauthorized,
+  },
 })
 
 const renameTagRoute = createRoute({
@@ -43,7 +47,13 @@ const renameTagRoute = createRoute({
   tags: [TAGS],
   summary: 'Renomme un tag ; vers un nom existant, c’est une fusion',
   request: { params: TagParamsSchema, body: jsonBody(RenameTagBodySchema) },
-  responses: { 204: done, 400: invalid, 401: unauthorized, 422: rejected },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    204: done,
+    400: invalid,
+    401: unauthorized,
+    422: rejected,
+  },
 })
 
 const mergeTagsRoute = createRoute({
@@ -52,7 +62,13 @@ const mergeTagsRoute = createRoute({
   tags: [TAGS],
   summary: 'Fusionne des tags dans une cible (créée au besoin), sans doublon',
   request: { body: jsonBody(TagMergeSchema) },
-  responses: { 204: done, 400: invalid, 401: unauthorized, 422: rejected },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    204: done,
+    400: invalid,
+    401: unauthorized,
+    422: rejected,
+  },
 })
 
 const previewMergeRoute = createRoute({
@@ -61,7 +77,12 @@ const previewMergeRoute = createRoute({
   tags: [TAGS],
   summary: 'Impact chiffré d’une fusion (dialog de fusion)',
   request: { body: jsonBody(TagMergeSchema) },
-  responses: { 200: json(MergeImpactSchema, 'Impact'), 400: invalid, 401: unauthorized },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    200: json(MergeImpactSchema, 'Impact'),
+    400: invalid,
+    401: unauthorized,
+  },
 })
 
 const deleteTagRoute = createRoute({
@@ -70,7 +91,7 @@ const deleteTagRoute = createRoute({
   tags: [TAGS],
   summary: 'Retire le tag de tous les contextes et du registre',
   request: { params: TagParamsSchema },
-  responses: { 204: done, 401: unauthorized, 422: rejected },
+  responses: { 500: ERROR_RESPONSES[500], 204: done, 401: unauthorized, 422: rejected },
 })
 
 const listCollectionsRoute = createRoute({
@@ -78,7 +99,11 @@ const listCollectionsRoute = createRoute({
   path: '/api/collections',
   tags: [COLLECTIONS],
   summary: 'Collections, « Sans collection » (système) en dernier',
-  responses: { 200: json(CollectionListSchema, 'Toutes les collections'), 401: unauthorized },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    200: json(CollectionListSchema, 'Toutes les collections'),
+    401: unauthorized,
+  },
 })
 
 const createCollectionRoute = createRoute({
@@ -87,7 +112,12 @@ const createCollectionRoute = createRoute({
   tags: [COLLECTIONS],
   summary: 'Crée une collection',
   request: { body: jsonBody(CollectionInputSchema) },
-  responses: { 201: json(CollectionSchema, 'Collection créée'), 400: invalid, 401: unauthorized },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    201: json(CollectionSchema, 'Collection créée'),
+    400: invalid,
+    401: unauthorized,
+  },
 })
 
 const updateCollectionRoute = createRoute({
@@ -97,6 +127,7 @@ const updateCollectionRoute = createRoute({
   summary: 'Renomme une collection (« Sans collection » est protégée)',
   request: { params: CollectionParamsSchema, body: jsonBody(CollectionInputSchema) },
   responses: {
+    500: ERROR_RESPONSES[500],
     200: json(CollectionSchema, 'Collection mise à jour'),
     400: invalid,
     401: unauthorized,
@@ -110,7 +141,13 @@ const deleteCollectionRoute = createRoute({
   tags: [COLLECTIONS],
   summary: 'Supprime une collection : ses contextes vont vers `targetCollectionId` (obligatoire)',
   request: { params: CollectionParamsSchema, query: DeleteCollectionQuerySchema },
-  responses: { 204: done, 400: invalid, 401: unauthorized, 422: rejected },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    204: done,
+    400: invalid,
+    401: unauthorized,
+    422: rejected,
+  },
 })
 
 export function registerTaxonomyRoutes(app: OpenAPIHono<AppEnv>, taxonomy: TaxonomyService): void {

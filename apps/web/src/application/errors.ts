@@ -24,3 +24,18 @@ export class RepositoryUnavailableError extends Error {
 export function isRepositoryUnavailable(error: unknown): error is RepositoryUnavailableError {
   return error instanceof RepositoryUnavailableError
 }
+
+/** Jeton absent, invalide ou révoqué (HTTP 401) : l'UI affiche un message dédié, sans réessai. */
+export class UnauthorizedError extends Error {
+  /** Discriminant : sans lui, un `Error` quelconque serait structurellement un UnauthorizedError. */
+  readonly code = 'UNAUTHORIZED'
+
+  constructor() {
+    super('Authentification refusée par le serveur Context Hub')
+    this.name = 'UnauthorizedError'
+  }
+}
+
+export function isUnauthorized(error: unknown): error is UnauthorizedError {
+  return error instanceof UnauthorizedError
+}

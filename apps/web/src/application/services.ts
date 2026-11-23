@@ -6,8 +6,8 @@ import type { WorkspaceRepository } from './ports/WorkspaceRepository.ts'
 
 /** Dépendances injectées dans l'UI par le point d'assemblage (src/main.tsx). */
 export interface AppConfig {
-  /** Hôte du serveur MCP (`VITE_MCP_HOST`), ou null : placeholder [HÔTE]. */
-  readonly mcpHost: string | null
+  /** URL du serveur MCP (`VITE_MCP_URL`), ou null : placeholder `https://[HÔTE]/mcp`. */
+  readonly mcpUrl: string | null
 }
 
 export interface AppServices {

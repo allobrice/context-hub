@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Types, schémas et règles métier pures de Context Hub (SPEC §2). Aucune dépendance du workspace.",
+  "sideEffects": false,
   "exports": {
     "./*": "./src/*"
   },

@@ -165,6 +165,36 @@
           "message"
         ]
       },
+      "InternalError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "INTERNAL"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "requestId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
       "LibrarySearchResult": {
         "type": "object",
         "properties": {
@@ -248,10 +278,24 @@
             "$ref": "#/components/schemas/ContextStatus"
           },
           "publishedVersion": {
-            "$ref": "#/components/schemas/ContextVersion"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "draft": {
-            "$ref": "#/components/schemas/ContextVersion"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -353,10 +397,7 @@
         ]
       },
       "ContextVersion": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "number": {
             "type": "integer",
@@ -737,7 +778,14 @@
                 "type": "integer"
               },
               "latest": {
-                "$ref": "#/components/schemas/ConcurrentVersion"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ConcurrentVersion"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -754,10 +802,7 @@
         ]
       },
       "ConcurrentVersion": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "number": {
             "type": "integer",
@@ -1024,6 +1069,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1143,6 +1198,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       },
@@ -1208,6 +1273,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1258,6 +1333,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -1368,6 +1453,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1475,6 +1570,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1528,6 +1633,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1578,6 +1693,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -1653,6 +1778,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1680,6 +1815,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -1754,6 +1899,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       },
@@ -1800,6 +1955,16 @@
                       "$ref": "#/components/schemas/TaxonomyRuleError"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -1863,6 +2028,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1913,6 +2088,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
           }
         }
       }
@@ -1940,6 +2125,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -1988,6 +2183,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -2066,6 +2271,16 @@
                       "$ref": "#/components/schemas/TaxonomyRuleError"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }
@@ -2149,6 +2364,16 @@
                       "$ref": "#/components/schemas/TaxonomyRuleError"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
                 }
               }
             }

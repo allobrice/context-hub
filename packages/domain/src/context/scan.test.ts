@@ -6,6 +6,7 @@ import {
   hasSecret,
   maskSecret,
   maskSecretsIn,
+  mergeFindings,
   scanContent,
   suggestVariableReplacement,
   type ScanFinding,
@@ -124,5 +125,18 @@ describe('faux positifs', () => {
     expect(activeFindings([secret, suspicious], new Set([findingKey(secret)]))).toEqual([
       suspicious,
     ])
+  })
+})
+
+describe('mergeFindings', () => {
+  const secret = { kind: 'secret', line: 3, pattern: 'sk_live_', label: 'clé d’API' } as const
+  const suspicious = { kind: 'suspicious-instruction', line: 1, excerpt: 'ignore…' } as const
+
+  it('ajoute les findings du serveur absents localement, triés par ligne, sans doublon', () => {
+    expect(mergeFindings([secret], [secret, suspicious])).toEqual([suspicious, secret])
+  })
+
+  it('garde les findings locaux si le serveur n’en renvoie aucun', () => {
+    expect(mergeFindings([secret], [])).toEqual([secret])
   })
 })

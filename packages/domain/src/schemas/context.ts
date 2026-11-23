@@ -8,6 +8,14 @@ import { z } from 'zod'
 import { isValidFalsePositiveReason } from '../context/editing.ts'
 import { CONTEXT_STATUSES, DESCRIPTION_MAX_LENGTH, SCOPE_KINDS } from '../context/types.ts'
 
+/**
+ * `schéma | null` pour un schéma nommé (`.meta({ id })`). `.nullable()` hériterait de l'id : le
+ * composant OpenAPI deviendrait lui-même nullable, et toute liste de ce composant aussi.
+ */
+export function orNull<T extends z.ZodType>(schema: T) {
+  return z.union([schema, z.null()])
+}
+
 export const ScopeKindSchema = z.enum(SCOPE_KINDS).meta({ id: 'ScopeKind' })
 export const ContextStatusSchema = z.enum(CONTEXT_STATUSES).meta({ id: 'ContextStatus' })
 
@@ -43,8 +51,8 @@ export const ContextSchema = z
     tags: z.array(z.string()).readonly(),
     scope: ScopeSchema,
     status: ContextStatusSchema,
-    publishedVersion: ContextVersionSchema.nullable(),
-    draft: ContextVersionSchema.nullable(),
+    publishedVersion: orNull(ContextVersionSchema),
+    draft: orNull(ContextVersionSchema),
     createdAt: Timestamp,
     updatedAt: Timestamp,
     author: z.string(),

@@ -5,3 +5,4 @@ node_modules/
 pnpm-lock.yaml
 # Contrat OpenAPI généré (pnpm --filter @context-hub/server openapi:export)
 apps/server/openapi.json
+apps/web/src/infrastructure/http/openapi.d.ts

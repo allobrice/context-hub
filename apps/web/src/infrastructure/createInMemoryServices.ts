@@ -10,7 +10,7 @@ import { LocalDraftStorage } from './storage/LocalDraftStorage.ts'
 /** Assemble les adapters in-memory sur un même état de démo. */
 export function createInMemoryServices(
   simulation: Partial<SimulationOptions> = {},
-  config: AppConfig = { mcpHost: null },
+  config: AppConfig = { mcpUrl: null },
 ): AppServices {
   const options = { ...DEFAULT_SIMULATION, ...simulation }
   const state = createDemoState()

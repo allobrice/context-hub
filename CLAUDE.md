@@ -13,14 +13,14 @@ design-kit/        # référence de design, lecture seule (SPEC.md = source de v
 
 ## Commandes (racine)
 
-| Commande            | Rôle                                                         |
-| ------------------- | ------------------------------------------------------------ |
-| `pnpm install`      | Dépendances de tout le workspace (pnpm via `packageManager`) |
-| `pnpm dev`          | Lance les apps en parallèle                                  |
-| `pnpm -r typecheck` | `tsc` de chaque paquet                                       |
-| `pnpm -r lint`      | ESLint (config racine unique), zéro avertissement toléré     |
-| `pnpm -r test`      | Vitest de chaque paquet                                      |
-| `pnpm format`       | Prettier sur tout le dépôt                                   |
+| Commande            | Rôle                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| `pnpm install`      | Dépendances de tout le workspace (pnpm via `packageManager`)  |
+| `pnpm dev`          | Lance le serveur (`:8787`) et le front (`:5173`) en parallèle |
+| `pnpm -r typecheck` | `tsc` de chaque paquet                                        |
+| `pnpm -r lint`      | ESLint (config racine unique), zéro avertissement toléré      |
+| `pnpm -r test`      | Vitest de chaque paquet                                       |
+| `pnpm format`       | Prettier sur tout le dépôt                                    |
 
 Un script d'un seul paquet : `pnpm --filter @context-hub/<paquet> <script>` (ex. `pnpm --filter @context-hub/server db:seed`).
 **Fin de chaque tâche : `pnpm -r typecheck && pnpm -r lint && pnpm -r test` au vert.**
@@ -36,6 +36,7 @@ Appliquée par `no-restricted-imports` et `eslint-plugin-boundaries` dans `eslin
 
 ## Outillage partagé
 
+- Node **24.22.1**, épinglé par Volta (`volta` dans `package.json`) et `.nvmrc` (CI).
 - `tsconfig.base.json` : TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`…), étendu par chaque paquet. Chaque paquet a un `tsconfig.json` de solution (références) que lit le project service d'ESLint.
 - `eslint.config.js` (racine) : une seule config ; ses motifs sont relatifs à la racine, quel que soit le dossier d'où l'on lance `eslint`.
 - `.prettierrc.json` : sans point-virgule, guillemets simples, 100 colonnes.

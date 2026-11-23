@@ -1,18 +1,20 @@
 # Context Hub UI (`apps/web`)
 
-UI de gestion de Context Hub : des « contextes » Markdown réutilisables, versionnés et partagés, que les sessions Claude Code lisent via un serveur MCP. Règles communes au monorepo (paquets, gate de fin de tâche) : `CLAUDE.md` racine. L'UI tourne sur un adapter in-memory ; le branchement sur `apps/server` arrive en phase 5.
+UI de gestion de Context Hub : des « contextes » Markdown réutilisables, versionnés et partagés, que les sessions Claude Code lisent via un serveur MCP. Règles communes au monorepo (paquets, gate de fin de tâche) : `CLAUDE.md` racine. Deux sources de données, choisies au build par `VITE_DATA_SOURCE` : `memory` (défaut : fixtures, `?mock=*`) ou `http` (API `apps/server`).
 
 ## Commandes
 
 Depuis `apps/web` (ou depuis la racine avec `pnpm --filter @context-hub/web <script>`) :
 
-| Commande         | Rôle                                                                        |
-| ---------------- | --------------------------------------------------------------------------- |
-| `pnpm dev`       | Serveur Vite                                                                |
-| `pnpm build`     | Typecheck puis build de production                                          |
-| `pnpm typecheck` | `tsc` sur l'app (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`) |
-| `pnpm lint`      | ESLint (config racine), zéro avertissement toléré                           |
-| `pnpm test`      | Vitest (une passe) ; `pnpm test:watch` en continu                           |
+| Commande             | Rôle                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| `pnpm dev`           | Serveur Vite                                                                          |
+| `pnpm build`         | Typecheck puis build de production                                                    |
+| `pnpm typecheck`     | `tsc` sur l'app (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`)           |
+| `pnpm lint`          | ESLint (config racine), zéro avertissement toléré                                     |
+| `pnpm test`          | Vitest : projet `unit` (jsdom) puis projet `contract` (serveur réel)                  |
+| `pnpm test:contract` | Suite de contrat HTTP seule (démarre des serveurs `apps/server` en processus enfants) |
+| `pnpm api:generate`  | Régénère `src/infrastructure/http/openapi.d.ts` depuis `apps/server/openapi.json`     |
 
 Formatage : `pnpm format` à la racine. Fin de chaque tâche : la gate du `CLAUDE.md` racine.
 
@@ -29,14 +31,16 @@ Formatage : `pnpm format` à la racine. Fin de chaque tâche : la gate du `CLAUD
 src/
   main.tsx         # point d'assemblage : instancie l'infrastructure et l'injecte dans l'UI
   application/     # ports (interfaces) + cas d'usage
-  infrastructure/  # InMemory*Repository, horloge de démo, latence simulée, ?mock=empty|loading|error|slow|conflict
+  infrastructure/  # in-memory/ (InMemory*Repository, ?mock=*), http/ (Http*Repository, client openapi-fetch,
+                   # types générés), config/env.ts, createInMemoryServices / createHttpServices
   ui/
     app/           # router (lazy), providers, layout
     components/    # composants génériques
     features/      # library/ context-detail/ context-editor/ taxonomy/
     styles/        # tokens, thèmes, mixins, reset
   test/            # setup Vitest, helpers de rendu
-tests/architecture # garde-fous : couches, dépendances du paquet, couleurs en dur
+tests/architecture # garde-fous : couches, dépendances du paquet, couleurs en dur, types OpenAPI à jour
+tests/contract     # suite de contrat contre un vrai serveur (Node : processus enfants)
 ```
 
 Le domaine (types et règles pures, SPEC §2) est le paquet `packages/domain`, importé par `@context-hub/domain/<chemin>.ts` (ex. `@context-hub/domain/context/types.ts`), jamais par un chemin relatif.
@@ -56,6 +60,15 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 - Copie locale des brouillons (`DraftStorage`, `localStorage` validé par garde de type) : autosave 2 s, conservée sur conflit, effacée après enregistrement serveur.
 - `?mock=conflict` : à l'enregistrement d'un contexte publié, « Camille » publie la version suivante juste avant → `VersionConflictError` ; « Repartir de la vN » débloque.
 - `?mock=empty|loading|error|slow|conflict` : relu à chaque appel. Il ne touche que la requête **principale** de l'écran ; la navigation (sidebar) reste disponible (maquettes 05 et 06).
+
+## Données réelles (mode `http`)
+
+- `HttpContextRepository`, `HttpTaxonomyRepository`, `HttpWorkspaceRepository` implémentent les **mêmes ports** que l'in-memory. Client `openapi-fetch` typé par `openapi.d.ts`, **généré** depuis le contrat commité du serveur (`pnpm api:generate`) : jamais d'import du code serveur, jamais de modification à la main. `tests/architecture/openapi-types.test.ts` échoue s'il n'est plus à jour.
+- Erreurs d'API → erreurs du domaine dans `http/apiClient.ts` (`unwrap`) : 404 → `ContextNotFoundError`, 409 → `VersionConflictError` (écran de conflit), 422 → `DraftRejectedError` avec les **findings du serveur** (fusionnés au scan local dans l'éditeur, `mergeFindings`), 401 → `UnauthorizedError` (message dédié, sans « Réessayer », `LoadErrorState`), réseau / 5xx → `RepositoryUnavailableError`.
+- `VITE_DATA_SOURCE` est comparé **dans `main.tsx`** sur `import.meta.env` : Vite remplace la valeur au build et la branche inutilisée sort du bundle (les fixtures en mode http, le client HTTP en mode memory). Le domaine est `sideEffects: false` pour la même raison.
+- Dev : `pnpm dev` à la racine lance serveur et front. Le proxy Vite envoie `/api` vers `CONTEXT_HUB_API_TARGET` (défaut `http://127.0.0.1:8787`) et **injecte le jeton côté Node** (`CONTEXT_HUB_DEV_TOKEN`, sans préfixe `VITE_`, dans `.env.local`) : il n'entre jamais dans le bundle ni dans le navigateur. Voir `.env.example`.
+- `VITE_MCP_URL` : URL du serveur MCP du bloc « Utiliser dans Claude Code » (absente : `https://[HÔTE]/mcp`).
+- **Suite de contrat unique** (`src/test/contract/servicesContract.ts`) : mêmes scénarios contre l'in-memory (`inMemory.contract.test.ts`, projet `unit`) et contre l'adapter HTTP sur un vrai serveur seedé neuf à chaque test (`tests/contract/http.contract.test.ts`, projet `contract`, lancé après `unit` pour ne pas disputer le CPU aux tests d'UI). Toute évolution d'un port s'y teste pour les deux adapters.
 
 ## Routes
 
@@ -105,7 +118,7 @@ La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`library
 
 - TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`). Exports nommés uniquement. Imports relatifs avec extension `.ts` / `.tsx`.
 - Prettier : sans point-virgule, guillemets simples, 100 colonnes.
-- Le scan de contenu côté UI (`@context-hub/domain/context/scan.ts`) est indicatif : le serveur fera autorité.
+- Le scan de contenu côté UI (`@context-hub/domain/context/scan.ts`) est indicatif : le serveur fait autorité (422 avec ses findings).
 
 ## Décisions validées (phase 0)
 

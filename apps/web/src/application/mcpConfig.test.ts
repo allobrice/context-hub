@@ -13,8 +13,8 @@ describe('configuration MCP (SPEC §5.2)', () => {
     )
   })
 
-  it('.mcp.json valide, jeton interpolé, hôte configuré', () => {
-    const json: unknown = JSON.parse(mcpJsonConfig('hub.example.com'))
+  it('.mcp.json valide, jeton interpolé, URL configurée', () => {
+    const json: unknown = JSON.parse(mcpJsonConfig('https://hub.example.com/mcp'))
     expect(json).toEqual({
       mcpServers: {
         'context-hub': {
@@ -26,9 +26,15 @@ describe('configuration MCP (SPEC §5.2)', () => {
     })
   })
 
+  it('affiche l’URL réelle du serveur en dev', () => {
+    expect(cliConfig('http://127.0.0.1:8787/mcp')).toContain(
+      'context-hub http://127.0.0.1:8787/mcp \\',
+    )
+  })
+
   it('ne contient jamais de jeton en clair', () => {
     for (const format of ['cli', 'mcp-json'] as const) {
-      expect(mcpConfig(format, 'hub.example.com')).toMatch(/\$\{?CONTEXT_HUB_TOKEN\}?/)
+      expect(mcpConfig(format, 'http://127.0.0.1:8787/mcp')).toMatch(/\$\{?CONTEXT_HUB_TOKEN\}?/)
     }
   })
 })

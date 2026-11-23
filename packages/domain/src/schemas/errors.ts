@@ -5,7 +5,7 @@
 import { z } from 'zod'
 
 import { DRAFT_REJECTIONS, TAXONOMY_RULE_VIOLATIONS } from '../shared/errors.ts'
-import { ScanFindingSchema } from './context.ts'
+import { orNull, ScanFindingSchema } from './context.ts'
 
 export const API_ERROR_CODES = [
   'UNAUTHORIZED',
@@ -52,7 +52,7 @@ export const VersionConflictErrorSchema = z
       baseVersion: z.number().int(),
       latestVersion: z.number().int(),
       /** Version publiée entre-temps, pour comparer ou « Repartir de la vN ». */
-      latest: ConcurrentVersionSchema.nullable(),
+      latest: orNull(ConcurrentVersionSchema),
     }),
   })
   .meta({ id: 'VersionConflictError' })

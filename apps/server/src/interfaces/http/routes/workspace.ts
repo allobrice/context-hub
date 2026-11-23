@@ -12,6 +12,7 @@ const workspaceRoute = createRoute({
   tags: ['Espace'],
   summary: 'Navigation (sidebar) : utilisateur, compteurs, collections, portées, tags',
   responses: {
+    500: ERROR_RESPONSES[500],
     200: json(WorkspaceOverviewSchema, 'Vue d’ensemble'),
     401: ERROR_RESPONSES[401],
   },

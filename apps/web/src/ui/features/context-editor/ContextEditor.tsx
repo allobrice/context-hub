@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useReducer, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { isRepositoryUnavailable } from '../../../application/errors.ts'
+import { isRepositoryUnavailable, isUnauthorized } from '../../../application/errors.ts'
 import type {
   ContextDetail,
   SaveDraftCommand,
@@ -13,7 +13,12 @@ import {
   shortTitle,
 } from '@context-hub/domain/context/editing.ts'
 import { nextDraftNumber } from '@context-hub/domain/context/lifecycle.ts'
-import { scanContent, findingKey, type ScanFinding } from '@context-hub/domain/context/scan.ts'
+import {
+  findingKey,
+  mergeFindings,
+  scanContent,
+  type ScanFinding,
+} from '@context-hub/domain/context/scan.ts'
 import { DraftRejectedError, VersionConflictError } from '@context-hub/domain/shared/errors.ts'
 import type { Collection, Tag } from '@context-hub/domain/taxonomy/types.ts'
 import { paths } from '../../app/paths.ts'
@@ -24,7 +29,7 @@ import { TextInput } from '../../components/Field/Field.tsx'
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback.ts'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.ts'
 import { formatRelativeDate } from '../../lib/format.ts'
-import { failureOf } from '../../lib/errors.ts'
+import { failureOf, UNAUTHORIZED_MESSAGE, UNAUTHORIZED_TITLE } from '../../lib/errors.ts'
 import styles from './Editor.module.scss'
 import { EditorAlert } from './EditorAlert.tsx'
 import { CollectionDialog } from '../taxonomy/CollectionDialog.tsx'
@@ -93,6 +98,11 @@ export function ContextEditor({
   const [conflict, setConflict] = useState<VersionConflictError | null>(null)
   const [beforeRebase, setBeforeRebase] = useState<string | null>(null)
   const [failure, setFailure] = useState<string | null>(null)
+  /** Findings du scan refait par le serveur lors d'un refus (422), pour le contenu alors envoyé. */
+  const [serverScan, setServerScan] = useState<{
+    readonly content: string
+    readonly findings: readonly ScanFinding[]
+  } | null>(null)
   const [localCopy, setLocalCopy] = useState(() => {
     const local = drafts.load(storageKey)
     return local && differsFrom(local, initialState) ? local : null
@@ -117,7 +127,14 @@ export function ContextEditor({
 
   // ── Scan debouncé ──────────────────────────────────────────────────────────
   const scannedContent = useDebouncedValue(values.content, SCAN_DELAY_MS)
-  const findings = useMemo(() => scanContent(scannedContent), [scannedContent])
+  // Le serveur fait autorité : ses findings complètent le scan local tant que le contenu refusé
+  // n'a pas changé (au-delà, leurs numéros de ligne ne correspondraient plus).
+  const findings = useMemo(() => {
+    const local = scanContent(scannedContent)
+    return serverScan?.content === scannedContent
+      ? mergeFindings(local, serverScan.findings)
+      : local
+  }, [scannedContent, serverScan])
   const flaggedLines = useMemo(
     () => new Set(remainingFindings(findings, state.falsePositives).map((finding) => finding.line)),
     [findings, state.falsePositives],
@@ -183,7 +200,12 @@ export function ContextEditor({
             saveLocalCopy()
             setConflict(error)
           } else if (error instanceof DraftRejectedError) {
+            setServerScan({ content: values.content, findings: error.findings })
             setFailure(`Enregistrement refusé : ${describeRejections(error.reasons)}.`)
+          } else if (isUnauthorized(error)) {
+            setFailure(
+              `${UNAUTHORIZED_TITLE}. ${UNAUTHORIZED_MESSAGE} Votre brouillon est conservé localement.`,
+            )
           } else {
             setFailure(
               isRepositoryUnavailable(error)

@@ -18,6 +18,8 @@ pnpm --filter @context-hub/server dev          # http://127.0.0.1:8787
 
 Le seed n'écrit que dans une base vide (`data/context-hub.db` par défaut). Pour repartir des données de démo, supprimer ce fichier puis relancer `db:seed`. Seul le hash sha-256 du jeton est stocké : un jeton perdu ne se retrouve pas, on en génère un nouveau avec une nouvelle base.
 
+Pour l'UI branchée sur ce serveur : dans `apps/web/.env.local`, `VITE_DATA_SOURCE=http` et `CONTEXT_HUB_DEV_TOKEN=<jeton>` (injecté par le proxy Vite, jamais envoyé par le navigateur), puis `pnpm dev` à la racine.
+
 Configuration facultative dans `apps/server/.env.local` (voir `.env.example`) : hôte, port, origine du front pour CORS, hôtes acceptés sur `/mcp`, chemin de la base.
 
 Le jeton se garde dans l'environnement, jamais dans un fichier versionné :
@@ -103,6 +105,8 @@ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport 
 ```
 
 Les autres méthodes utiles sont `tools/list` et `resources/templates/list`.
+
+Sans jeton, le 401 (`WWW-Authenticate: Bearer`) pousse l'Inspector vers un flux OAuth, que Context Hub ne propose pas en v1 : toujours fournir le header `Authorization`. Commandes vérifiées avec Node 24.22.1 (version épinglée par Volta).
 
 ## Sécurité, en bref
 

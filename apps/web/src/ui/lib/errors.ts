@@ -1,4 +1,4 @@
-import { isRepositoryUnavailable } from '../../application/errors.ts'
+import { isRepositoryUnavailable, isUnauthorized } from '../../application/errors.ts'
 import {
   isDomainError,
   TaxonomyRuleError,
@@ -14,6 +14,12 @@ const TAXONOMY_MESSAGES: Readonly<Record<TaxonomyRuleViolation, string>> = {
   'unknown-collection': 'Cette collection n’existe plus : la liste a peut-être changé entre-temps.',
 }
 
+export const UNAUTHORIZED_TITLE = 'Accès refusé par le serveur Context Hub'
+
+/** Message du 401 : jeton absent, invalide ou révoqué. */
+export const UNAUTHORIZED_MESSAGE =
+  'Le jeton d’API est absent, invalide ou révoqué. En local, vérifiez CONTEXT_HUB_DEV_TOKEN dans apps/web/.env.local puis relancez le serveur Vite.'
+
 /** Code technique à afficher en mono sous une erreur (stockage), ou undefined. */
 export function technicalCode(error: unknown): string | undefined {
   return isRepositoryUnavailable(error) ? error.summary : undefined
@@ -21,6 +27,7 @@ export function technicalCode(error: unknown): string | undefined {
 
 /** Message lisible pour l'échec d'une opération (mutation). */
 export function failureMessage(error: unknown): string {
+  if (isUnauthorized(error)) return `${UNAUTHORIZED_TITLE}. ${UNAUTHORIZED_MESSAGE}`
   if (isRepositoryUnavailable(error))
     return `Le stockage n’a pas répondu (${error.summary}). Rien n’a été modifié.`
   if (error instanceof TaxonomyRuleError) return TAXONOMY_MESSAGES[error.violation]

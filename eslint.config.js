@@ -182,7 +182,16 @@ const FORBIDDEN_UNSAFE_HTML = [
 ]
 
 export default tseslint.config(
-  { ignores: ['design-kit/**', 'dist/**', 'coverage/**', 'node_modules/**'] },
+  {
+    ignores: [
+      'design-kit/**',
+      'dist/**',
+      'coverage/**',
+      'node_modules/**',
+      // Types générés depuis apps/server/openapi.json (pnpm --filter @context-hub/web api:generate).
+      '**/infrastructure/http/openapi.d.ts',
+    ],
+  },
 
   {
     files: ['**/*.{ts,tsx}'],

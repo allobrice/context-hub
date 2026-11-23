@@ -1,8 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../../../test/renderApp.tsx'
+import { DraftRejectedError } from '@context-hub/domain/shared/errors.ts'
+
+import { createTestServices, renderApp } from '../../../test/renderApp.tsx'
 
 const EDIT = '/contexts/ctx-nuxt-conventions/edit'
 
@@ -45,6 +47,25 @@ describe('Édition — scan et blocage de publication (maquette 12)', () => {
     })
     // Le Détail (route lazy) affiche le scan de la version publiée : la v5 nettoyée.
     expect(await screen.findByText('Aucun secret détecté (scan v5)')).toBeInTheDocument()
+  })
+
+  it('affiche les findings d’un refus du serveur (422) même absents du scan local', async () => {
+    const services = createTestServices()
+    vi.spyOn(services.contexts, 'publish').mockRejectedValue(
+      new DraftRejectedError(
+        ['secret-detected'],
+        [{ kind: 'secret', line: 3, pattern: 'ghp_', label: 'jeton GitHub' }],
+      ),
+    )
+    renderApp(EDIT, { services })
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Remplacer par ${NUXT_API_KEY}' }),
+    )
+    expect(await screen.findByText('Aucun secret détecté')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Publier la v5' }))
+
+    expect(await screen.findByText(/Ligne 3 · jeton GitHub \(motif ghp_\)/)).toBeInTheDocument()
+    expect(await screen.findByText(/Enregistrement refusé : /)).toBeInTheDocument()
   })
 
   it('« Faux positif… » exige une justification puis ignore le signalement', async () => {

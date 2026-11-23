@@ -6,10 +6,9 @@ import { resourceUri } from '@context-hub/domain/context/uri.ts'
 import { ContextNotFoundError } from '@context-hub/domain/shared/errors.ts'
 import { useServices } from '../../app/providers/servicesContext.ts'
 import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog.tsx'
-import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
+import { LoadErrorState } from '../../components/LoadErrorState/LoadErrorState.tsx'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard.ts'
 import { ContentPanel } from './ContentPanel.tsx'
-import { technicalCode } from '../../lib/errors.ts'
 import styles from './Detail.module.scss'
 import { DetailHeader } from './DetailHeader.tsx'
 import { ContextNotFound, DetailSkeleton } from './DetailStates.tsx'
@@ -40,14 +39,14 @@ export function DetailPage() {
     return (
       <div className={styles.notFound}>
         <title>Erreur · Context Hub</title>
-        <ErrorState
+        <LoadErrorState
+          error={error}
           title="Impossible de charger le contexte"
-          code={technicalCode(error)}
           onRetry={() => void query.refetch()}
         >
           Le stockage n’a pas répondu. Les sessions Claude Code déjà connectées continuent de servir
           la dernière version en cache.
-        </ErrorState>
+        </LoadErrorState>
       </div>
     )
   }

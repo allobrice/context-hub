@@ -7,14 +7,14 @@ import {
 import type { Collection } from '@context-hub/domain/taxonomy/types.ts'
 import { Button } from '../../components/Button/Button.tsx'
 import { EmptyState } from '../../components/EmptyState/EmptyState.tsx'
-import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
+import { LoadErrorState } from '../../components/LoadErrorState/LoadErrorState.tsx'
 import { Icon } from '../../components/Icon/Icon.tsx'
 import { IconButton } from '../../components/IconButton/IconButton.tsx'
 import { Skeleton } from '../../components/Skeleton/Skeleton.tsx'
 import { cx } from '../../lib/cx.ts'
 import { CollectionDialog } from './CollectionDialog.tsx'
 import { DeleteCollectionDialog } from './DeleteCollectionDialog.tsx'
-import { failureOf, technicalCode } from '../../lib/errors.ts'
+import { failureOf } from '../../lib/errors.ts'
 import styles from './Taxonomy.module.scss'
 import { useCollections, useTaxonomyActions } from './useTaxonomy.ts'
 
@@ -37,9 +37,9 @@ export function CollectionsTab({ creating, onCreatingChange }: CollectionsTabPro
   if (query.isError) {
     const { error } = query
     return (
-      <ErrorState
+      <LoadErrorState
+        error={error}
         title="Impossible de charger les collections"
-        code={technicalCode(error)}
         onRetry={() => void query.refetch()}
       />
     )

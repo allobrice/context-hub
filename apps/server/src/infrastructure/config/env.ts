@@ -7,7 +7,8 @@ import { z } from 'zod'
 const EnvSchema = z.object({
   /** Écoute locale par défaut (dev) : jamais exposé sur le réseau sans le décider. */
   CONTEXT_HUB_HOST: z.string().min(1).default('127.0.0.1'),
-  CONTEXT_HUB_PORT: z.coerce.number().int().min(1).max(65_535).default(8787),
+  /** 0 : port libre choisi par le système (tests), lu dans la ligne `server.listening`. */
+  CONTEXT_HUB_PORT: z.coerce.number().int().min(0).max(65_535).default(8787),
   /** Seule origine autorisée par CORS : le front. */
   CONTEXT_HUB_WEB_ORIGIN: z.url().default('http://localhost:5173'),
   CONTEXT_HUB_WORKSPACE_NAME: z.string().min(1).default('Espace AlloVoisins'),

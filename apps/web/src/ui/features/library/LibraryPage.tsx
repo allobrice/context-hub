@@ -5,7 +5,7 @@ import { paths } from '../../app/paths.ts'
 import { useServices } from '../../app/providers/servicesContext.ts'
 import { useWorkspaceOverview } from '../../app/queries.ts'
 import { ButtonLink } from '../../components/Button/ButtonLink.tsx'
-import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
+import { LoadErrorState } from '../../components/LoadErrorState/LoadErrorState.tsx'
 import { cx } from '../../lib/cx.ts'
 import { plural } from '../../lib/format.ts'
 import { ContextCards } from './ContextCards.tsx'
@@ -13,7 +13,6 @@ import { ContextTable } from './ContextTable.tsx'
 import { FilterBar } from './FilterBar.tsx'
 import { LibrarySkeleton } from './LibrarySkeleton.tsx'
 import { LibraryEmpty, NoResults } from './LibraryStates.tsx'
-import { technicalCode } from '../../lib/errors.ts'
 import styles from './LibraryPage.module.scss'
 import type { LibraryUrlState } from './libraryParams.ts'
 import { Pagination } from './Pagination.tsx'
@@ -75,16 +74,16 @@ export function LibraryPage() {
     if (isError) {
       const error = search.error
       return (
-        <ErrorState
+        <LoadErrorState
+          error={error}
           title="Impossible de charger les contextes"
-          code={technicalCode(error)}
           onRetry={() => {
             void search.refetch()
           }}
         >
           Le stockage n’a pas répondu. Les sessions Claude Code déjà connectées continuent de servir
           la dernière version en cache.
-        </ErrorState>
+        </LoadErrorState>
       )
     }
     if (!data) return <LibrarySkeleton view={state.view} sort={state.sort} />

@@ -9,7 +9,7 @@ import { Button } from '../../components/Button/Button.tsx'
 import { ButtonLink } from '../../components/Button/ButtonLink.tsx'
 import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog.tsx'
 import { EmptyState } from '../../components/EmptyState/EmptyState.tsx'
-import { ErrorState } from '../../components/ErrorState/ErrorState.tsx'
+import { LoadErrorState } from '../../components/LoadErrorState/LoadErrorState.tsx'
 import { Icon } from '../../components/Icon/Icon.tsx'
 import { IconButton } from '../../components/IconButton/IconButton.tsx'
 import { Skeleton } from '../../components/Skeleton/Skeleton.tsx'
@@ -18,7 +18,7 @@ import { cx } from '../../lib/cx.ts'
 import { formatRelativeDate, plural } from '../../lib/format.ts'
 import { InlineRename } from './InlineRename.tsx'
 import { MergeTagsDialog, type MergeRequest } from './MergeTagsDialog.tsx'
-import { failureOf, technicalCode } from '../../lib/errors.ts'
+import { failureOf } from '../../lib/errors.ts'
 import styles from './Taxonomy.module.scss'
 import { useTaxonomyActions, useTags } from './useTaxonomy.ts'
 
@@ -94,9 +94,9 @@ export function TagsTab({ tagNames }: { tagNames: readonly string[] }) {
   if (query.isError) {
     const { error } = query
     return (
-      <ErrorState
+      <LoadErrorState
+        error={error}
         title="Impossible de charger les tags"
-        code={technicalCode(error)}
         onRetry={() => void query.refetch()}
       />
     )

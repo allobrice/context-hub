@@ -12,6 +12,7 @@ import {
 } from '@context-hub/domain/schemas/context.ts'
 import {
   DraftRejectedErrorSchema,
+  InternalErrorSchema,
   NoDraftErrorSchema,
   NotFoundErrorSchema,
   TaxonomyRuleErrorSchema,
@@ -106,4 +107,6 @@ export const ERROR_RESPONSES = {
     z.union([DraftRejectedErrorSchema, TaxonomyRuleErrorSchema]),
     'Règle métier refusée (scan, slug, taxonomie…)',
   ),
+  /** Toute route peut répondre ce 500 générique (`handleError`), sans détail interne. */
+  500: json(InternalErrorSchema, 'Erreur interne (identifiant de requête pour le support)'),
 } as const

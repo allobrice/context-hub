@@ -36,6 +36,7 @@ const searchRoute = createRoute({
   summary: 'Bibliothèque : recherche plein texte, filtres, tri et page (25 par page)',
   request: { query: LibraryQuerySchema },
   responses: {
+    500: ERROR_RESPONSES[500],
     200: json(LibrarySearchResultSchema, 'Une page et les compteurs de toute la bibliothèque'),
     400: invalid,
     401: unauthorized,
@@ -48,7 +49,7 @@ const getRoute = createRoute({
   tags: [TAG],
   summary: 'Un contexte, par identifiant ou slug encodé',
   request: { params: ContextParamsSchema },
-  responses: { 200: detail, 401: unauthorized, 404: notFound },
+  responses: { 500: ERROR_RESPONSES[500], 200: detail, 401: unauthorized, 404: notFound },
 })
 
 const createContextRoute = createRoute({
@@ -59,7 +60,13 @@ const createContextRoute = createRoute({
   request: {
     body: { content: { 'application/json': { schema: ContextDraftInputSchema } }, required: true },
   },
-  responses: { 201: detail, 400: invalid, 401: unauthorized, 422: rejected },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    201: detail,
+    400: invalid,
+    401: unauthorized,
+    422: rejected,
+  },
 })
 
 const saveDraftRoute = createRoute({
@@ -73,6 +80,7 @@ const saveDraftRoute = createRoute({
     body: { content: { 'application/json': { schema: SaveDraftBodySchema } }, required: true },
   },
   responses: {
+    500: ERROR_RESPONSES[500],
     200: detail,
     400: invalid,
     401: unauthorized,
@@ -93,6 +101,7 @@ const publishRoute = createRoute({
     body: { content: { 'application/json': { schema: PublishBodySchema } }, required: true },
   },
   responses: {
+    500: ERROR_RESPONSES[500],
     200: detail,
     400: invalid,
     401: unauthorized,
@@ -108,7 +117,7 @@ const archiveRoute = createRoute({
   tags: [TAG],
   summary: 'Archive : les sessions MCP ne lisent plus le contexte',
   request: { params: ContextParamsSchema },
-  responses: { 200: detail, 401: unauthorized, 404: notFound },
+  responses: { 500: ERROR_RESPONSES[500], 200: detail, 401: unauthorized, 404: notFound },
 })
 
 const unarchiveRoute = createRoute({
@@ -117,7 +126,7 @@ const unarchiveRoute = createRoute({
   tags: [TAG],
   summary: 'Désarchive : publié s’il a une version publiée, sinon brouillon',
   request: { params: ContextParamsSchema },
-  responses: { 200: detail, 401: unauthorized, 404: notFound },
+  responses: { 500: ERROR_RESPONSES[500], 200: detail, 401: unauthorized, 404: notFound },
 })
 
 const restoreRoute = createRoute({
@@ -126,7 +135,13 @@ const restoreRoute = createRoute({
   tags: [TAG],
   summary: 'Copie la version n dans le brouillon, sans publier',
   request: { params: VersionParamsSchema },
-  responses: { 200: detail, 400: invalid, 401: unauthorized, 404: notFound },
+  responses: {
+    500: ERROR_RESPONSES[500],
+    200: detail,
+    400: invalid,
+    401: unauthorized,
+    404: notFound,
+  },
 })
 
 export function registerContextRoutes(app: OpenAPIHono<AppEnv>, contexts: ContextService): void {

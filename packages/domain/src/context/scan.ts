@@ -158,3 +158,18 @@ export function activeFindings(
 ): ScanFinding[] {
   return findings.filter((finding) => !ignoredKeys.has(findingKey(finding)))
 }
+
+/**
+ * Findings locaux complétés par ceux du serveur (qui fait autorité), sans doublon (`findingKey`),
+ * triés par ligne. Sert à afficher dans l'éditeur un refus de publication du serveur.
+ */
+export function mergeFindings(
+  local: readonly ScanFinding[],
+  server: readonly ScanFinding[],
+): ScanFinding[] {
+  const byKey = new Map(local.map((finding) => [findingKey(finding), finding]))
+  for (const finding of server) {
+    if (!byKey.has(findingKey(finding))) byKey.set(findingKey(finding), finding)
+  }
+  return [...byKey.values()].sort((a, b) => a.line - b.line)
+}
