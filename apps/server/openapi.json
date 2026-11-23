@@ -1,0 +1,2537 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Context Hub API",
+    "version": "1.0.0",
+    "description": "API REST de l’UI Context Hub. Toutes les routes exigent `Authorization: Bearer <jeton>`, sauf /api/health. Erreurs : `{ code, message, details? }`."
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Jeton d’API Context Hub (préfixe chub_)."
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "WorkspaceOverview": {
+        "type": "object",
+        "properties": {
+          "workspaceName": {
+            "type": "string"
+          },
+          "currentUser": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "contextCount": {
+            "type": "integer"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          },
+          "scopeCounts": {
+            "type": "object",
+            "properties": {
+              "personal": {
+                "type": "integer"
+              },
+              "project": {
+                "type": "integer"
+              },
+              "team": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "personal",
+              "project",
+              "team"
+            ]
+          },
+          "tagNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mcpServer": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "online",
+                  "offline"
+                ]
+              },
+              "transport": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "transport"
+            ]
+          }
+        },
+        "required": [
+          "workspaceName",
+          "currentUser",
+          "contextCount",
+          "collections",
+          "scopeCounts",
+          "tagNames",
+          "mcpServer"
+        ]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "contextCount": {
+            "type": "integer"
+          },
+          "publishedCount": {
+            "type": "integer"
+          },
+          "system": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "contextCount",
+          "publishedCount"
+        ]
+      },
+      "UnauthorizedError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "UNAUTHORIZED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "InternalError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "INTERNAL"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "requestId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "LibrarySearchResult": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "$ref": "#/components/schemas/ContextPage"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/StatusCounts"
+          }
+        },
+        "required": [
+          "page",
+          "totals"
+        ]
+      },
+      "ContextPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Context"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageCount": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageCount",
+          "from",
+          "to"
+        ]
+      },
+      "Context": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "collectionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContextStatus"
+          },
+          "publishedVersion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "string"
+          },
+          "mcpReads7d": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "description",
+          "collectionId",
+          "tags",
+          "scope",
+          "status",
+          "publishedVersion",
+          "draft",
+          "createdAt",
+          "updatedAt",
+          "author",
+          "mcpReads7d"
+        ]
+      },
+      "Scope": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "personal"
+                ]
+              },
+              "owner": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "owner"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "project"
+                ]
+              },
+              "repo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "repo"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "team"
+                ]
+              },
+              "team": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "team"
+            ]
+          }
+        ]
+      },
+      "ContextStatus": {
+        "type": "string",
+        "enum": [
+          "published",
+          "draft",
+          "archived"
+        ]
+      },
+      "ContextVersion": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "content": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tokenEstimate": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "number",
+          "content",
+          "note",
+          "author",
+          "createdAt",
+          "tokenEstimate"
+        ],
+        "description": "Version immuable (ou brouillon en cours)."
+      },
+      "StatusCounts": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "integer"
+          },
+          "draft": {
+            "type": "integer"
+          },
+          "archived": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "published",
+          "draft",
+          "archived",
+          "total"
+        ]
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_FAILED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "message"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "issues"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ScopeKind": {
+        "type": "string",
+        "enum": [
+          "personal",
+          "project",
+          "team"
+        ]
+      },
+      "ContextDetail": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContextVersion"
+            }
+          },
+          "collectionName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "context",
+          "history",
+          "collectionName"
+        ]
+      },
+      "NotFoundError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "NOT_FOUND"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "reference": {
+                "type": "string"
+              },
+              "requestId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "reference",
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ForbiddenOriginError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "FORBIDDEN_ORIGIN"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Mutation envoyée depuis une autre origine que le front (protection CSRF)."
+      },
+      "DraftRejectedError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "DRAFT_REJECTED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "secret-detected",
+                    "title-empty",
+                    "version-note-empty",
+                    "description-too-long",
+                    "slug-invalid",
+                    "slug-taken",
+                    "slug-frozen",
+                    "repo-required",
+                    "personal-scope-forbidden",
+                    "secret-in-metadata"
+                  ]
+                }
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ScanFinding"
+                }
+              }
+            },
+            "required": [
+              "reasons",
+              "findings"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ScanFinding": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "secret"
+                ]
+              },
+              "line": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "pattern": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "line",
+              "pattern",
+              "label"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "suspicious-instruction"
+                ]
+              },
+              "line": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "excerpt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "line",
+              "excerpt"
+            ]
+          }
+        ]
+      },
+      "TaxonomyRuleError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "TAXONOMY_RULE"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "violation": {
+                "type": "string",
+                "enum": [
+                  "system-collection-immutable",
+                  "deletion-target-required",
+                  "deletion-target-invalid",
+                  "invalid-tag-name",
+                  "unknown-tag",
+                  "unknown-collection"
+                ]
+              }
+            },
+            "required": [
+              "violation"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ContextDraftInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 640
+          },
+          "collectionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500000
+          },
+          "versionNote": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "description",
+          "collectionId",
+          "tags",
+          "scope",
+          "content",
+          "versionNote"
+        ]
+      },
+      "VersionConflictError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "VERSION_CONFLICT"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "baseVersion": {
+                "type": "integer"
+              },
+              "latestVersion": {
+                "type": "integer"
+              },
+              "latest": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ConcurrentVersion"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "baseVersion",
+              "latestVersion",
+              "latest"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ConcurrentVersion": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "author": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "author",
+          "createdAt",
+          "content"
+        ]
+      },
+      "NoDraftError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "NO_DRAFT"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Publication demandée sans brouillon en cours."
+      },
+      "SaveDraftBody": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "exclusiveMinimum": 0
+          },
+          "draft": {
+            "$ref": "#/components/schemas/ContextDraftInput"
+          }
+        },
+        "required": [
+          "baseVersion",
+          "draft"
+        ]
+      },
+      "PublishBody": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "exclusiveMinimum": 0
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "falsePositives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FalsePositive"
+            },
+            "maxItems": 100,
+            "default": []
+          }
+        },
+        "required": [
+          "baseVersion",
+          "note"
+        ]
+      },
+      "FalsePositive": {
+        "type": "object",
+        "properties": {
+          "findingKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "findingKey",
+          "reason"
+        ],
+        "description": "Finding écarté par l’auteur, avec sa justification."
+      },
+      "TagList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Tag"
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contextCount": {
+            "type": "integer"
+          },
+          "publishedCount": {
+            "type": "integer"
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "contextCount",
+          "publishedCount",
+          "lastUsedAt"
+        ]
+      },
+      "RenameTag": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TagMerge": {
+        "type": "object",
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sources",
+          "target"
+        ]
+      },
+      "MergeImpact": {
+        "type": "object",
+        "properties": {
+          "affectedContexts": {
+            "type": "integer"
+          },
+          "affectedPublished": {
+            "type": "integer"
+          },
+          "duplicatesAvoided": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "affectedContexts",
+          "affectedPublished",
+          "duplicatesAvoided"
+        ]
+      },
+      "CollectionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Collection"
+        }
+      },
+      "CollectionInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 240
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Espace"
+        ],
+        "summary": "Santé du serveur (seule route sans authentification)",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Le serveur répond",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace": {
+      "get": {
+        "tags": [
+          "Espace"
+        ],
+        "summary": "Navigation (sidebar) : utilisateur, compteurs, collections, portées, tags",
+        "responses": {
+          "200": {
+            "description": "Vue d’ensemble",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts": {
+      "get": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Bibliothèque : recherche plein texte, filtres, tri et page (25 par page)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": ""
+            },
+            "required": false,
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxItems": 20,
+              "description": "Tous requis (ET). Répéter le paramètre : tags=a&tags=b."
+            },
+            "required": false,
+            "description": "Tous requis (ET). Répéter le paramètre : tags=a&tags=b.",
+            "name": "tags",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Identifiant de collection ; « none » = Sans collection."
+            },
+            "required": false,
+            "description": "Identifiant de collection ; « none » = Sans collection.",
+            "name": "collection",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/ScopeKind"
+            },
+            "required": false,
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/ContextStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "updated-desc",
+                "updated-asc",
+                "title-asc",
+                "title-desc"
+              ],
+              "default": "updated-desc"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Une page et les compteurs de toute la bibliothèque",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibrarySearchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Crée un contexte en brouillon (v1)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextDraftInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}": {
+      "get": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Un contexte, par identifiant ou slug encodé",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}/draft": {
+      "put": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Enregistre le brouillon au-dessus de `baseVersion` (409 si une version a été publiée entre-temps)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveDraftBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflit : version publiée entre-temps, ou rien à publier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/VersionConflictError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoDraftError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}/publish": {
+      "post": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Publie le brouillon : le serveur rescanne le contenu (422 avec les findings si un secret reste)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflit : version publiée entre-temps, ou rien à publier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/VersionConflictError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoDraftError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}/archive": {
+      "post": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Archive : les sessions MCP ne lisent plus le contexte",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}/unarchive": {
+      "post": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Désarchive : publié s’il a une version publiée, sinon brouillon",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contexts/{id}/versions/{n}/restore": {
+      "post": {
+        "tags": [
+          "Contextes"
+        ],
+        "summary": "Copie la version n dans le brouillon, sans publier",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4)."
+            },
+            "required": true,
+            "description": "Identifiant ou slug encodé (nuxt%2Fconventions-nuxt-4).",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "required": true,
+            "name": "n",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le contexte, son historique et sa collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Registre des tags, avec compteurs (contextes visibles) et dernier usage",
+        "responses": {
+          "200": {
+            "description": "Tous les tags",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags/{name}": {
+      "patch": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Renomme un tag ; vers un nom existant, c’est une fusion",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameTag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Fait"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Retire le tag de tous les contextes et du registre",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Fait"
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags/merge": {
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Fusionne des tags dans une cible (créée au besoin), sans doublon",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagMerge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Fait"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags/merge/preview": {
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Impact chiffré d’une fusion (dialog de fusion)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagMerge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Impact",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MergeImpact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections": {
+      "get": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "Collections, « Sans collection » (système) en dernier",
+        "responses": {
+          "200": {
+            "description": "Toutes les collections",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "Crée une collection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collection créée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collections/{id}": {
+      "patch": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "Renomme une collection (« Sans collection » est protégée)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Collection mise à jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "Supprime une collection : ses contextes vont vers `targetCollectionId` (obligatoire)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Obligatoire ; « none » = Sans collection."
+            },
+            "required": true,
+            "description": "Obligatoire ; « none » = Sans collection.",
+            "name": "targetCollectionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false"
+            },
+            "required": false,
+            "name": "addFormerNameAsTag",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Fait"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée (scan, slug, taxonomie…)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DraftRejectedError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyRuleError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

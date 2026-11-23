@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Les tests de tests/ importent du code de l'app (DOM) en plus des API Node.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "allowJs": true
+  },
+  "include": ["vite.config.ts", "tests"]
+}

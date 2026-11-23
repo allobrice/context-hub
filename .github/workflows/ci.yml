@@ -24,15 +24,19 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      # Version de pnpm lue dans `packageManager` (package.json racine).
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
-      # `build` enchaîne `typecheck` puis `vite build` : le typecheck n'est pas lancé deux fois.
-      - run: npm run build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm -r lint
+      # Le `build` de chaque paquet enchaîne son `typecheck` : on lance le typecheck des paquets
+      # sans build, puis les builds.
+      - run: pnpm --filter "!@context-hub/web" -r typecheck
+      - run: pnpm -r build
 
   test:
     name: Tests
@@ -44,9 +48,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      # Version de pnpm lue dans `packageManager` (package.json racine).
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run test
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r test

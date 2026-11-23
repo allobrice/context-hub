@@ -11,3 +11,9 @@ coverage/
 
 # Captures du MCP Playwright
 .playwright-mcp/
+
+# Bases SQLite locales (apps/server)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
