@@ -86,6 +86,31 @@ export interface StatusWrite extends WriteAt {
   readonly status: ContextStatus
 }
 
+/** Contexte publié tel que l'expose MCP : métadonnées, sans le contenu. */
+export interface PublishedSummary {
+  readonly id: ContextId
+  readonly slug: string
+  readonly title: string
+  readonly description: string
+  readonly scope: Scope
+  readonly version: number
+  readonly tokenEstimate: number
+}
+
+export interface PublishedSearch {
+  readonly query: string
+  /** Tous requis (ET). */
+  readonly tags: readonly string[]
+  /** Identifiant de collection ; « none » = Sans collection ; null = toutes. */
+  readonly collectionId: string | null
+  /**
+   * Repo du projet appelant (`X-Context-Hub-Repo`), ou null. Filtre de PERTINENCE, pas de sécurité :
+   * les contextes `project` de ce repo passent en tête, ceux des autres repos sont exclus.
+   */
+  readonly repo: string | null
+  readonly limit: number
+}
+
 /**
  * Persistance des contextes. Toutes les lectures appliquent la visibilité du `viewer`. Chaque
  * écriture est atomique ; les cas d'usage appliquent les règles métier du domaine avant d'écrire.
@@ -97,6 +122,10 @@ export interface ContextStore {
   /** Slugs utilisés par d'autres contextes que `exceptId`, toutes portées confondues. */
   isSlugTaken(slug: string, exceptId: ContextId | null): Promise<boolean>
   countByScope(viewer: Viewer): Promise<Readonly<Record<ScopeKind, number>>>
+  /** Contextes publiés visibles (jamais les brouillons ni les archivés), triés par slug. */
+  listPublished(viewer: Viewer): Promise<readonly PublishedSummary[]>
+  /** Recherche plein texte sur le contenu PUBLIÉ uniquement, par pertinence. */
+  searchPublished(viewer: Viewer, search: PublishedSearch): Promise<readonly PublishedSummary[]>
 
   create(command: CreateContextCommand): Promise<void>
   /** @throws VersionConflictError si la version publiée n'est plus celle attendue. */

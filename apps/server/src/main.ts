@@ -10,11 +10,12 @@ import { consoleLogger } from './infrastructure/logging/jsonLogger.ts'
 
 const config = readServerConfig()
 const database = openDatabase(databasePath())
-const { app } = composeServer(database.db, {
+const { app, mcp } = composeServer(database.db, {
   clock: systemClock,
   logger: consoleLogger,
   webOrigin: config.webOrigin,
   workspaceName: config.workspaceName,
+  allowedHosts: config.allowedHosts,
 })
 
 const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, (info) => {
@@ -22,9 +23,12 @@ const server = serve({ fetch: app.fetch, hostname: config.host, port: config.por
 })
 
 function shutdown(): void {
-  server.close(() => {
-    database.close()
-    process.exit(0)
+  // Ferme d'abord les sessions MCP (flux SSE ouverts), sinon `server.close` attendrait leur fin.
+  void mcp.close().finally(() => {
+    server.close(() => {
+      database.close()
+      process.exit(0)
+    })
   })
 }
 

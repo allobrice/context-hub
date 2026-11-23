@@ -11,6 +11,8 @@ const EnvSchema = z.object({
   /** Seule origine autorisée par CORS : le front. */
   CONTEXT_HUB_WEB_ORIGIN: z.url().default('http://localhost:5173'),
   CONTEXT_HUB_WORKSPACE_NAME: z.string().min(1).default('Espace AlloVoisins'),
+  /** Noms d'hôte acceptés dans `Host` sur /mcp, séparés par des virgules (DNS rebinding). */
+  CONTEXT_HUB_ALLOWED_HOSTS: z.string().default('localhost,127.0.0.1,[::1]'),
 })
 
 export interface ServerConfig {
@@ -18,6 +20,7 @@ export interface ServerConfig {
   readonly port: number
   readonly webOrigin: string
   readonly workspaceName: string
+  readonly allowedHosts: readonly string[]
 }
 
 /** @throws Error listant les variables invalides */
@@ -33,5 +36,8 @@ export function readServerConfig(env: NodeJS.ProcessEnv = process.env): ServerCo
     port: data.CONTEXT_HUB_PORT,
     webOrigin: new URL(data.CONTEXT_HUB_WEB_ORIGIN).origin,
     workspaceName: data.CONTEXT_HUB_WORKSPACE_NAME,
+    allowedHosts: data.CONTEXT_HUB_ALLOWED_HOSTS.split(',')
+      .map((host) => host.trim())
+      .filter(Boolean),
   }
 }

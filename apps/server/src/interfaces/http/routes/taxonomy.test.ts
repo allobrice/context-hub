@@ -20,9 +20,7 @@ beforeEach(async () => {
   api = await createTestApp()
 })
 
-afterEach(() => {
-  api.close()
-})
+afterEach(() => api.close())
 
 async function tags() {
   return TagListSchema.parse(await (await api.request('/api/tags')).json())

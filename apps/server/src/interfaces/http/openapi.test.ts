@@ -19,7 +19,7 @@ describe('openapi.json', () => {
       const committed: unknown = JSON.parse(readFileSync(COMMITTED, 'utf8'))
       expect(committed).toEqual(served)
     } finally {
-      api.close()
+      await api.close()
     }
   })
 })

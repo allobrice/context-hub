@@ -14,9 +14,7 @@ beforeEach(async () => {
   api = await createTestApp()
 })
 
-afterEach(() => {
-  api.close()
-})
+afterEach(() => api.close())
 
 describe('GET /api/health', () => {
   it('répond sans authentification', async () => {

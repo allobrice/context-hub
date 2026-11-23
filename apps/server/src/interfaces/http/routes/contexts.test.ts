@@ -35,9 +35,7 @@ beforeEach(async () => {
   api = await createTestApp()
 })
 
-afterEach(() => {
-  api.close()
-})
+afterEach(() => api.close())
 
 async function detailOf(response: Response) {
   return ContextDetailSchema.parse(await response.json())

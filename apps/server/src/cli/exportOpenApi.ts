@@ -20,6 +20,7 @@ try {
     logger: consoleLogger,
     webOrigin: 'http://localhost',
     workspaceName: 'export',
+    allowedHosts: ['localhost'],
   })
   const document = app.getOpenAPI31Document(OPENAPI_DOCUMENT)
   writeFileSync(OUTPUT, `${JSON.stringify(document, null, 2)}\n`)

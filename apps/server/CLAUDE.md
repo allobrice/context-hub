@@ -2,7 +2,7 @@
 
 Serveur Node (Hono) : API REST `/api/*` pour l'UI, serveur MCP Streamable HTTP `/mcp` pour les sessions Claude Code, persistance SQLite (Drizzle + better-sqlite3). Règles communes : `CLAUDE.md` racine.
 
-> Construit par phases : 2 (persistance) et 3 (REST) faites, 4 (MCP) à venir.
+> Construit par phases : 2 (persistance), 3 (REST) et 4 (MCP). Connexion des clients MCP : `README.md`.
 
 ## Commandes
 
@@ -29,9 +29,10 @@ src/
   main.ts           # démarrage : config, base migrée, composition, écoute 127.0.0.1
   composition.ts    # câblage unique (stores → cas d'usage → app Hono), partagé par main, CLI et tests
   cli/              # exportOpenApi.ts
-  application/      # cas d'usage (ContextService, TaxonomyService, WorkspaceService, AuthService),
+  application/      # cas d'usage (ContextService, TaxonomyService, WorkspaceService, AuthService, mcp/ContextCatalog),
                     # ports (ContextStore, TaxonomyStore, UserStore, McpReadLog, Clock, Logger), Viewer ; sans Hono ni Drizzle
   interfaces/http/  # app.ts (middlewares, routes, OpenAPI), routes/*, schemas.ts (transport), errors.ts, middleware/
+  interfaces/mcp/   # mountMcp.ts (aiguillage 2025 / 2026-07-28), legacySessions.ts, contextHubServer.ts (surface MCP)
   infrastructure/config/ # env.ts : configuration validée par Zod
   infrastructure/logging/ # logger JSON
   infrastructure/db/
@@ -71,3 +72,14 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 - Le serveur fait autorité : `ContextService` rejoue `draftRejections` / `publishRejections` et **rescanne le contenu à la publication** (422 avec les findings, sans la valeur des secrets). Les faux positifs ne valent qu'avec un motif et pour un finding réellement présent.
 - Les routes d'écriture acceptent un identifiant ou un slug encodé ; le cas d'usage résout la référence puis écrit par identifiant.
 - CORS limité à `CONTEXT_HUB_WEB_ORIGIN` ; corps limité à 2 Mo ; journal : une ligne JSON par requête (méthode, motif de route, statut, durée, utilisateur), jamais de corps, query, en-tête ni contenu.
+
+## Serveur MCP : règles
+
+- SDK v2 (`@modelcontextprotocol/server` + `@modelcontextprotocol/hono`). `/mcp` est monté dans la même app Hono, derrière `hostHeaderValidation` / `originValidation` du SDK (DNS rebinding ; `CONTEXT_HUB_ALLOWED_HOSTS`), une limite de corps de 1 Mo et le **même** middleware Bearer que l'API.
+- **Topologie hybride** (pattern `isLegacyRequest` du SDK) : `createMcpHandler` n'a pas de sessions. Les clients 2025 (défaut du client v2) passent donc par `LegacySessions` (`WebStandardStreamableHTTPServerTransport` avec `Mcp-Session-Id`, flux GET pour les notifications), et les clients 2026-07-28 par `createMcpHandler({ legacy: 'reject' })` (`subscriptions/listen`). Une seule factory (`createContextHubMcpServer`) sert les deux.
+- Une session legacy est liée à l'utilisateur qui l'a ouverte : un autre jeton sur le même `Mcp-Session-Id` reçoit 404. Plafond de `MAX_LEGACY_SESSIONS`.
+- `notifications/resources/list_changed` : `ContextService` émet sur `ContextEvents` à chaque publication, archivage ou désarchivage ; `mountMcp` relaie vers les sessions et vers `handler.notify.resourcesChanged()`. Le bus est en mémoire du processus (une seule instance).
+- Templates : `context://{+slug}@{version}` **enregistré avant** `context://{+slug}` (le SDK essaie les templates dans l'ordre ; `{+slug}` accepte les « / », `{slug}` non).
+- `ContextCatalog` : seuls les contextes `published` sont servis (jamais un brouillon ni un archivé), versions figées prises dans l'historique publié, portées du `viewer`, chaque lecture écrite dans `mcp_reads`. `search_contexts` ne renvoie jamais le contenu et ne cherche que dans le contenu publié.
+- `X-Context-Hub-Repo` : **filtre de pertinence, pas une frontière de sécurité** (projets du repo en tête, autres repos exclus de `search_contexts`).
+- Le contenu est une donnée : renvoyé en `text/markdown` (ressource embarquée pour `get_context`), et les descriptions des outils le rappellent. Journal MCP : méthode, URI, outil, nombre de résultats, utilisateur ; jamais le contenu.

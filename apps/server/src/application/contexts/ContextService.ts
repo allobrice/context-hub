@@ -24,6 +24,7 @@ import {
 
 import { NoDraftError } from '../errors.ts'
 import type { Clock } from '../ports/Clock.ts'
+import type { ContextEvents } from '../ports/ContextEvents.ts'
 import type {
   ContextDetail,
   ContextMetadata,
@@ -50,6 +51,8 @@ export interface ContextServiceDependencies {
   readonly store: ContextStore
   readonly clock: Clock
   readonly newId: () => ContextId
+  /** Notifie les sessions MCP quand la liste des contextes publiés change. */
+  readonly events: ContextEvents
 }
 
 /** Une portée personnelle appartient toujours à celui qui l'enregistre. */
@@ -103,11 +106,13 @@ export class ContextService {
   private readonly store: ContextStore
   private readonly clock: Clock
   private readonly newId: () => ContextId
+  private readonly events: ContextEvents
 
-  constructor({ store, clock, newId }: ContextServiceDependencies) {
+  constructor({ store, clock, newId, events }: ContextServiceDependencies) {
     this.store = store
     this.clock = clock
     this.newId = newId
+    this.events = events
   }
 
   search(viewer: Viewer, criteria: LibraryCriteria): Promise<ContextSearchResult> {
@@ -195,6 +200,7 @@ export class ContextService {
       falsePositives: falsePositives.filter((item) => keys.has(item.findingKey)),
       at: this.clock.now(),
     })
+    this.events.emit({ kind: 'published', contextId: id })
     return this.get(viewer, id)
   }
 
@@ -204,6 +210,7 @@ export class ContextService {
     const { id } = current.context
     if (!canArchive(current.context)) return current
     await this.store.setStatus({ id, status: 'archived', at: this.clock.now() })
+    this.events.emit({ kind: 'archived', contextId: id })
     return this.get(viewer, id)
   }
 
@@ -213,6 +220,7 @@ export class ContextService {
     if (canArchive(current.context)) return current
     const status = unarchivedStatus(current.context)
     await this.store.setStatus({ id, status, at: this.clock.now() })
+    this.events.emit({ kind: 'unarchived', contextId: id })
     return this.get(viewer, id)
   }
 

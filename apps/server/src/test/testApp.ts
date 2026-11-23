@@ -45,7 +45,10 @@ export interface TestApp {
   readonly database: TestDatabase
   readonly logs: CapturedLog[]
   request(path: string, options?: RequestOptions): Promise<Response>
-  close(): void
+  /** `fetch` en process vers l'app (avec un Host local), pour le client MCP du SDK. */
+  readonly fetch: (input: string | URL, init?: RequestInit) => Promise<Response>
+  readonly mcp: ReturnType<typeof composeServer>['mcp']
+  close(): Promise<void>
 }
 
 let sequence = 0
@@ -65,11 +68,12 @@ export async function createTestApp(): Promise<TestApp> {
     at: database.clock.now(),
   })
   const { logger, logs } = captureLogger()
-  const { app } = composeServer(database.db, {
+  const { app, mcp } = composeServer(database.db, {
     clock: database.clock,
     logger,
     webOrigin: WEB_ORIGIN,
     workspaceName: 'Espace AlloVoisins',
+    allowedHosts: ['localhost', '127.0.0.1'],
     newContextId: sequentialId,
   })
   return {
@@ -88,7 +92,15 @@ export async function createTestApp(): Promise<TestApp> {
       }
       return Promise.resolve(app.request(path, init))
     },
-    close: () => {
+    fetch: (input, init) => {
+      const url = new URL(input)
+      const headers = new Headers(init?.headers)
+      headers.set('host', url.host)
+      return Promise.resolve(app.request(url.href, { ...init, headers }))
+    },
+    mcp,
+    close: async () => {
+      await mcp.close()
       database.close()
     },
   }

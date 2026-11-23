@@ -10,9 +10,7 @@ beforeEach(async () => {
   api = await createTestApp()
 })
 
-afterEach(() => {
-  api.close()
-})
+afterEach(() => api.close())
 
 describe('GET /api/workspace', () => {
   it('renvoie la navigation de l’utilisateur authentifié (portées des fixtures)', async () => {

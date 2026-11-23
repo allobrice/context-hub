@@ -3,11 +3,13 @@ import { and, asc, count, desc, eq, inArray, isNull, ne, or, sql, type SQL } fro
 import {
   CONTEXT_STATUSES,
   SCOPE_KINDS,
+  toContextId,
   type ContextId,
   type ContextStatus,
   type ScopeKind,
 } from '@context-hub/domain/context/types.ts'
 import {
+  DEFAULT_LIBRARY_CRITERIA,
   pageWindow,
   queryTerms,
   toPage,
@@ -24,6 +26,8 @@ import type {
   ContextSearchResult,
   ContextStore,
   CreateContextCommand,
+  PublishedSearch,
+  PublishedSummary,
   PublishWrite,
   RestoreDraftWrite,
   RevisionWrite,
@@ -41,6 +45,7 @@ import {
   hydrate,
   metadataColumns,
   reindex,
+  scopeOf,
   versionOf,
   visibleTo,
   writeTags,
@@ -75,6 +80,46 @@ function filterConditions(criteria: LibraryCriteria): SQL[] {
     )
   }
   return conditions
+}
+
+/** Contextes publiés, avec le numéro et l'estimation de leur version publiée. */
+function publishedSummaries(db: SyncDb, where: SQL | undefined): PublishedSummary[] {
+  return db
+    .select({
+      id: contexts.id,
+      slug: contexts.slug,
+      title: contexts.title,
+      description: contexts.description,
+      scopeKind: contexts.scopeKind,
+      scopeValue: contexts.scopeValue,
+      version: contextVersions.number,
+      tokenEstimate: contextVersions.tokenEstimate,
+    })
+    .from(contexts)
+    .innerJoin(
+      contextVersions,
+      and(
+        eq(contextVersions.contextId, contexts.id),
+        eq(contextVersions.number, contexts.publishedVersion),
+      ),
+    )
+    .where(and(eq(contexts.status, 'published'), where))
+    .orderBy(asc(contexts.slug))
+    .all()
+    .map((row) => ({
+      id: toContextId(row.id),
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      scope: scopeOf(row.scopeKind, row.scopeValue),
+      version: row.version,
+      tokenEstimate: row.tokenEstimate,
+    }))
+}
+
+/** Le contexte appartient-il au repo du projet appelant ? */
+function isProjectOf(repo: string | null, summary: PublishedSummary): boolean {
+  return repo !== null && summary.scope.kind === 'project' && summary.scope.repo === repo
 }
 
 function draftColumns(
@@ -173,6 +218,38 @@ export class DrizzleContextStore implements ContextStore {
       for (const kind of SCOPE_KINDS)
         counts[kind] = rows.find((row) => row.kind === kind)?.total ?? 0
       return counts
+    })
+  }
+
+  listPublished(viewer: Viewer): Promise<readonly PublishedSummary[]> {
+    return deferred(() => publishedSummaries(this.db, visibleTo(viewer)))
+  }
+
+  searchPublished(
+    viewer: Viewer,
+    { query, tags, collectionId, repo, limit }: PublishedSearch,
+  ): Promise<readonly PublishedSummary[]> {
+    return deferred(() => {
+      // Contenu publié uniquement (scope `published`) : aucun terme de brouillon ne remonte.
+      const ranked = this.searchIndex.match(this.db, query, 'published')
+      if (ranked.length === 0) return []
+      const conditions = [
+        visibleTo(viewer),
+        inArray(contexts.id, ranked),
+        ...filterConditions({ ...DEFAULT_LIBRARY_CRITERIA, tags, collectionId }),
+      ]
+      // Filtre de pertinence (pas une frontière de sécurité) : hors des projets des autres repos.
+      if (repo !== null)
+        conditions.push(
+          sql`not (${contexts.scopeKind} = 'project' and ${contexts.scopeValue} <> ${repo})`,
+        )
+      const rank = new Map(ranked.map((id, index) => [id, index]))
+      const byRelevance = (a: PublishedSummary, b: PublishedSummary) =>
+        Number(isProjectOf(repo, b)) - Number(isProjectOf(repo, a)) ||
+        (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)
+      return publishedSummaries(this.db, and(...conditions))
+        .sort(byRelevance)
+        .slice(0, limit)
     })
   }
 
