@@ -74,6 +74,11 @@ export interface PublishWrite extends WriteAt {
   readonly version: RevisionWrite
   /** Faux positifs du scan écartés par l'auteur, conservés sur la version. */
   readonly falsePositives: readonly FalsePositive[]
+  /**
+   * Date du brouillon relu et scanné. Vérifiée dans la transaction : un brouillon enregistré
+   * entre-temps refuse la publication (VersionConflictError) au lieu d'être écrasé.
+   */
+  readonly expectedDraftUpdatedAt: string
 }
 
 export interface RestoreDraftWrite extends WriteAt {
@@ -86,7 +91,10 @@ export interface StatusWrite extends WriteAt {
   readonly status: ContextStatus
 }
 
-/** Contexte publié tel que l'expose MCP : métadonnées, sans le contenu. */
+/**
+ * Contexte publié tel que l'expose MCP : métadonnées PUBLIÉES (jamais celles d'un brouillon),
+ * sans le contenu.
+ */
 export interface PublishedSummary {
   readonly id: ContextId
   readonly slug: string
@@ -95,6 +103,12 @@ export interface PublishedSummary {
   readonly scope: Scope
   readonly version: number
   readonly tokenEstimate: number
+}
+
+export interface PublishedDetail {
+  readonly summary: PublishedSummary
+  /** Versions publiées (immuables), de la plus récente à la plus ancienne. */
+  readonly history: readonly ContextVersion[]
 }
 
 export interface PublishedSearch {
@@ -122,8 +136,13 @@ export interface ContextStore {
   /** Slugs utilisés par d'autres contextes que `exceptId`, toutes portées confondues. */
   isSlugTaken(slug: string, exceptId: ContextId | null): Promise<boolean>
   countByScope(viewer: Viewer): Promise<Readonly<Record<ScopeKind, number>>>
+  /** L'utilisateur est-il l'auteur (créateur) du contexte ? */
+  isAuthor(id: ContextId, userId: UserId): Promise<boolean>
+  collectionExists(id: string): Promise<boolean>
   /** Contextes publiés visibles (jamais les brouillons ni les archivés), triés par slug. */
   listPublished(viewer: Viewer): Promise<readonly PublishedSummary[]>
+  /** Un contexte publié par slug, selon sa portée PUBLIÉE ; null s'il n'est pas servi. */
+  findPublished(viewer: Viewer, slug: string): Promise<PublishedDetail | null>
   /** Recherche plein texte sur le contenu PUBLIÉ uniquement, par pertinence. */
   searchPublished(viewer: Viewer, search: PublishedSearch): Promise<readonly PublishedSummary[]>
 

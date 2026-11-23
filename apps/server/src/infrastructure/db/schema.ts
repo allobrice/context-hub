@@ -55,6 +55,15 @@ export const contexts = sqliteTable(
     status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
     /** Numéro de la version lue par les sessions MCP, null si jamais publié. */
     publishedVersion: integer('published_version'),
+    // Métadonnées PUBLIÉES, écrites seulement à la publication (après le scan) : c'est tout ce que
+    // voit MCP. Les colonnes ci-dessus sont les métadonnées courantes (brouillon compris) de l'UI.
+    publishedTitle: text('published_title'),
+    publishedDescription: text('published_description'),
+    publishedCollectionId: text('published_collection_id').references(() => collections.id),
+    publishedScopeKind: text('published_scope_kind', { enum: ['personal', 'project', 'team'] }),
+    publishedScopeValue: text('published_scope_value'),
+    /** Tags publiés, en JSON (`string[]`). */
+    publishedTags: text('published_tags').notNull().default('[]'),
     authorId: text('author_id')
       .notNull()
       .references(() => users.id),
@@ -66,6 +75,7 @@ export const contexts = sqliteTable(
     index('contexts_updated_idx').on(table.updatedAt),
     index('contexts_scope_idx').on(table.scopeKind, table.scopeValue),
     index('contexts_collection_idx').on(table.collectionId),
+    index('contexts_published_scope_idx').on(table.publishedScopeKind, table.publishedScopeValue),
   ],
 )
 

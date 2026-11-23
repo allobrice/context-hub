@@ -18,7 +18,13 @@ import { deferred } from '../deferred.ts'
 import { isoDate } from '../dates.ts'
 import { collections, contexts, contextTags, tags } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
-import { reindex, tagsByContext, visibleTo, writeTags } from './contextRecords.ts'
+import {
+  reindex,
+  rewritePublishedTags,
+  tagsByContext,
+  visibleTo,
+  writeTags,
+} from './contextRecords.ts'
 
 /** Nombre de contextes publiés, en SQL standard (portable). */
 const publishedCount = sql<number>`sum(case when ${contexts.status} = 'published' then 1 else 0 end)`
@@ -130,8 +136,15 @@ export class DrizzleTaxonomyStore implements TaxonomyStore {
           const merged = applyTagMerge(tagLists.get(contextId) ?? [], sources, target)
           writeTags(tx, contextId, merged, at)
         }
+        // Les tags publiés suivent la taxonomie (renommer ne crée pas de version : SPEC §5.4).
+        const published = rewritePublishedTags(tx, (current) =>
+          current.some((tag) => removed.includes(tag))
+            ? applyTagMerge(current, sources, target)
+            : current,
+        )
         if (removed.length > 0) tx.delete(tags).where(inArray(tags.name, removed)).run()
-        for (const contextId of affected) reindex(tx, this.searchIndex, contextId)
+        for (const contextId of new Set([...affected, ...published]))
+          reindex(tx, this.searchIndex, contextId)
       })
     })
   }
@@ -144,10 +157,14 @@ export class DrizzleTaxonomyStore implements TaxonomyStore {
         tx.delete(contextTags)
           .where(inArray(contextTags.tagName, [...names]))
           .run()
+        const published = rewritePublishedTags(tx, (current) =>
+          current.filter((tag) => !names.includes(tag)),
+        )
         tx.delete(tags)
           .where(inArray(tags.name, [...names]))
           .run()
-        for (const contextId of affected) reindex(tx, this.searchIndex, contextId)
+        for (const contextId of new Set([...affected, ...published]))
+          reindex(tx, this.searchIndex, contextId)
       })
     })
   }
@@ -219,10 +236,27 @@ export class DrizzleTaxonomyStore implements TaxonomyStore {
           .where(eq(contexts.collectionId, deletedId))
           .all()
           .map((row) => row.id)
+        const movedPublished = tx
+          .select({ id: contexts.id })
+          .from(contexts)
+          .where(eq(contexts.publishedCollectionId, deletedId))
+          .all()
+          .map((row) => row.id)
         tx.update(contexts)
           .set({ collectionId: targetId })
           .where(eq(contexts.collectionId, deletedId))
           .run()
+        tx.update(contexts)
+          .set({ publishedCollectionId: targetId })
+          .where(eq(contexts.publishedCollectionId, deletedId))
+          .run()
+        if (tagToAdd !== null) {
+          rewritePublishedTags(tx, (current, contextId) =>
+            movedPublished.includes(contextId) && !current.includes(tagToAdd)
+              ? [...current, tagToAdd]
+              : current,
+          )
+        }
         if (tagToAdd !== null) {
           touchTag(tx, tagToAdd, at)
           const tagLists = tagsByContext(tx, moved)
@@ -232,7 +266,8 @@ export class DrizzleTaxonomyStore implements TaxonomyStore {
           }
         }
         tx.delete(collections).where(eq(collections.id, deletedId)).run()
-        for (const contextId of moved) reindex(tx, this.searchIndex, contextId)
+        for (const contextId of new Set([...moved, ...movedPublished]))
+          reindex(tx, this.searchIndex, contextId)
       })
     })
   }

@@ -58,6 +58,10 @@ export type DraftRejection =
   | 'slug-taken'
   | 'slug-frozen'
   | 'repo-required'
+  /** Seul l'auteur d'un contexte peut le rendre personnel (sinon : prise de contrôle). */
+  | 'personal-scope-forbidden'
+  /** Secret détecté dans le titre, la description, la note de version ou les tags. */
+  | 'secret-in-metadata'
 
 export const DRAFT_REJECTIONS = [
   'secret-detected',
@@ -68,6 +72,8 @@ export const DRAFT_REJECTIONS = [
   'slug-taken',
   'slug-frozen',
   'repo-required',
+  'personal-scope-forbidden',
+  'secret-in-metadata',
 ] as const satisfies readonly DraftRejection[]
 
 export class DraftRejectedError extends DomainError {

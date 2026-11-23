@@ -9,7 +9,6 @@ import {
   type ScopeKind,
 } from '@context-hub/domain/context/types.ts'
 import {
-  DEFAULT_LIBRARY_CRITERIA,
   pageWindow,
   queryTerms,
   toPage,
@@ -26,6 +25,7 @@ import type {
   ContextSearchResult,
   ContextStore,
   CreateContextCommand,
+  PublishedDetail,
   PublishedSearch,
   PublishedSummary,
   PublishWrite,
@@ -34,7 +34,7 @@ import type {
   SaveDraftWrite,
   StatusWrite,
 } from '../../../application/ports/ContextStore.ts'
-import type { Viewer } from '../../../application/viewer.ts'
+import type { UserId, Viewer } from '../../../application/viewer.ts'
 import type { AppDatabase, SyncDb } from '../connection.ts'
 import { deferred } from '../deferred.ts'
 import { isoDate } from '../dates.ts'
@@ -44,6 +44,9 @@ import {
   history,
   hydrate,
   metadataColumns,
+  parsePublishedTags,
+  publishedMetadataColumns,
+  publishedVisibleTo,
   reindex,
   scopeOf,
   versionOf,
@@ -82,16 +85,24 @@ function filterConditions(criteria: LibraryCriteria): SQL[] {
   return conditions
 }
 
-/** Contextes publiés, avec le numéro et l'estimation de leur version publiée. */
-function publishedSummaries(db: SyncDb, where: SQL | undefined): PublishedSummary[] {
+interface PublishedRow extends PublishedSummary {
+  readonly tags: readonly string[]
+}
+
+/**
+ * Contextes publiés, avec leurs métadonnées PUBLIÉES (colonnes `published_*`) et le numéro et
+ * l'estimation de leur version publiée. La portée appliquée est la portée publiée.
+ */
+function publishedRows(db: SyncDb, viewer: Viewer, where: SQL | undefined): PublishedRow[] {
   return db
     .select({
       id: contexts.id,
       slug: contexts.slug,
-      title: contexts.title,
-      description: contexts.description,
-      scopeKind: contexts.scopeKind,
-      scopeValue: contexts.scopeValue,
+      title: contexts.publishedTitle,
+      description: contexts.publishedDescription,
+      scopeKind: contexts.publishedScopeKind,
+      scopeValue: contexts.publishedScopeValue,
+      tags: contexts.publishedTags,
       version: contextVersions.number,
       tokenEstimate: contextVersions.tokenEstimate,
     })
@@ -103,18 +114,30 @@ function publishedSummaries(db: SyncDb, where: SQL | undefined): PublishedSummar
         eq(contextVersions.number, contexts.publishedVersion),
       ),
     )
-    .where(and(eq(contexts.status, 'published'), where))
+    .where(and(eq(contexts.status, 'published'), publishedVisibleTo(viewer), where))
     .orderBy(asc(contexts.slug))
     .all()
-    .map((row) => ({
-      id: toContextId(row.id),
-      slug: row.slug,
-      title: row.title,
-      description: row.description,
-      scope: scopeOf(row.scopeKind, row.scopeValue),
-      version: row.version,
-      tokenEstimate: row.tokenEstimate,
-    }))
+    .flatMap((row) =>
+      row.scopeKind === null || row.scopeValue === null
+        ? []
+        : [
+            {
+              id: toContextId(row.id),
+              slug: row.slug,
+              title: row.title ?? '',
+              description: row.description ?? '',
+              scope: scopeOf(row.scopeKind, row.scopeValue),
+              version: row.version,
+              tokenEstimate: row.tokenEstimate,
+              tags: parsePublishedTags(row.tags),
+            },
+          ],
+    )
+}
+
+function toSummary(row: PublishedRow): PublishedSummary {
+  const { id, slug, title, description, scope, version, tokenEstimate } = row
+  return { id, slug, title, description, scope, version, tokenEstimate }
 }
 
 /** Le contexte appartient-il au repo du projet appelant ? */
@@ -221,8 +244,37 @@ export class DrizzleContextStore implements ContextStore {
     })
   }
 
+  isAuthor(id: ContextId, userId: UserId): Promise<boolean> {
+    return deferred(
+      () =>
+        this.db
+          .select({ id: contexts.id })
+          .from(contexts)
+          .where(and(eq(contexts.id, id), eq(contexts.authorId, userId)))
+          .get() !== undefined,
+    )
+  }
+
+  collectionExists(id: string): Promise<boolean> {
+    return deferred(
+      () =>
+        this.db
+          .select({ id: collections.id })
+          .from(collections)
+          .where(eq(collections.id, id))
+          .get() !== undefined,
+    )
+  }
+
   listPublished(viewer: Viewer): Promise<readonly PublishedSummary[]> {
-    return deferred(() => publishedSummaries(this.db, visibleTo(viewer)))
+    return deferred(() => publishedRows(this.db, viewer, undefined).map(toSummary))
+  }
+
+  findPublished(viewer: Viewer, slug: string): Promise<PublishedDetail | null> {
+    return deferred(() => {
+      const [row] = publishedRows(this.db, viewer, eq(contexts.slug, slug))
+      return row ? { summary: toSummary(row), history: history(this.db, row.id) } : null
+    })
   }
 
   searchPublished(
@@ -230,24 +282,26 @@ export class DrizzleContextStore implements ContextStore {
     { query, tags, collectionId, repo, limit }: PublishedSearch,
   ): Promise<readonly PublishedSummary[]> {
     return deferred(() => {
-      // Contenu publié uniquement (scope `published`) : aucun terme de brouillon ne remonte.
+      // Texte PUBLIÉ uniquement : ni contenu ni métadonnées de brouillon ne remontent.
       const ranked = this.searchIndex.match(this.db, query, 'published')
       if (ranked.length === 0) return []
-      const conditions = [
-        visibleTo(viewer),
-        inArray(contexts.id, ranked),
-        ...filterConditions({ ...DEFAULT_LIBRARY_CRITERIA, tags, collectionId }),
-      ]
+      const conditions: SQL[] = [inArray(contexts.id, ranked)]
+      if (collectionId === UNCATEGORIZED_COLLECTION_ID)
+        conditions.push(isNull(contexts.publishedCollectionId))
+      else if (collectionId !== null)
+        conditions.push(eq(contexts.publishedCollectionId, collectionId))
       // Filtre de pertinence (pas une frontière de sécurité) : hors des projets des autres repos.
       if (repo !== null)
         conditions.push(
-          sql`not (${contexts.scopeKind} = 'project' and ${contexts.scopeValue} <> ${repo})`,
+          sql`not (${contexts.publishedScopeKind} = 'project' and ${contexts.publishedScopeValue} <> ${repo})`,
         )
       const rank = new Map(ranked.map((id, index) => [id, index]))
       const byRelevance = (a: PublishedSummary, b: PublishedSummary) =>
         Number(isProjectOf(repo, b)) - Number(isProjectOf(repo, a)) ||
         (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)
-      return publishedSummaries(this.db, and(...conditions))
+      return publishedRows(this.db, viewer, and(...conditions))
+        .filter((row) => tags.every((tag) => row.tags.includes(tag)))
+        .map(toSummary)
         .sort(byRelevance)
         .slice(0, limit)
     })
@@ -302,11 +356,13 @@ export class DrizzleContextStore implements ContextStore {
     metadata,
     version,
     falsePositives,
+    expectedDraftUpdatedAt,
     at,
   }: PublishWrite): Promise<void> {
     return deferred(() => {
       this.db.transaction((tx) => {
         this.assertPublishedVersion(tx, id, expectedPublishedVersion)
+        this.assertDraftUnchanged(tx, id, expectedDraftUpdatedAt)
         const now = isoDate(at)
         tx.insert(contextVersions)
           .values({
@@ -323,6 +379,7 @@ export class DrizzleContextStore implements ContextStore {
         tx.update(contexts)
           .set({
             ...metadataColumns(metadata),
+            ...publishedMetadataColumns(metadata),
             status: 'published',
             publishedVersion: version.number,
             updatedAt: now,
@@ -384,6 +441,23 @@ export class DrizzleContextStore implements ContextStore {
       .get()
     if (!row) throw new ContextNotFoundError(id)
     return row.publishedVersion
+  }
+
+  /**
+   * Le brouillon publié est celui qui a été relu et scanné : un brouillon enregistré entre-temps
+   * serait sinon écrasé (et publié sans avoir été scanné).
+   * @throws VersionConflictError
+   */
+  private assertDraftUnchanged(db: SyncDb, id: string, expectedUpdatedAt: string): void {
+    const draft = db
+      .select({ updatedAt: contextDrafts.updatedAt })
+      .from(contextDrafts)
+      .where(eq(contextDrafts.contextId, id))
+      .get()
+    if (draft?.updatedAt === expectedUpdatedAt) return
+    const current = this.publishedVersionOf(db, id)
+    const latest = current === null ? null : versionOf(db, id, current)
+    throw new VersionConflictError(current ?? 0, current ?? 0, latest ?? undefined)
   }
 
   /**

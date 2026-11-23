@@ -25,6 +25,7 @@ const SECRET_RULES: readonly SecretRule[] = [
   { pattern: 'sk_live_', label: 'clé d’API', regex: /sk_live_[A-Za-z0-9•*]{6,}/ },
   { pattern: 'sk-', label: 'clé d’API', regex: /\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{16,}/ },
   { pattern: 'ghp_', label: 'jeton GitHub', regex: /\bghp_[A-Za-z0-9]{20,}/ },
+  { pattern: 'chub_', label: 'jeton Context Hub', regex: /\bchub_[A-Za-z0-9_-]{20,}/ },
   { pattern: 'AKIA', label: 'clé d’accès AWS', regex: /\bAKIA[0-9A-Z]{16}\b/ },
   { pattern: '-----BEGIN', label: 'clé privée', regex: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
   {
@@ -39,7 +40,9 @@ const SUSPICIOUS_RULES: readonly RegExp[] = [
   /\bignore[rz]?\s+(?:toutes\s+)?les\s+instructions\s+(?:pr[ée]c[ée]dentes|ci-dessus)\b/i,
   /\bdisregard\s+(?:all\s+)?(?:previous|prior)\s+(?:instructions|messages)\b/i,
   // Exfiltration : image ou lien Markdown vers une URL externe qui embarque des données en query string.
-  /!?\[[^\]]*\]\(https?:\/\/[^)\s]+\?[^)\s]*=\s*(?:\{|\$|%7B)/i,
+  // Répétitions BORNÉES (texte du lien ≤ 200, URL ≤ 300 + 300) : sans borne, une ligne de « [ » ou
+  // de « ?a » faisait un travail quadratique (ReDoS, ~2 s pour 80 000 caractères, audit phase 6).
+  /!?\[[^\]]{0,200}\]\(https?:\/\/[^)\s?]{1,300}\?[^)\s]{0,300}=\s*(?:\{|\$|%7B)/i,
   /https?:\/\/(?:[a-z0-9-]+\.)*(?:webhook\.site|requestbin\.(?:com|net)|pipedream\.net|ngrok(?:-free)?\.(?:io|app))\b/i,
 ]
 

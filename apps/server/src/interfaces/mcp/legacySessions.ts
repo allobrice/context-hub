@@ -17,6 +17,8 @@ import type { UserId, Viewer } from '../../application/viewer.ts'
 
 /** Garde-fou mémoire : au-delà, une nouvelle session est refusée (503). */
 export const MAX_LEGACY_SESSIONS = 500
+/** Par utilisateur : un seul jeton ne peut pas épuiser les sessions des autres (429). */
+export const MAX_LEGACY_SESSIONS_PER_USER = 20
 
 const SESSION_HEADER = 'mcp-session-id'
 
@@ -63,9 +65,17 @@ export class LegacySessions {
     }
     if (!(await isInitialize(request)))
       return jsonRpcError(400, -32000, 'Bad Request: no valid session ID provided')
+    if (this.sessionsOf(viewer) >= MAX_LEGACY_SESSIONS_PER_USER)
+      return jsonRpcError(429, -32000, 'Too many MCP sessions for this user')
     if (this.sessions.size >= MAX_LEGACY_SESSIONS)
       return jsonRpcError(503, -32000, 'Too many MCP sessions')
     return this.open(request, viewer, authInfo)
+  }
+
+  private sessionsOf(viewer: Viewer): number {
+    let count = 0
+    for (const session of this.sessions.values()) if (session.userId === viewer.userId) count += 1
+    return count
   }
 
   /** Pousse `notifications/resources/list_changed` à toutes les sessions ouvertes. */

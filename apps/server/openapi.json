@@ -566,6 +566,25 @@
           "details"
         ]
       },
+      "ForbiddenOriginError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "FORBIDDEN_ORIGIN"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Mutation envoyée depuis une autre origine que le front (protection CSRF)."
+      },
       "DraftRejectedError": {
         "type": "object",
         "properties": {
@@ -593,7 +612,9 @@
                     "slug-invalid",
                     "slug-taken",
                     "slug-frozen",
-                    "repo-required"
+                    "repo-required",
+                    "personal-scope-forbidden",
+                    "secret-in-metadata"
                   ]
                 }
               },
@@ -1257,6 +1278,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Règle métier refusée (scan, slug, taxonomie…)",
             "content": {
@@ -1410,6 +1441,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Introuvable ou hors de portée",
             "content": {
@@ -1527,6 +1568,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Introuvable ou hors de portée",
             "content": {
@@ -1624,6 +1675,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Introuvable ou hors de portée",
             "content": {
@@ -1683,6 +1744,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -1765,6 +1836,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -1883,6 +1964,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Règle métier refusée (scan, slug, taxonomie…)",
             "content": {
@@ -1938,6 +2029,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -2008,6 +2109,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -2085,6 +2196,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -2187,6 +2308,16 @@
               }
             }
           },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Erreur interne (identifiant de requête pour le support)",
             "content": {
@@ -2254,6 +2385,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }
@@ -2347,6 +2488,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
                 }
               }
             }

@@ -9,6 +9,7 @@ import { orNull, ScanFindingSchema } from './context.ts'
 
 export const API_ERROR_CODES = [
   'UNAUTHORIZED',
+  'FORBIDDEN_ORIGIN',
   'NOT_FOUND',
   'VERSION_CONFLICT',
   'NO_DRAFT',
@@ -25,6 +26,13 @@ const message = z.string()
 export const UnauthorizedErrorSchema = z
   .object({ code: z.literal('UNAUTHORIZED'), message })
   .meta({ id: 'UnauthorizedError' })
+
+export const ForbiddenOriginErrorSchema = z
+  .object({ code: z.literal('FORBIDDEN_ORIGIN'), message })
+  .meta({
+    id: 'ForbiddenOriginError',
+    description: 'Mutation envoyée depuis une autre origine que le front (protection CSRF).',
+  })
 
 export const NotFoundErrorSchema = z
   .object({
@@ -98,6 +106,7 @@ export const InternalErrorSchema = z
 export const ApiErrorSchema = z
   .discriminatedUnion('code', [
     UnauthorizedErrorSchema,
+    ForbiddenOriginErrorSchema,
     NotFoundErrorSchema,
     VersionConflictErrorSchema,
     NoDraftErrorSchema,

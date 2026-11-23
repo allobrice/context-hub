@@ -1,6 +1,6 @@
 import type { DraftRejection } from '../shared/errors.ts'
 import { publishBlockers } from './publish.ts'
-import { findingKey, scanContent, type ScanFinding } from './scan.ts'
+import { findingKey, hasSecret, scanContent, type ScanFinding } from './scan.ts'
 import { isValidSlug } from './slug.ts'
 import { DESCRIPTION_MAX_LENGTH, type Scope } from './types.ts'
 
@@ -48,6 +48,11 @@ export interface DraftCheck {
   readonly takenSlugs: ReadonlySet<string>
   /** Slug figé (contexte déjà publié), ou null s'il est encore modifiable. */
   readonly frozenSlug: string | null
+  /**
+   * La portée personnelle est-elle permise à celui qui enregistre ? Seulement pour un nouveau
+   * contexte ou pour son auteur : sinon n'importe qui pourrait s'approprier un contexte d'équipe.
+   */
+  readonly personalScopeAllowed: boolean
 }
 
 /** Contrôles d'un brouillon, avant tout enregistrement. */
@@ -58,20 +63,53 @@ export function draftRejections(input: ContextDraftInput, check: DraftCheck): Dr
   else if (check.takenSlugs.has(input.slug)) reasons.push('slug-taken')
   if (input.scope.kind === 'project' && input.scope.repo.trim() === '')
     reasons.push('repo-required')
+  if (input.scope.kind === 'personal' && !check.personalScopeAllowed)
+    reasons.push('personal-scope-forbidden')
   if (input.description.length > DESCRIPTION_MAX_LENGTH) reasons.push('description-too-long')
   return reasons
 }
 
-/** Contrôles d'une publication : ceux du brouillon + canPublish sur le contenu rescanné. */
+/** Métadonnées publiées avec la version (elles aussi lues par les sessions MCP). */
+function metadataText(input: ContextDraftInput): string {
+  return [input.title, input.description, input.versionNote, ...input.tags].join('\n')
+}
+
+export interface PublishReview {
+  readonly reasons: DraftRejection[]
+  /** Findings du contenu, hors faux positifs justifiés. */
+  readonly findings: ScanFinding[]
+}
+
+/**
+ * Contrôles d'une publication : ceux du brouillon, le contenu rescanné (une seule fois) et les
+ * métadonnées, qui sont scannées aussi : un faux positif ne vaut que pour le contenu.
+ */
+export function reviewPublication(
+  input: ContextDraftInput,
+  falsePositives: readonly FalsePositive[],
+  check: DraftCheck,
+  /** Scan du contenu déjà calculé (évite de scanner deux fois un contenu de 500 000 caractères). */
+  scanned: readonly ScanFinding[] = scanContent(input.content),
+): PublishReview {
+  const findings = remainingFindings(scanned, falsePositives)
+  const blockers = publishBlockers(
+    { title: input.title, description: input.description, versionNote: input.versionNote },
+    findings,
+  )
+  const metadata: DraftRejection[] = hasSecret(scanContent(metadataText(input)))
+    ? ['secret-in-metadata']
+    : []
+  const reasons = [
+    ...new Set<DraftRejection>([...blockers, ...metadata, ...draftRejections(input, check)]),
+  ]
+  return { reasons, findings }
+}
+
+/** Motifs de refus d'une publication (voir `reviewPublication`). */
 export function publishRejections(
   input: ContextDraftInput,
   falsePositives: readonly FalsePositive[],
   check: DraftCheck,
 ): DraftRejection[] {
-  const findings = remainingFindings(scanContent(input.content), falsePositives)
-  const blockers = publishBlockers(
-    { title: input.title, description: input.description, versionNote: input.versionNote },
-    findings,
-  )
-  return [...new Set<DraftRejection>([...blockers, ...draftRejections(input, check)])]
+  return reviewPublication(input, falsePositives, check).reasons
 }

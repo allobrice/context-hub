@@ -1,7 +1,6 @@
 import {
   draftRejections,
-  publishRejections,
-  remainingFindings,
+  reviewPublication,
   type ContextDraftInput,
   type DraftCheck,
   type FalsePositive,
@@ -19,6 +18,7 @@ import type { LibraryCriteria } from '@context-hub/domain/library/criteria.ts'
 import {
   ContextNotFoundError,
   DraftRejectedError,
+  TaxonomyRuleError,
   VersionConflictError,
 } from '@context-hub/domain/shared/errors.ts'
 
@@ -129,7 +129,8 @@ export class ContextService {
   /** Nouveau contexte, en brouillon v1. @throws DraftRejectedError */
   async create(viewer: Viewer, rawInput: ContextDraftInput): Promise<ContextDetail> {
     const input = ownedBy(rawInput, viewer)
-    const reasons = draftRejections(input, await this.draftCheck(input.slug, null, null))
+    await this.assertCollectionExists(input.collectionId)
+    const reasons = draftRejections(input, await this.draftCheck(input.slug, null, viewer))
     if (reasons.length > 0) throw new DraftRejectedError(reasons)
     const id = this.newId()
     await this.store.create({
@@ -151,7 +152,8 @@ export class ContextService {
     const id = current.context.id
     assertBaseVersion(current, baseVersion)
     const input = ownedBy(draft, viewer)
-    const reasons = draftRejections(input, await this.draftCheck(input.slug, id, current))
+    await this.assertCollectionExists(input.collectionId)
+    const reasons = draftRejections(input, await this.draftCheck(input.slug, current, viewer))
     if (reasons.length > 0) throw new DraftRejectedError(reasons)
     await this.store.saveDraft({
       id,
@@ -184,20 +186,20 @@ export class ContextService {
     if (!draft) throw new NoDraftError(id)
     assertBaseVersion(current, baseVersion)
     const input = draftInputOf(current.context, draft, note)
-    const check = await this.draftCheck(input.slug, id, current)
-    const reasons = publishRejections(input, falsePositives, check)
-    const findings = scanContent(draft.content)
-    if (reasons.length > 0) {
-      throw new DraftRejectedError(reasons, remainingFindings(findings, falsePositives))
-    }
+    const check = await this.draftCheck(input.slug, current, viewer)
+    // Un seul scan du contenu, réutilisé pour la revue et pour filtrer les faux positifs.
+    const scanned = scanContent(input.content)
+    const { reasons, findings } = reviewPublication(input, falsePositives, check, scanned)
+    if (reasons.length > 0) throw new DraftRejectedError(reasons, findings)
     // Ne conserver que les faux positifs qui portent sur un finding réel de ce contenu.
-    const keys = new Set(findings.map(findingKey))
+    const keys = new Set(scanned.map(findingKey))
     await this.store.publish({
       id,
       expectedPublishedVersion: baseVersion,
       metadata: metadataOf(input),
       version: revisionOf(draft.number, draft.content, note, viewer),
       falsePositives: falsePositives.filter((item) => keys.has(item.findingKey)),
+      expectedDraftUpdatedAt: draft.createdAt,
       at: this.clock.now(),
     })
     this.events.emit({ kind: 'published', contextId: id })
@@ -248,15 +250,28 @@ export class ContextService {
     return this.get(viewer, id)
   }
 
+  /**
+   * Contrôles d'un brouillon. La portée personnelle n'est permise que pour un nouveau contexte ou à
+   * son auteur : sinon n'importe quel membre pourrait s'approprier un contexte d'équipe et le faire
+   * disparaître pour les autres (audit phase 6).
+   */
   private async draftCheck(
     slug: string,
-    exceptId: ContextId | null,
     current: ContextDetail | null,
+    viewer: Viewer,
   ): Promise<DraftCheck> {
-    const taken = await this.store.isSlugTaken(slug, exceptId)
+    const id = current?.context.id ?? null
+    const taken = await this.store.isSlugTaken(slug, id)
     return {
       takenSlugs: new Set(taken ? [slug] : []),
       frozenSlug: current?.context.publishedVersion ? current.context.slug : null,
+      personalScopeAllowed: id === null || (await this.store.isAuthor(id, viewer.userId)),
     }
+  }
+
+  /** Une collection inconnue est une règle métier (422), pas une erreur de clé étrangère (500). */
+  private async assertCollectionExists(collectionId: string | null): Promise<void> {
+    if (collectionId !== null && !(await this.store.collectionExists(collectionId)))
+      throw new TaxonomyRuleError('unknown-collection')
   }
 }

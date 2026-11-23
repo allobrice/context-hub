@@ -13,7 +13,8 @@ export interface PublishedRead {
 
 /**
  * Lecture des contextes par les sessions MCP. Règles de sécurité :
- * - seuls les contextes au statut `published` sont servis : jamais un brouillon ni un archivé ;
+ * - seuls les contextes au statut `published` sont servis : jamais un brouillon ni un archivé,
+ *   et seulement leurs métadonnées publiées (titre, description, tags, portée) ;
  * - une version figée n'est servie que parmi les versions publiées (immuables) ;
  * - les portées du `viewer` s'appliquent (un `personal` d'un autre est introuvable) ;
  * - chaque lecture de contenu est journalisée dans `mcp_reads` (sans le contenu).
@@ -36,32 +37,19 @@ export class ContextCatalog {
   /** Version publiée courante (version null) ou figée ; null si introuvable ou non servie. */
   async read(viewer: Viewer, slug: string, version: number | null): Promise<PublishedRead | null> {
     if (!isValidSlug(slug)) return null
-    const detail = await this.store.find(viewer, slug)
-    // `find` accepte aussi un identifiant : seule une URI par slug est servie.
-    if (detail?.context.slug !== slug || detail.context.status !== 'published') return null
-    const published = detail.context.publishedVersion
+    // Métadonnées et portée PUBLIÉES : un brouillon en cours n'a aucun effet sur ce qui est servi.
+    const published = await this.store.findPublished(viewer, slug)
     if (!published) return null
-    const served =
-      version === null ? published : detail.history.find((item) => item.number === version)
+    const { summary, history } = published
+    const servedNumber = version ?? summary.version
+    const served = history.find((item) => item.number === servedNumber)
     if (!served) return null
-    const { context } = detail
     await this.reads.record({
-      contextId: context.id,
+      contextId: summary.id,
       version: served.number,
       userId: viewer.userId,
       at: this.clock.now(),
     })
-    return {
-      summary: {
-        id: context.id,
-        slug: context.slug,
-        title: context.title,
-        description: context.description,
-        scope: context.scope,
-        version: published.number,
-        tokenEstimate: published.tokenEstimate,
-      },
-      version: served,
-    }
+    return { summary, version: served }
   }
 }

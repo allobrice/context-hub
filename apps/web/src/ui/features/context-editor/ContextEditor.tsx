@@ -143,6 +143,8 @@ export function ContextEditor({
   const check = {
     takenSlugs: new Set<string>(),
     frozenSlug: context?.publishedVersion ? context.slug : null,
+    // Indicatif : le serveur refuse la portée personnelle à qui n'est pas l'auteur.
+    personalScopeAllowed: true,
   }
   const publishBlocked = publishRejections(values, state.falsePositives, check)
   const slugProblem =

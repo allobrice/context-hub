@@ -10,6 +10,8 @@ const REJECTION_LABELS: Readonly<Record<DraftRejection, string>> = {
   'slug-taken': 'identifiant déjà utilisé par un autre contexte',
   'slug-frozen': 'identifiant figé depuis la v1',
   'repo-required': 'repo requis pour la portée Projet',
+  'personal-scope-forbidden': 'seul l’auteur peut rendre ce contexte personnel',
+  'secret-in-metadata': 'secret potentiel dans le titre, la description, la note ou les tags',
 }
 
 export const SLUG_REJECTIONS: ReadonlySet<DraftRejection> = new Set([

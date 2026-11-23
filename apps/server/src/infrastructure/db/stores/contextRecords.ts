@@ -2,7 +2,7 @@
  * Lecture et écriture des agrégats « contexte » partagées par les stores : visibilité, hydratation
  * (tags, versions, brouillon, lectures MCP), tags d'un contexte et réindexation plein texte.
  */
-import { and, asc, count, desc, eq, gte, inArray, sql, type SQL } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, sql, type SQL } from 'drizzle-orm'
 
 import type {
   Context,
@@ -234,36 +234,107 @@ export function metadataColumns(metadata: ContextMetadata) {
   }
 }
 
+/** Colonnes des métadonnées PUBLIÉES, écrites à la publication seulement (voir schema.ts). */
+export function publishedMetadataColumns(metadata: ContextMetadata) {
+  const scope = scopeColumns(metadata.scope)
+  return {
+    publishedTitle: metadata.title,
+    publishedDescription: metadata.description,
+    publishedCollectionId: metadata.collectionId,
+    publishedScopeKind: scope.scopeKind,
+    publishedScopeValue: scope.scopeValue,
+    publishedTags: JSON.stringify([...metadata.tags]),
+  }
+}
+
+/** Tags publiés (colonne JSON) ; une valeur illisible donne une liste vide. */
+export function parsePublishedTags(json: string): string[] {
+  try {
+    const value: unknown = JSON.parse(json)
+    return Array.isArray(value) ? value.filter((tag): tag is string => typeof tag === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Réécrit les tags PUBLIÉS des contextes publiés (taxonomie : renommage, fusion, suppression).
+ * `rewrite` reçoit les tags d'un contexte et renvoie les nouveaux. Renvoie les contextes modifiés.
+ */
+export function rewritePublishedTags(
+  db: SyncDb,
+  rewrite: (tags: readonly string[], contextId: string) => readonly string[],
+): string[] {
+  const changed: string[] = []
+  const rows = db
+    .select({ id: contexts.id, tags: contexts.publishedTags })
+    .from(contexts)
+    .where(isNotNull(contexts.publishedVersion))
+    .all()
+  for (const row of rows) {
+    const current = parsePublishedTags(row.tags)
+    const next = rewrite(current, row.id)
+    if (next.length === current.length && next.every((tag, index) => tag === current[index]))
+      continue
+    db.update(contexts)
+      .set({ publishedTags: JSON.stringify([...new Set(next)]) })
+      .where(eq(contexts.id, row.id))
+      .run()
+    changed.push(row.id)
+  }
+  return changed
+}
+
+/** Portées appliquées aux métadonnées publiées : ce que voient les sessions MCP. */
+export function publishedVisibleTo(viewer: Viewer): SQL {
+  return sql`(${contexts.publishedScopeKind} <> 'personal' or ${contexts.publishedScopeValue} = ${viewer.userId})`
+}
+
+function contentOf(db: SyncDb, contextId: string, number: number | null): string | null {
+  if (number === null) return null
+  return (
+    db
+      .select({ content: contextVersions.content })
+      .from(contextVersions)
+      .where(and(eq(contextVersions.contextId, contextId), eq(contextVersions.number, number)))
+      .get()?.content ?? null
+  )
+}
+
 /** Recalcule l'entrée plein texte d'un contexte à partir de l'état en base. */
 export function reindex(db: SyncDb, index: ContextSearchIndex, contextId: string): void {
   const row = db.select().from(contexts).where(eq(contexts.id, contextId)).get()
   if (!row) return
-  const publishedContent =
-    row.publishedVersion === null
-      ? null
-      : (db
-          .select({ content: contextVersions.content })
-          .from(contextVersions)
-          .where(
-            and(
-              eq(contextVersions.contextId, contextId),
-              eq(contextVersions.number, row.publishedVersion),
-            ),
-          )
-          .get()?.content ?? null)
+  const publishedContent = contentOf(db, contextId, row.publishedVersion)
   const draftContent =
     db
       .select({ content: contextDrafts.content })
       .from(contextDrafts)
       .where(eq(contextDrafts.contextId, contextId))
       .get()?.content ?? null
-  index.upsert(db, {
-    contextId,
-    title: row.title,
-    description: row.description,
-    slug: row.slug,
-    tags: tagsByContext(db, [contextId]).get(contextId) ?? [],
-    publishedContent,
-    draftContent,
-  })
+  const currentTags = tagsByContext(db, [contextId]).get(contextId) ?? []
+  const currentText = [
+    row.title,
+    row.description,
+    row.slug,
+    ...currentTags,
+    publishedContent ?? '',
+    draftContent ?? '',
+  ].join('\n')
+  const publishedText =
+    row.publishedVersion === null
+      ? null
+      : [
+          row.publishedTitle ?? '',
+          row.publishedDescription ?? '',
+          row.slug,
+          ...parsePublishedTags(row.publishedTags),
+          publishedContent ?? '',
+        ].join('\n')
+  index.upsert(db, { contextId, currentText, publishedText })
+}
+
+/** Reconstruit tout l'index (après une migration qui l'a recréé vide). */
+export function reindexAll(db: SyncDb, index: ContextSearchIndex): void {
+  for (const { id } of db.select({ id: contexts.id }).from(contexts).all()) reindex(db, index, id)
 }

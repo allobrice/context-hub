@@ -1,19 +1,20 @@
 import type { SyncDb } from '../connection.ts'
 
-/** Ce qui est indexé pour un contexte. Les contenus publié et brouillon sont séparés. */
+/**
+ * Ce qui est indexé pour un contexte, en deux textes séparés :
+ * - `currentText` : métadonnées courantes et contenus (publié et brouillon), pour l'UI ;
+ * - `publishedText` : métadonnées et contenu PUBLIÉS seulement (null si jamais publié), pour MCP.
+ */
 export interface SearchDocument {
   readonly contextId: string
-  readonly title: string
-  readonly description: string
-  readonly slug: string
-  readonly tags: readonly string[]
-  readonly publishedContent: string | null
-  readonly draftContent: string | null
+  readonly currentText: string
+  readonly publishedText: string | null
 }
 
 /**
- * - `library` : Bibliothèque de l'UI, sur tout (métadonnées, contenu publié et brouillon) ;
- * - `published` : MCP, sans le brouillon, pour qu'aucun terme non publié ne fuie.
+ * - `library` : Bibliothèque de l'UI, sur le texte courant et publié ;
+ * - `published` : MCP, sur le seul texte publié : aucun terme de brouillon (contenu, titre,
+ *   description, tags) ne peut remonter.
  */
 export type SearchScope = 'library' | 'published'
 
@@ -26,4 +27,6 @@ export interface ContextSearchIndex {
   upsert(db: SyncDb, document: SearchDocument): void
   /** Identifiants des contextes correspondants, du plus pertinent au moins pertinent. */
   match(db: SyncDb, query: string, scope: SearchScope): string[]
+  /** Vrai si l'index ne contient aucun document (à reconstruire après une migration). */
+  isEmpty(db: SyncDb): boolean
 }

@@ -130,6 +130,8 @@ export class InMemoryContextRepository implements ContextRepository {
         this.state.contexts.filter((r) => r.context.id !== command.id).map((r) => r.context.slug),
       ),
       frozenSlug: existing?.context.publishedVersion ? existing.context.slug : null,
+      // Un seul utilisateur en démo : il est l'auteur de ce qu'il édite.
+      personalScopeAllowed: true,
     }
     const reasons = publish
       ? publishRejections(command.draft, command.falsePositives, check)

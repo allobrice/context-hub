@@ -21,6 +21,7 @@ type Schemas = components['schemas']
 /** Toutes les erreurs que l'API peut renvoyer, au format unique `{ code, message, details? }`. */
 export type ApiErrorBody =
   | Schemas['UnauthorizedError']
+  | Schemas['ForbiddenOriginError']
   | Schemas['NotFoundError']
   | Schemas['VersionConflictError']
   | Schemas['NoDraftError']
@@ -35,6 +36,7 @@ export type ApiErrorBody =
  */
 const API_ERROR_CODES: ReadonlySet<string> = new Set<ApiErrorBody['code']>([
   'UNAUTHORIZED',
+  'FORBIDDEN_ORIGIN',
   'NOT_FOUND',
   'VERSION_CONFLICT',
   'NO_DRAFT',
@@ -83,6 +85,7 @@ export function toError(body: ApiErrorBody, response: Response): Error {
       return new DraftRejectedError(body.details.reasons, body.details.findings)
     case 'TAXONOMY_RULE':
       return new TaxonomyRuleError(body.details.violation)
+    case 'FORBIDDEN_ORIGIN':
     case 'NO_DRAFT':
     case 'VALIDATION_FAILED':
     case 'INTERNAL':

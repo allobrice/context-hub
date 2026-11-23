@@ -48,6 +48,7 @@ const renameTagRoute = createRoute({
   summary: 'Renomme un tag ; vers un nom existant, c’est une fusion',
   request: { params: TagParamsSchema, body: jsonBody(RenameTagBodySchema) },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     204: done,
     400: invalid,
@@ -63,6 +64,7 @@ const mergeTagsRoute = createRoute({
   summary: 'Fusionne des tags dans une cible (créée au besoin), sans doublon',
   request: { body: jsonBody(TagMergeSchema) },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     204: done,
     400: invalid,
@@ -78,6 +80,7 @@ const previewMergeRoute = createRoute({
   summary: 'Impact chiffré d’une fusion (dialog de fusion)',
   request: { body: jsonBody(TagMergeSchema) },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     200: json(MergeImpactSchema, 'Impact'),
     400: invalid,
@@ -91,7 +94,13 @@ const deleteTagRoute = createRoute({
   tags: [TAGS],
   summary: 'Retire le tag de tous les contextes et du registre',
   request: { params: TagParamsSchema },
-  responses: { 500: ERROR_RESPONSES[500], 204: done, 401: unauthorized, 422: rejected },
+  responses: {
+    403: ERROR_RESPONSES[403],
+    500: ERROR_RESPONSES[500],
+    204: done,
+    401: unauthorized,
+    422: rejected,
+  },
 })
 
 const listCollectionsRoute = createRoute({
@@ -113,6 +122,7 @@ const createCollectionRoute = createRoute({
   summary: 'Crée une collection',
   request: { body: jsonBody(CollectionInputSchema) },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     201: json(CollectionSchema, 'Collection créée'),
     400: invalid,
@@ -127,6 +137,7 @@ const updateCollectionRoute = createRoute({
   summary: 'Renomme une collection (« Sans collection » est protégée)',
   request: { params: CollectionParamsSchema, body: jsonBody(CollectionInputSchema) },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     200: json(CollectionSchema, 'Collection mise à jour'),
     400: invalid,
@@ -142,6 +153,7 @@ const deleteCollectionRoute = createRoute({
   summary: 'Supprime une collection : ses contextes vont vers `targetCollectionId` (obligatoire)',
   request: { params: CollectionParamsSchema, query: DeleteCollectionQuerySchema },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     204: done,
     400: invalid,

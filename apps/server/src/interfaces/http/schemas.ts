@@ -12,6 +12,7 @@ import {
 } from '@context-hub/domain/schemas/context.ts'
 import {
   DraftRejectedErrorSchema,
+  ForbiddenOriginErrorSchema,
   InternalErrorSchema,
   NoDraftErrorSchema,
   NotFoundErrorSchema,
@@ -98,6 +99,7 @@ export const json = <T extends z.ZodType>(schema: T, description: string) => ({
 export const ERROR_RESPONSES = {
   400: json(ValidationErrorSchema, 'Requête invalide'),
   401: json(UnauthorizedErrorSchema, 'Jeton absent ou invalide'),
+  403: json(ForbiddenOriginErrorSchema, 'Mutation depuis une origine étrangère (CSRF)'),
   404: json(NotFoundErrorSchema, 'Introuvable ou hors de portée'),
   409: json(
     z.union([VersionConflictErrorSchema, NoDraftErrorSchema]),

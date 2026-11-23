@@ -5,8 +5,8 @@ import { queryTerms } from '@context-hub/domain/library/criteria.ts'
 import type { SyncDb } from '../connection.ts'
 import type { ContextSearchIndex, SearchDocument, SearchScope } from './ContextSearchIndex.ts'
 
-/** Colonnes interrogées par la recherche MCP : tout sauf le brouillon. */
-const PUBLISHED_COLUMNS = '{title description slug tags published_content}'
+/** Colonne interrogée par la recherche MCP : le texte publié seulement. */
+const PUBLISHED_COLUMN = 'published_text'
 
 const HAS_WORD_CHARACTER = /[\p{L}\p{N}]/u
 
@@ -21,7 +21,7 @@ export function toMatchExpression(query: string, scope: SearchScope): string | n
     .map((term) => `"${term.replaceAll('"', '""')}"*`)
   if (terms.length === 0) return null
   const expression = terms.join(' AND ')
-  return scope === 'published' ? `${PUBLISHED_COLUMNS} : (${expression})` : expression
+  return scope === 'published' ? `${PUBLISHED_COLUMN} : (${expression})` : expression
 }
 
 function isContextIdRow(row: unknown): row is { context_id: string } {
@@ -33,17 +33,17 @@ function isContextIdRow(row: unknown): row is { context_id: string } {
   )
 }
 
-/** Index FTS5 (`context_search`, migration `0001`), tokenizer unicode61 sans accents. */
+/** Index FTS5 (`context_search`, migration `0003`), tokenizer unicode61 sans accents. */
 export class Fts5SearchIndex implements ContextSearchIndex {
   upsert(db: SyncDb, document: SearchDocument): void {
     db.run(sql`DELETE FROM context_search WHERE context_id = ${document.contextId}`)
     db.run(sql`
-      INSERT INTO context_search
-        (context_id, title, description, slug, tags, published_content, draft_content)
-      VALUES (
-        ${document.contextId}, ${document.title}, ${document.description}, ${document.slug},
-        ${document.tags.join(' ')}, ${document.publishedContent ?? ''}, ${document.draftContent ?? ''}
-      )`)
+      INSERT INTO context_search (context_id, current_text, published_text)
+      VALUES (${document.contextId}, ${document.currentText}, ${document.publishedText ?? ''})`)
+  }
+
+  isEmpty(db: SyncDb): boolean {
+    return db.all(sql`SELECT 1 FROM context_search LIMIT 1`).length === 0
   }
 
   match(db: SyncDb, query: string, scope: SearchScope): string[] {

@@ -24,7 +24,7 @@ import {
   users,
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
-import { reindex, scopeColumns } from '../stores/contextRecords.ts'
+import { publishedMetadataColumns, reindex, scopeColumns } from '../stores/contextRecords.ts'
 
 /** Utilisateur de dev : seul porteur d'un jeton, propriétaire des contextes `personal` de démo. */
 export const DEV_USER = { id: 'brice', name: 'Brice' } as const
@@ -62,6 +62,8 @@ function seedContext(db: SyncDb, record: ContextRecord, now: Date): void {
       ...scopeColumns(context.scope),
       status: context.status,
       publishedVersion: context.publishedVersion?.number ?? null,
+      // Démo : les métadonnées publiées sont celles des fixtures.
+      ...(context.publishedVersion ? publishedMetadataColumns(context) : {}),
       authorId: userIdOf(context.author),
       createdAt: toUtcIso(context.createdAt),
       updatedAt: toUtcIso(context.updatedAt),

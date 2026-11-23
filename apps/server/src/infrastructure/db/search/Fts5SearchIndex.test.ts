@@ -8,14 +8,12 @@ describe('toMatchExpression', () => {
   })
 
   it('limite la recherche publiée aux colonnes hors brouillon', () => {
-    expect(toMatchExpression('nuxt', 'published')).toBe(
-      '{title description slug tags published_content} : ("nuxt"*)',
-    )
+    expect(toMatchExpression('nuxt', 'published')).toBe('published_text : ("nuxt"*)')
   })
 
   it('neutralise la syntaxe FTS5 (opérateurs, guillemets, colonnes)', () => {
     expect(toMatchExpression('draft_content:secret OR "x', 'published')).toBe(
-      '{title description slug tags published_content} : ("draft_content:secret"* AND "or"* AND """x"*)',
+      'published_text : ("draft_content:secret"* AND "or"* AND """x"*)',
     )
   })
 

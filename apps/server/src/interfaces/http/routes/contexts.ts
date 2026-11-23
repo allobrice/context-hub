@@ -61,6 +61,7 @@ const createContextRoute = createRoute({
     body: { content: { 'application/json': { schema: ContextDraftInputSchema } }, required: true },
   },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     201: detail,
     400: invalid,
@@ -80,6 +81,7 @@ const saveDraftRoute = createRoute({
     body: { content: { 'application/json': { schema: SaveDraftBodySchema } }, required: true },
   },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     200: detail,
     400: invalid,
@@ -101,6 +103,7 @@ const publishRoute = createRoute({
     body: { content: { 'application/json': { schema: PublishBodySchema } }, required: true },
   },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     200: detail,
     400: invalid,
@@ -117,7 +120,13 @@ const archiveRoute = createRoute({
   tags: [TAG],
   summary: 'Archive : les sessions MCP ne lisent plus le contexte',
   request: { params: ContextParamsSchema },
-  responses: { 500: ERROR_RESPONSES[500], 200: detail, 401: unauthorized, 404: notFound },
+  responses: {
+    403: ERROR_RESPONSES[403],
+    500: ERROR_RESPONSES[500],
+    200: detail,
+    401: unauthorized,
+    404: notFound,
+  },
 })
 
 const unarchiveRoute = createRoute({
@@ -126,7 +135,13 @@ const unarchiveRoute = createRoute({
   tags: [TAG],
   summary: 'Désarchive : publié s’il a une version publiée, sinon brouillon',
   request: { params: ContextParamsSchema },
-  responses: { 500: ERROR_RESPONSES[500], 200: detail, 401: unauthorized, 404: notFound },
+  responses: {
+    403: ERROR_RESPONSES[403],
+    500: ERROR_RESPONSES[500],
+    200: detail,
+    401: unauthorized,
+    404: notFound,
+  },
 })
 
 const restoreRoute = createRoute({
@@ -136,6 +151,7 @@ const restoreRoute = createRoute({
   summary: 'Copie la version n dans le brouillon, sans publier',
   request: { params: VersionParamsSchema },
   responses: {
+    403: ERROR_RESPONSES[403],
     500: ERROR_RESPONSES[500],
     200: detail,
     400: invalid,

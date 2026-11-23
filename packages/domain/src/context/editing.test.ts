@@ -6,6 +6,7 @@ import {
   isValidFalsePositiveReason,
   publishRejections,
   remainingFindings,
+  reviewPublication,
   shortTitle,
   type ContextDraftInput,
 } from './editing.ts'
@@ -67,7 +68,7 @@ const input: ContextDraftInput = {
   content: '# Conventions',
   versionNote: 'Ajout section routes server/',
 }
-const free = { takenSlugs: new Set<string>(), frozenSlug: null }
+const free = { takenSlugs: new Set<string>(), frozenSlug: null, personalScopeAllowed: true }
 
 describe('draftRejections', () => {
   it('accepte un brouillon valide', () => {
@@ -114,5 +115,25 @@ describe('publishRejections (contrôle serveur)', () => {
       'title-empty',
       'version-note-empty',
     ])
+  })
+})
+
+describe('règles de sécurité de la publication (audit phase 6)', () => {
+  it('refuse la portée personnelle à qui n’est pas l’auteur', () => {
+    const personal = { ...input, scope: { kind: 'personal', owner: 'camille' } as const }
+    expect(draftRejections(personal, { ...free, personalScopeAllowed: false })).toContain(
+      'personal-scope-forbidden',
+    )
+    expect(draftRejections(personal, free)).not.toContain('personal-scope-forbidden')
+  })
+
+  it('scanne aussi le titre, la description, la note et les tags', () => {
+    for (const field of ['title', 'description', 'versionNote'] as const) {
+      const withSecret = { ...input, [field]: 'token ghp_abcdefghijklmnopqrstuvwxyz0123' }
+      expect(reviewPublication(withSecret, [], free).reasons, field).toContain('secret-in-metadata')
+    }
+    expect(
+      reviewPublication({ ...input, tags: ['sk_live_51HxDEMOonly3kQ'] }, [], free).reasons,
+    ).toContain('secret-in-metadata')
   })
 })

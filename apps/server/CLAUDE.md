@@ -54,7 +54,8 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 ## Persistance : règles
 
 - **Portabilité Postgres** : pas de SQL spécifique hors `search/Fts5SearchIndex.ts` et de la migration custom `0001`. Dates en ISO 8601 UTC (`dates.ts` : `isoDate`, `toUtcIso`) : triables lexicographiquement.
-- **Versions immuables** : `context_versions` n'est jamais mis à jour (insert seulement). Trigger `BEFORE UPDATE … RAISE(ABORT)` en défense en profondeur ; `immutable-versions.test.ts` le vérifie.
+- **Versions immuables** : `context_versions` n'est jamais mis à jour ni supprimé (insert seulement). Triggers `BEFORE UPDATE` et `BEFORE DELETE … RAISE(ABORT)` en défense en profondeur ; `immutable-versions.test.ts` le vérifie.
+- **Métadonnées publiées séparées** : `contexts.published_*` (titre, description, collection, portée, tags JSON) ne sont écrites qu'à la **publication**, après le scan ; les colonnes courantes portent le brouillon (UI). MCP (`listPublished`, `findPublished`, `searchPublished`, colonne FTS `published_text`) ne lit **que** les métadonnées publiées et applique la portée publiée. La taxonomie (renommer, fusionner, supprimer) met à jour les deux.
 - **Un seul brouillon par contexte** : `context_drafts` a `context_id` pour clé primaire.
 - **Portées** : `visibleTo(viewer)` sur toutes les lectures. `personal` réservé à son propriétaire (`scope_value` = id utilisateur), `team` et `project` visibles de tout utilisateur authentifié. Un contexte hors portée est introuvable (null, donc 404), pas interdit.
 - **Concurrence optimiste** : `saveDraft` et `publish` vérifient `expectedPublishedVersion` dans la transaction de l'écriture et lèvent `VersionConflictError` avec la version publiée entre-temps.
@@ -83,3 +84,13 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 - `ContextCatalog` : seuls les contextes `published` sont servis (jamais un brouillon ni un archivé), versions figées prises dans l'historique publié, portées du `viewer`, chaque lecture écrite dans `mcp_reads`. `search_contexts` ne renvoie jamais le contenu et ne cherche que dans le contenu publié.
 - `X-Context-Hub-Repo` : **filtre de pertinence, pas une frontière de sécurité** (projets du repo en tête, autres repos exclus de `search_contexts`).
 - Le contenu est une donnée : renvoyé en `text/markdown` (ressource embarquée pour `get_context`), et les descriptions des outils le rappellent. Journal MCP : méthode, URI, outil, nombre de résultats, utilisateur ; jamais le contenu.
+
+## Règles de sécurité ajoutées par l'audit (phase 6)
+
+- Seul l'**auteur** d'un contexte peut le passer en portée `personal` (`personal-scope-forbidden`) : sinon un membre pourrait s'approprier un contexte d'équipe.
+- À la publication, le titre, la description, la note et les tags sont **scannés** aussi (`secret-in-metadata`) ; un faux positif ne vaut que pour le contenu. Le contenu n'est scanné qu'une fois (`reviewPublication`).
+- `publish` vérifie dans la transaction que le brouillon publié est celui qui a été relu et scanné (`expectedDraftUpdatedAt`) : sinon 409, jamais d'écrasement silencieux.
+- Mutations `/api/*` avec un `Origin` autre que le front : 403 `FORBIDDEN_ORIGIN` (CSRF via le proxy de dev, qui ajoute le jeton). Les clients sans `Origin` passent.
+- Collection inconnue : 422 `TAXONOMY_RULE` (`unknown-collection`), pas une erreur de clé étrangère.
+- Sessions MCP 2025 : 20 par utilisateur au plus (429), 500 au total (503).
+- Scan : répétitions bornées dans les règles d'instructions suspectes (pas de ReDoS) ; jetons `chub_` détectés. Tests de non-régression : `src/interfaces/http/security.test.ts`.

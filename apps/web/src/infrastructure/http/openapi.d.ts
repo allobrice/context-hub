@@ -201,6 +201,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
                 422: {
                     headers: {
@@ -345,6 +354,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Introuvable ou hors de portée */
                 404: {
                     headers: {
@@ -443,6 +461,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Introuvable ou hors de portée */
                 404: {
                     headers: {
@@ -527,6 +554,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Introuvable ou hors de portée */
                 404: {
                     headers: {
@@ -591,6 +627,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Introuvable ou hors de portée */
@@ -667,6 +712,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Introuvable ou hors de portée */
@@ -787,6 +841,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
                 422: {
                     headers: {
@@ -848,6 +911,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
@@ -918,6 +990,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
@@ -994,6 +1075,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Erreur interne (identifiant de requête pour le support) */
@@ -1101,6 +1191,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Erreur interne (identifiant de requête pour le support) */
                 500: {
                     headers: {
@@ -1169,6 +1268,15 @@ export interface paths {
                         "application/json": components["schemas"]["UnauthorizedError"];
                     };
                 };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
                 422: {
                     headers: {
@@ -1232,6 +1340,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
                     };
                 };
                 /** @description Règle métier refusée (scan, slug, taxonomie…) */
@@ -1393,12 +1510,18 @@ export interface components {
                 requestId: string;
             };
         };
+        /** @description Mutation envoyée depuis une autre origine que le front (protection CSRF). */
+        ForbiddenOriginError: {
+            /** @enum {string} */
+            code: "FORBIDDEN_ORIGIN";
+            message: string;
+        };
         DraftRejectedError: {
             /** @enum {string} */
             code: "DRAFT_REJECTED";
             message: string;
             details: {
-                reasons: ("secret-detected" | "title-empty" | "version-note-empty" | "description-too-long" | "slug-invalid" | "slug-taken" | "slug-frozen" | "repo-required")[];
+                reasons: ("secret-detected" | "title-empty" | "version-note-empty" | "description-too-long" | "slug-invalid" | "slug-taken" | "slug-frozen" | "repo-required" | "personal-scope-forbidden" | "secret-in-metadata")[];
                 findings: components["schemas"]["ScanFinding"][];
             };
         };

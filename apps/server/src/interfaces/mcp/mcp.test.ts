@@ -11,6 +11,7 @@ import { CONTEXT_FIXTURES } from '@context-hub/domain/fixtures/contexts.ts'
 import { ContextDetailSchema } from '@context-hub/domain/schemas/context.ts'
 
 import { TEST_TOKEN } from '../../test/testDatabase.ts'
+import { MAX_LEGACY_SESSIONS_PER_USER } from './legacySessions.ts'
 import { CAMILLE_TOKEN, createTestApp, type TestApp } from '../../test/testApp.ts'
 
 const RECORDS = CONTEXT_FIXTURES
@@ -346,6 +347,15 @@ describe('MCP : protections HTTP', () => {
     expect(rebound.status).toBe(403)
     expect((await post({ ...auth, Origin: 'https://evil.example' })).status).toBe(403)
     expect((await post({ ...auth, Origin: 'http://localhost:6274' })).status).toBe(200)
+  })
+
+  it('plafonne les sessions ouvertes par un même utilisateur (429), pas celles des autres', async () => {
+    const auth = { Authorization: `Bearer ${TEST_TOKEN}` }
+    for (let index = 0; index < MAX_LEGACY_SESSIONS_PER_USER; index += 1) {
+      expect((await post(auth)).status).toBe(200)
+    }
+    expect((await post(auth)).status).toBe(429)
+    expect((await post({ Authorization: `Bearer ${CAMILLE_TOKEN}` })).status).toBe(200)
   })
 
   it('refuse qu’un autre utilisateur reprenne une session ouverte (404)', async () => {

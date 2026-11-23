@@ -11,6 +11,7 @@ import type { WorkspaceService } from '../../application/workspace/WorkspaceServ
 import type { AppEnv } from './env.ts'
 import { handleError, notFound, validationHook } from './errors.ts'
 import { authenticate } from './middleware/authenticate.ts'
+import { rejectCrossOriginMutations } from './middleware/rejectCrossOriginMutations.ts'
 import { requestLogging } from './middleware/requestLogging.ts'
 import { registerContextRoutes } from './routes/contexts.ts'
 import { registerTaxonomyRoutes } from './routes/taxonomy.ts'
@@ -57,6 +58,7 @@ export function createHttpApp(deps: HttpAppDependencies): OpenAPIHono<AppEnv> {
       maxAge: 600,
     }),
   )
+  app.use('/api/*', rejectCrossOriginMutations(deps.webOrigin))
   app.use('/api/*', bodyLimit({ maxSize: MAX_BODY_BYTES }))
   app.use('/api/*', authenticate(deps.auth, new Set([HEALTH_PATH])))
 

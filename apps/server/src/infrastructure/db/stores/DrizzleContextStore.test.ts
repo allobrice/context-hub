@@ -205,6 +205,7 @@ describe('DrizzleContextStore : écriture', () => {
       metadata: METADATA,
       version: revision(),
       falsePositives: [{ findingKey: 'secret:1:sk-', reason: 'exemple de documentation' }],
+      expectedDraftUpdatedAt: AT.toISOString(),
       at: AT,
     })
     const detail = await database.contexts.find(BRICE, ID)
@@ -213,6 +214,27 @@ describe('DrizzleContextStore : écriture', () => {
     expect(detail?.context.draft).toBeNull()
     expect(detail?.history).toHaveLength(1)
     expect(database.searchIndex.match(database.db, 'zorglub', 'published')).toEqual([ID])
+  })
+
+  it('refuse de publier un brouillon modifié entre sa relecture et la publication', async () => {
+    await database.contexts.create({ id: ID, metadata: METADATA, draft: revision(), at: AT })
+    const publish = database.contexts.publish({
+      id: ID,
+      expectedPublishedVersion: null,
+      metadata: METADATA,
+      version: revision(),
+      falsePositives: [],
+      expectedDraftUpdatedAt: '2026-01-01T00:00:00.000Z',
+      at: AT,
+    })
+    await expect(publish).rejects.toBeInstanceOf(VersionConflictError)
+    expect((await database.contexts.find(BRICE, ID))?.context.status).toBe('draft')
+  })
+
+  it('refuse aussi le DELETE d’une version publiée', () => {
+    expect(sqliteErrorMessage(() => database.db.run(sql`DELETE FROM context_versions`))).toMatch(
+      /immuable/,
+    )
   })
 
   it('refuse l’UPDATE d’une version publiée (trigger d’immuabilité)', () => {
