@@ -66,6 +66,8 @@ describe('fixtures — cohérence avec les maquettes', () => {
       vuejs: usage('vuejs'),
       debug: usage('debug'),
       'legacy-webpack': usage('legacy-webpack'),
+      database: usage('database'),
+      'data-viz': usage('data-viz'),
     }).toEqual({
       conventions: [11, 9],
       nuxt: [9, 8],
@@ -79,6 +81,9 @@ describe('fixtures — cohérence avec les maquettes', () => {
       vuejs: [2, 2],
       debug: [1, 0],
       'legacy-webpack': [0, 0],
+      // Suggestions de la combobox (maquette 12).
+      database: [2, 2],
+      'data-viz': [1, 1],
     })
   })
 

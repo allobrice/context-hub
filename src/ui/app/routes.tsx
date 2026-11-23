@@ -25,14 +25,24 @@ export const appRoutes: RouteObject[] = [
           Component: (await import('../features/library/LibraryPage.tsx')).LibraryPage,
         }),
       },
-      { path: 'contexts/new', lazy: comingSoon('Nouveau contexte') },
+      {
+        path: 'contexts/new',
+        lazy: async () => ({
+          Component: (await import('../features/context-editor/EditorPage.tsx')).EditorPage,
+        }),
+      },
       {
         path: 'contexts/:id',
         lazy: async () => ({
           Component: (await import('../features/context-detail/DetailPage.tsx')).DetailPage,
         }),
       },
-      { path: 'contexts/:id/edit', lazy: comingSoon('Modifier le contexte') },
+      {
+        path: 'contexts/:id/edit',
+        lazy: async () => ({
+          Component: (await import('../features/context-editor/EditorPage.tsx')).EditorPage,
+        }),
+      },
       { path: 'taxonomy', lazy: comingSoon('Tags & collections') },
       {
         path: 'mcp',

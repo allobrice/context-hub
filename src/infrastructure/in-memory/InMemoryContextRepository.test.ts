@@ -136,3 +136,104 @@ describe('InMemoryContextRepository — Détail et cycle de vie', () => {
     expect(context.publishedVersion?.number).toBe(4)
   })
 })
+
+describe('InMemoryContextRepository — enregistrement et publication', () => {
+  const NUXT = toContextId('ctx-nuxt-conventions')
+
+  async function nuxtDraftInput(services: ReturnType<typeof servicesIn>) {
+    const { context } = await services.contexts.get(NUXT)
+    return {
+      title: context.title,
+      slug: context.slug,
+      description: context.description,
+      collectionId: context.collectionId,
+      tags: [...context.tags],
+      scope: context.scope,
+      content: context.draft?.content ?? '',
+      versionNote: 'Ajout section routes server/',
+    }
+  }
+
+  it('crée un contexte en brouillon v1, avec ses nouveaux tags', async () => {
+    const services = servicesIn('normal')
+    const { context } = await services.contexts.saveDraft({
+      id: null,
+      baseVersion: null,
+      falsePositives: [],
+      draft: {
+        title: 'Notes Pinia SSR',
+        slug: 'vue/notes-pinia-ssr',
+        description: 'Hydratation des stores',
+        collectionId: 'vue',
+        tags: ['pinia', 'hydratation'],
+        scope: { kind: 'personal', owner: 'brice' },
+        content: '# Notes',
+        versionNote: '',
+      },
+    })
+    expect(context).toMatchObject({ status: 'draft', publishedVersion: null, draft: { number: 1 } })
+    expect((await services.contexts.get('vue/notes-pinia-ssr')).context.id).toBe(context.id)
+    expect((await services.taxonomy.listTags()).map((tag) => tag.name)).toContain('hydratation')
+  })
+
+  it('refuse un slug déjà pris ou modifié après la v1', async () => {
+    const services = servicesIn('normal')
+    const draft = await nuxtDraftInput(services)
+    await expect(
+      services.contexts.saveDraft({ id: null, baseVersion: null, falsePositives: [], draft }),
+    ).rejects.toMatchObject({ code: 'DRAFT_REJECTED', reasons: ['slug-taken'] })
+    await expect(
+      services.contexts.saveDraft({
+        id: NUXT,
+        baseVersion: 4,
+        falsePositives: [],
+        draft: { ...draft, slug: 'nuxt/x' },
+      }),
+    ).rejects.toMatchObject({ reasons: ['slug-frozen'] })
+  })
+
+  it('publication : le serveur rescanne et refuse le secret, puis accepte un faux positif justifié', async () => {
+    const services = servicesIn('normal')
+    const draft = await nuxtDraftInput(services)
+    await expect(
+      services.contexts.publish({ id: NUXT, baseVersion: 4, falsePositives: [], draft }),
+    ).rejects.toMatchObject({ code: 'DRAFT_REJECTED', reasons: ['secret-detected'] })
+
+    const { context, history } = await services.contexts.publish({
+      id: NUXT,
+      baseVersion: 4,
+      falsePositives: [{ findingKey: 'secret:15:sk_live_', reason: 'clé factice de démo' }],
+      draft,
+    })
+    expect(context).toMatchObject({
+      status: 'published',
+      draft: null,
+      publishedVersion: { number: 5 },
+    })
+    expect(history[0]?.note).toBe('Ajout section routes server/')
+  })
+
+  it('mode conflict : Camille publie la v5 pendant l’édition, puis « repartir de la v5 » débloque', async () => {
+    const services = servicesIn('conflict')
+    const draft = await nuxtDraftInput(services)
+    const save = services.contexts.saveDraft({
+      id: NUXT,
+      baseVersion: 4,
+      falsePositives: [],
+      draft,
+    })
+    await expect(save).rejects.toMatchObject({
+      code: 'VERSION_CONFLICT',
+      baseVersion: 4,
+      latestVersion: 5,
+      latest: { author: 'Camille', number: 5 },
+    })
+    const saved = await services.contexts.saveDraft({
+      id: NUXT,
+      baseVersion: 5,
+      falsePositives: [],
+      draft,
+    })
+    expect(saved.context.draft?.number).toBe(6)
+  })
+})

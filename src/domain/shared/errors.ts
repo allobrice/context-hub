@@ -2,7 +2,8 @@
  * Erreurs métier typées. L'UI les distingue par `code` (union discriminée),
  * jamais par le texte du message.
  */
-export type DomainErrorCode = 'CONTEXT_NOT_FOUND' | 'VERSION_CONFLICT' | 'TAXONOMY_RULE'
+export type DomainErrorCode =
+  'CONTEXT_NOT_FOUND' | 'VERSION_CONFLICT' | 'DRAFT_REJECTED' | 'TAXONOMY_RULE'
 
 export abstract class DomainError extends Error {
   abstract readonly code: DomainErrorCode
@@ -21,17 +22,46 @@ export class ContextNotFoundError extends DomainError {
   }
 }
 
+/** Version publiée entre-temps par quelqu'un d'autre. */
+export interface ConcurrentVersion {
+  readonly number: number
+  readonly author: string
+  readonly createdAt: string
+  readonly content: string
+}
+
 /** Le brouillon a été enregistré au-dessus d'une version qui n'est plus la dernière. */
 export class VersionConflictError extends DomainError {
   readonly code = 'VERSION_CONFLICT'
   constructor(
     readonly baseVersion: number,
     readonly latestVersion: number,
+    /** La version qui a pris la place, pour comparer ou repartir d'elle. */
+    readonly latest?: ConcurrentVersion,
   ) {
     super(
       `Conflit de version : brouillon basé sur la v${baseVersion}, dernière version v${latestVersion}`,
     )
     this.name = 'VersionConflictError'
+  }
+}
+
+/** Raisons de refus d'un brouillon ou d'une publication, revérifiées côté serveur (qui fait autorité). */
+export type DraftRejection =
+  | 'secret-detected'
+  | 'title-empty'
+  | 'version-note-empty'
+  | 'description-too-long'
+  | 'slug-invalid'
+  | 'slug-taken'
+  | 'slug-frozen'
+  | 'repo-required'
+
+export class DraftRejectedError extends DomainError {
+  readonly code = 'DRAFT_REJECTED'
+  constructor(readonly reasons: readonly DraftRejection[]) {
+    super(`Brouillon refusé : ${reasons.join(', ')}`)
+    this.name = 'DraftRejectedError'
   }
 }
 

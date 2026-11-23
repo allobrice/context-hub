@@ -7,6 +7,7 @@ import {
   mergeImpact,
   normalizeTagName,
   planTagRename,
+  suggestTags,
 } from './tags.ts'
 import type { Tag } from './types.ts'
 
@@ -85,6 +86,41 @@ describe('mergeImpact', () => {
       affectedContexts: 0,
       duplicatesAvoided: 0,
     })
+  })
+})
+
+describe('suggestTags (maquette 12)', () => {
+  const registry = [
+    tag('data-fetching', 6),
+    tag('database', 2),
+    tag('data-viz', 1),
+    tag('nuxt', 9),
+    tag('metadata', 4),
+  ]
+
+  it('préfixe d’abord, puis inclusion, les plus utilisés en tête ; propose la création', () => {
+    expect(suggestTags(registry, 'data', ['nuxt'])).toEqual({
+      matches: [
+        tag('data-fetching', 6),
+        tag('database', 2),
+        tag('data-viz', 1),
+        tag('metadata', 4),
+      ],
+      creatable: 'data',
+    })
+  })
+
+  it('n’offre pas de créer un tag existant ou déjà choisi, ni un nom invalide', () => {
+    expect(suggestTags(registry, 'NUXT', []).creatable).toBeNull()
+    expect(suggestTags(registry, 'vue', ['vue']).creatable).toBeNull()
+    expect(suggestTags(registry, 'vue 3', []).creatable).toBeNull()
+  })
+
+  it('exclut les tags déjà choisis et limite le nombre de suggestions', () => {
+    expect(suggestTags(registry, '', ['nuxt'], 2).matches).toEqual([
+      tag('data-fetching', 6),
+      tag('metadata', 4),
+    ])
   })
 })
 

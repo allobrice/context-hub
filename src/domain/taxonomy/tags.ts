@@ -89,3 +89,40 @@ export function findSimilarTags(tags: readonly Tag[]): string[][] {
     .filter((group) => group.length > 1)
     .map((group) => [...group].sort((a, b) => a.localeCompare(b, 'fr')))
 }
+
+export interface TagSuggestions {
+  /** Tags existants correspondant à la saisie, les plus utilisés d'abord. */
+  readonly matches: readonly Tag[]
+  /** Nom à proposer en création (« Créer le tag « x » »), ou null. */
+  readonly creatable: string | null
+}
+
+/**
+ * Suggestions de la combobox de tags (maquette 12) : les noms qui commencent par la saisie,
+ * puis ceux qui la contiennent ; tags déjà choisis exclus.
+ */
+export function suggestTags(
+  tags: readonly Tag[],
+  rawQuery: string,
+  selected: readonly string[],
+  limit = 6,
+): TagSuggestions {
+  const query = normalizeTagName(rawQuery)
+  const available = tags.filter((tag) => !selected.includes(tag.name))
+  if (query === '') {
+    return {
+      matches: [...available].sort((a, b) => b.contextCount - a.contextCount).slice(0, limit),
+      creatable: null,
+    }
+  }
+  const rank = (tag: Tag) => (tag.name.startsWith(query) ? 0 : 1)
+  const matches = available
+    .filter((tag) => tag.name.includes(query))
+    .sort(
+      (a, b) =>
+        rank(a) - rank(b) || b.contextCount - a.contextCount || a.name.localeCompare(b.name, 'fr'),
+    )
+    .slice(0, limit)
+  const exists = tags.some((tag) => tag.name === query) || selected.includes(query)
+  return { matches, creatable: !exists && isValidTagName(query) ? query : null }
+}

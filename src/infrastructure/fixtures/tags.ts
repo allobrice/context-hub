@@ -35,11 +35,11 @@ export const TAG_FIXTURES: readonly TagRecord[] = [
   { name: 'typescript', lastUsedAt: '2026-09-29T10:30:00+02:00' },
   { name: 'testing', lastUsedAt: '2026-09-25T16:20:00+02:00' },
   { name: 'vitest', lastUsedAt: '2026-09-25T16:20:00+02:00' },
-  { name: 'loco', lastUsedAt: '2026-09-18T09:00:00+02:00' },
+  { name: 'database', lastUsedAt: '2026-09-30T10:15:00+02:00' },
   { name: 'design-system', lastUsedAt: '2026-09-15T14:00:00+02:00' },
   { name: 'scss', lastUsedAt: '2026-09-15T14:00:00+02:00' },
   { name: 'security', lastUsedAt: '2026-08-27T10:00:00+02:00' },
-  { name: 'gitlab-ci', lastUsedAt: '2026-07-08T11:00:00+02:00' },
+  { name: 'data-viz', lastUsedAt: '2026-09-28T15:00:00+02:00' },
   { name: 'docker', lastUsedAt: '2026-07-08T11:00:00+02:00' },
   { name: 'playwright', lastUsedAt: '2026-09-10T17:00:00+02:00' },
 ]

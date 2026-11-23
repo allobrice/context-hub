@@ -50,6 +50,9 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 - Ports dans `src/application/ports/` (`ContextRepository`, `WorkspaceRepository`, `Clock`) ; l'UI les reçoit via `useServices()`, jamais en import direct.
 - Fixtures dans `src/infrastructure/fixtures/` : les textes et compteurs des maquettes **sont** les fixtures. `contexts.test.ts` vérifie chaque compteur visible (statuts, collections, portées, tags, fusion) : le mettre à jour avec toute modification des fixtures.
 - Horloge figée au 23/11/2026 11:12 (`demoClock`) pour que « il y a 2 h », « hier »… correspondent aux maquettes. Les tests tournent en `TZ=Europe/Paris`.
+- Le repository in-memory joue le rôle du serveur : il revalide le brouillon (`draftRejections`) et rescanne le contenu à la publication (`publishRejections`) ; l'UI n'est jamais seule juge.
+- Copie locale des brouillons (`DraftStorage`, `localStorage` validé par garde de type) : autosave 2 s, conservée sur conflit, effacée après enregistrement serveur.
+- `?mock=conflict` : à l'enregistrement d'un contexte publié, « Camille » publie la version suivante juste avant → `VersionConflictError` ; « Repartir de la vN » débloque.
 - `?mock=empty|loading|error|slow|conflict` : relu à chaque appel. Il ne touche que la requête **principale** de l'écran ; la navigation (sidebar) reste disponible (maquettes 05 et 06).
 
 ## Routes

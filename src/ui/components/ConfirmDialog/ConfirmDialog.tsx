@@ -11,6 +11,9 @@ export interface ConfirmDialogProps {
   /** `danger` : action destructive → alertdialog et bouton danger. */
   tone?: 'primary' | 'danger'
   pending?: boolean
+  /** Bouton de confirmation inactif (saisie requise incomplète). */
+  confirmDisabled?: boolean
+  className?: string | undefined
   onConfirm: () => void
   onCancel: () => void
 }
@@ -23,6 +26,8 @@ export function ConfirmDialog({
   confirmLabel,
   tone = 'primary',
   pending = false,
+  confirmDisabled = false,
+  className,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -34,10 +39,16 @@ export function ConfirmDialog({
       title={title}
       role={tone === 'danger' ? 'alertdialog' : 'dialog'}
       describedBy={descriptionId}
+      className={className}
       footer={
         <>
           <Button onClick={onCancel}>Annuler</Button>
-          <Button variant={tone} onClick={onConfirm} disabled={pending} aria-busy={pending}>
+          <Button
+            variant={tone}
+            onClick={onConfirm}
+            disabled={pending || confirmDisabled}
+            aria-busy={pending}
+          >
             {confirmLabel}
           </Button>
         </>
