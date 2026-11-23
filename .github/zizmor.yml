@@ -1,0 +1,7 @@
+# Politique d'épinglage : actions officielles GitHub au tag majeur, toute autre action au SHA complet.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        actions/*: ref-pin
+        '*': hash-pin
