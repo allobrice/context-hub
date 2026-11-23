@@ -1,0 +1,6 @@
+// Le contenu garde l'espacement vertical du corps de dialog (14 px entre les champs).
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}

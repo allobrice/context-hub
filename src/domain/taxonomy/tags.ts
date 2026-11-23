@@ -48,33 +48,47 @@ export function applyTagMerge(
 }
 
 export interface MergeImpact {
-  /** Contextes qui portent au moins un des tags fusionnés. */
+  /** Contextes qui portent au moins un des tags fusionnés (ils « reçoivent » le tag cible). */
   readonly affectedContexts: number
+  /** Parmi eux, ceux qui sont publiés (lus par les sessions). */
+  readonly affectedPublished: number
   /** Contextes qui auraient eu le tag cible en double. */
   readonly duplicatesAvoided: number
 }
 
-/** Impact chiffré d'une fusion, pour le dialog de confirmation. */
+/** Impact chiffré d'une fusion, pour le dialog de confirmation (maquette 17). */
 export function mergeImpact(
-  contexts: readonly { readonly tags: readonly string[] }[],
+  contexts: readonly { readonly tags: readonly string[]; readonly status: string }[],
   sources: readonly string[],
   target: string,
 ): MergeImpact {
   const sourceSet = new Set(sources.filter((source) => source !== target))
   let affectedContexts = 0
+  let affectedPublished = 0
   let duplicatesAvoided = 0
-  for (const { tags } of contexts) {
+  for (const { tags, status } of contexts) {
     const touched = tags.filter((tag) => sourceSet.has(tag)).length
     if (touched === 0) continue
     affectedContexts += 1
+    if (status === 'published') affectedPublished += 1
     const occurrencesOfTarget = touched + (tags.includes(target) ? 1 : 0)
     if (occurrencesOfTarget > 1) duplicatesAvoided += 1
   }
-  return { affectedContexts, duplicatesAvoided }
+  return { affectedContexts, affectedPublished, duplicatesAvoided }
 }
 
 function similarityKey(name: string): string {
   return name.replace(/[-_.]/g, '').replace(/(?:js|\d+)$/, '')
+}
+
+/**
+ * Cible proposée pour fusionner un groupe de tags proches : le plus utilisé
+ * (« vue » pour vue / vue3 / vuejs, maquette 16).
+ */
+export function preferredMergeTarget(group: readonly Tag[]): Tag | undefined {
+  return [...group].sort(
+    (a, b) => b.contextCount - a.contextCount || a.name.length - b.name.length,
+  )[0]
 }
 
 /** Groupes de tags probablement synonymes (« vue », « vue3 », « vuejs »), triés par nom. */

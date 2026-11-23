@@ -17,7 +17,7 @@ export function createInMemoryServices(
   return {
     contexts: new InMemoryContextRepository(state, options, demoClock),
     workspace: new InMemoryWorkspaceRepository(state, options),
-    taxonomy: new InMemoryTaxonomyRepository(state, options),
+    taxonomy: new InMemoryTaxonomyRepository(state, options, demoClock),
     drafts: new LocalDraftStorage(),
     clock: demoClock,
     config,

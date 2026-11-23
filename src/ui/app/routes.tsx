@@ -4,12 +4,6 @@ import { AppLayout } from './layout/AppLayout.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
 import { RouteErrorPage } from './pages/RouteErrorPage.tsx'
 
-/** Écran provisoire : sera remplacé par la feature de la phase indiquée. */
-const comingSoon = (title: string) => async () => {
-  const { ComingSoonPage } = await import('./pages/ComingSoonPage.tsx')
-  return { Component: () => <ComingSoonPage title={title} /> }
-}
-
 /** Routes de l'application (SPEC §1). Chaque écran est chargé à la demande. */
 export const appRoutes: RouteObject[] = [
   {
@@ -43,7 +37,12 @@ export const appRoutes: RouteObject[] = [
           Component: (await import('../features/context-editor/EditorPage.tsx')).EditorPage,
         }),
       },
-      { path: 'taxonomy', lazy: comingSoon('Tags & collections') },
+      {
+        path: 'taxonomy',
+        lazy: async () => ({
+          Component: (await import('../features/taxonomy/TaxonomyPage.tsx')).TaxonomyPage,
+        }),
+      },
       {
         path: 'mcp',
         lazy: async () => ({ Component: (await import('../features/mcp/McpPage.tsx')).McpPage }),

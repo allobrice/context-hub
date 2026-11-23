@@ -4,7 +4,7 @@ import { lineDiff } from '../../../domain/context/diff.ts'
 import { isValidFalsePositiveReason } from '../../../domain/context/editing.ts'
 import type { ScanFinding } from '../../../domain/context/scan.ts'
 import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog.tsx'
-import { Field, TextInput } from '../../components/Field/Field.tsx'
+import { Field } from '../../components/Field/Field.tsx'
 import { cx } from '../../lib/cx.ts'
 import styles from './Editor.module.scss'
 
@@ -93,66 +93,6 @@ export function DiffDialog({ open, title, before, after, onClose }: DiffDialogPr
           </span>
         ))}
       </pre>
-    </ConfirmDialog>
-  )
-}
-
-export interface NewCollectionDialogProps {
-  open: boolean
-  pending: boolean
-  onCreate: (input: { name: string; description: string }) => void
-  onCancel: () => void
-}
-
-/** « + Nouvelle collection… » depuis le select de l'Éditeur. */
-export function NewCollectionDialog({
-  open,
-  pending,
-  onCreate,
-  onCancel,
-}: NewCollectionDialogProps) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const nameId = useId()
-  const descriptionId = useId()
-  const reset = () => {
-    setName('')
-    setDescription('')
-  }
-  return (
-    <ConfirmDialog
-      open={open}
-      title="Nouvelle collection"
-      confirmLabel="Créer la collection"
-      pending={pending}
-      confirmDisabled={name.trim() === ''}
-      onConfirm={() => {
-        onCreate({ name, description })
-        reset()
-      }}
-      onCancel={() => {
-        reset()
-        onCancel()
-      }}
-    >
-      <Field label="Nom" htmlFor={nameId}>
-        <TextInput
-          id={nameId}
-          value={name}
-          onChange={(event) => {
-            setName(event.target.value)
-          }}
-        />
-      </Field>
-      <Field label="Description" htmlFor={descriptionId}>
-        <TextInput
-          id={descriptionId}
-          value={description}
-          onChange={(event) => {
-            setDescription(event.target.value)
-          }}
-        />
-      </Field>
     </ConfirmDialog>
   )
 }

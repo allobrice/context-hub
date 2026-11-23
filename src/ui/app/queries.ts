@@ -6,6 +6,8 @@ import { useServices } from './providers/servicesContext.ts'
 export const queryKeys = {
   overview: ['workspace', 'overview'] as const,
   contexts: ['contexts'] as const,
+  tags: ['taxonomy', 'tags'] as const,
+  collections: ['taxonomy', 'collections'] as const,
 }
 
 /** Données de navigation (sidebar, options de filtres). */

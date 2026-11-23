@@ -2,6 +2,7 @@ import { useId, type ReactNode } from 'react'
 
 import { Button } from '../Button/Button.tsx'
 import { Dialog } from '../Dialog/Dialog.tsx'
+import styles from './ConfirmDialog.module.scss'
 
 export interface ConfirmDialogProps {
   open: boolean
@@ -54,7 +55,9 @@ export function ConfirmDialog({
         </>
       }
     >
-      <div id={descriptionId}>{children}</div>
+      <div id={descriptionId} className={styles.content}>
+        {children}
+      </div>
     </Dialog>
   )
 }

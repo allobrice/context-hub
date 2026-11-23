@@ -107,15 +107,14 @@ describe('Bibliothèque — résultats', () => {
   it('recherche debouncée, synchronisée dans l’URL', async () => {
     const view = renderApp('/')
     await findTable()
-    await userEvent.type(
-      screen.getByRole('searchbox', { name: 'Rechercher dans les contextes' }),
-      'pinia',
-    )
+    // Un seul événement de saisie : le test porte sur la synchro debouncée, pas sur la frappe.
+    await userEvent.click(screen.getByRole('searchbox', { name: 'Rechercher dans les contextes' }))
+    await userEvent.paste('pinia')
+    expect(view.location().search).toBe('')
     await waitFor(() => {
       expect(view.location().search).toBe('?q=pinia')
     })
-    // Debounce (250 ms) + rendu différé : marge explicite pour une suite exécutée en parallèle.
-    expect(await screen.findByText('4 résultats', {}, { timeout: 3000 })).toBeInTheDocument()
+    expect(await screen.findByText('4 résultats')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Patterns de stores Pinia' })).toBeInTheDocument()
   })
 

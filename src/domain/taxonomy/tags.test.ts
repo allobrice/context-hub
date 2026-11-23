@@ -7,6 +7,7 @@ import {
   mergeImpact,
   normalizeTagName,
   planTagRename,
+  preferredMergeTarget,
   suggestTags,
 } from './tags.ts'
 import type { Tag } from './types.ts'
@@ -67,23 +68,25 @@ describe('applyTagMerge', () => {
 })
 
 describe('mergeImpact', () => {
-  it('compte les contextes concernés et les doublons évités', () => {
+  it('compte les contextes concernés, les publiés et les doublons évités', () => {
     const contexts = [
-      { tags: ['vue3'] },
-      { tags: ['vue', 'vue3'] },
-      { tags: ['vuejs', 'vue3'] },
-      { tags: ['nuxt'] },
-      { tags: ['vue'] },
+      { tags: ['vue3'], status: 'published' },
+      { tags: ['vue', 'vue3'], status: 'draft' },
+      { tags: ['vuejs', 'vue3'], status: 'published' },
+      { tags: ['nuxt'], status: 'published' },
+      { tags: ['vue'], status: 'published' },
     ]
     expect(mergeImpact(contexts, ['vue3', 'vuejs'], 'vue')).toEqual({
       affectedContexts: 3,
+      affectedPublished: 2,
       duplicatesAvoided: 2,
     })
   })
 
   it('ignore la cible si elle figure parmi les sources', () => {
-    expect(mergeImpact([{ tags: ['vue'] }], ['vue'], 'vue')).toEqual({
+    expect(mergeImpact([{ tags: ['vue'], status: 'published' }], ['vue'], 'vue')).toEqual({
       affectedContexts: 0,
+      affectedPublished: 0,
       duplicatesAvoided: 0,
     })
   })
@@ -121,6 +124,12 @@ describe('suggestTags (maquette 12)', () => {
       tag('data-fetching', 6),
       tag('metadata', 4),
     ])
+  })
+})
+
+describe('preferredMergeTarget', () => {
+  it('propose le tag le plus utilisé du groupe', () => {
+    expect(preferredMergeTarget([tag('vue3', 5), tag('vue', 8), tag('vuejs', 2)])?.name).toBe('vue')
   })
 })
 

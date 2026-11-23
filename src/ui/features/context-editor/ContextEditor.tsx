@@ -26,7 +26,8 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue.ts'
 import { formatRelativeDate } from '../../lib/format.ts'
 import styles from './Editor.module.scss'
 import { EditorAlert } from './EditorAlert.tsx'
-import { DiffDialog, FalsePositiveDialog, NewCollectionDialog } from './EditorDialogs.tsx'
+import { CollectionDialog } from '../taxonomy/CollectionDialog.tsx'
+import { DiffDialog, FalsePositiveDialog } from './EditorDialogs.tsx'
 import { differsFrom, editorReducer, isDirty, type EditorState } from './editorForm.ts'
 import { EditorHeader } from './EditorHeader.tsx'
 import {
@@ -401,13 +402,14 @@ export function ContextEditor({
         }}
       />
 
-      <NewCollectionDialog
+      <CollectionDialog
+        collection={null}
         open={newCollectionOpen}
         pending={createCollection.isPending}
         onCancel={() => {
           setNewCollectionOpen(false)
         }}
-        onCreate={(input) => {
+        onSubmit={(input) => {
           createCollection.mutate(input, {
             onSuccess: (collection) => {
               dispatch({ type: 'collection', collectionId: collection.id })

@@ -57,7 +57,8 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 
 ## Routes
 
-`/` Bibliothèque · `/contexts/new` · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/mcp` · `/__components` (dev uniquement). Chemins centralisés dans `src/ui/app/paths.ts`, routes lazy dans `src/ui/app/routes.tsx`.
+`/` Bibliothèque · `/contexts/new` · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/mcp` · `/__components` (dev uniquement). Tous les écrans de la SPEC sont implémentés.
+Taxonomie : renommer vers un nom existant = fusionner ; l'impact d'une fusion est calculé par le repository (`previewTagMerge`) ; toute mutation de taxonomie invalide les caches `taxonomy`, `contexts` et la navigation. Chemins centralisés dans `src/ui/app/paths.ts`, routes lazy dans `src/ui/app/routes.tsx`.
 `/contexts/:id` accepte un identifiant ou un slug encodé (`nuxt%2Fconventions-nuxt-4`) ; une référence inconnue donne la 404 de la maquette 11.
 La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`libraryParams.ts`) ; les paramètres inconnus (`mock`) sont conservés.
 

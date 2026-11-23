@@ -94,6 +94,7 @@ describe('fixtures — cohérence avec les maquettes', () => {
     expect(concerned.filter((c) => c.status === 'published')).toHaveLength(5)
     expect(mergeImpact(contexts, sources, 'vue')).toEqual({
       affectedContexts: 7,
+      affectedPublished: 5,
       duplicatesAvoided: 2,
     })
   })

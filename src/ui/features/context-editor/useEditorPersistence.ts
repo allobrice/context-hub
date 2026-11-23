@@ -7,13 +7,10 @@ import type {
 import { useServices } from '../../app/providers/servicesContext.ts'
 import { queryKeys } from '../../app/queries.ts'
 
-export const tagsQueryKey = ['taxonomy', 'tags'] as const
-export const collectionsQueryKey = ['taxonomy', 'collections'] as const
-
 /** Tags avec compteurs, pour les suggestions de la combobox. */
 export function useTagSuggestions() {
   const { taxonomy } = useServices()
-  return useQuery({ queryKey: tagsQueryKey, queryFn: () => taxonomy.listTags() })
+  return useQuery({ queryKey: queryKeys.tags, queryFn: () => taxonomy.listTags() })
 }
 
 /** Enregistrer le brouillon ou publier : met à jour le cache du Détail et invalide les listes. */
@@ -36,7 +33,7 @@ export function useSaveContext() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [...queryKeys.contexts, 'search'] }),
         queryClient.invalidateQueries({ queryKey: queryKeys.overview }),
-        queryClient.invalidateQueries({ queryKey: tagsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.tags }),
       ])
     },
   })
@@ -50,7 +47,7 @@ export function useCreateCollection() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.overview }),
-        queryClient.invalidateQueries({ queryKey: collectionsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.collections }),
       ])
     },
   })
