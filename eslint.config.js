@@ -7,23 +7,76 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
+/** Racine du monorepo : les motifs ci-dessous sont relatifs à ce dossier, quel que soit le cwd du lint. */
+const ROOT = import.meta.dirname
+const WEB = 'apps/web'
+
 /**
- * Couches (voir CLAUDE.md) : ui → application → domain ; infrastructure implémente les ports d'application.
- * `src/main.tsx` est le point d'assemblage : seul fichier autorisé à importer infrastructure ET ui.
+ * Couches du front (voir CLAUDE.md) : ui → application → domain ; infrastructure implémente les ports
+ * d'application. Le domaine est le paquet `packages/domain` (`@context-hub/domain`).
+ * `apps/web/src/main.tsx` est le point d'assemblage : seul fichier autorisé à importer infrastructure ET ui.
  */
 export const LAYER_ELEMENTS = [
-  { type: 'domain', pattern: 'src/domain' },
-  { type: 'application', pattern: 'src/application' },
-  { type: 'infrastructure', pattern: 'src/infrastructure' },
-  { type: 'ui', pattern: 'src/ui' },
-  { type: 'test-support', pattern: 'src/test' },
+  { type: 'domain', pattern: 'packages/domain/src' },
+  { type: 'application', pattern: `${WEB}/src/application` },
+  { type: 'infrastructure', pattern: `${WEB}/src/infrastructure` },
+  { type: 'ui', pattern: `${WEB}/src/ui` },
+  { type: 'test-support', pattern: `${WEB}/src/test` },
 ]
 
-/** `src/main.tsx` est un fichier, pas un dossier : il est classé par un file descriptor. */
+/** `main.tsx` est un fichier, pas un dossier : il est classé par un file descriptor. */
 export const LAYER_FILES = [
-  { pattern: 'src/main.tsx', category: 'composition-root' },
-  { pattern: 'src/**/*.test.{ts,tsx}', category: 'test' },
+  { pattern: `${WEB}/src/main.tsx`, category: 'composition-root' },
+  { pattern: `${WEB}/src/**/*.test.{ts,tsx}`, category: 'test' },
 ]
+
+/** Fichiers soumis à la règle de couches, et tsconfig servant à résoudre leurs imports. */
+export const LAYER_INCLUDE = [`${WEB}/src/**/*`, 'packages/domain/src/**/*']
+export const LAYER_TSCONFIGS = [
+  `${ROOT}/${WEB}/tsconfig.app.json`,
+  `${ROOT}/packages/domain/tsconfig.lib.json`,
+]
+
+/**
+ * Règle de dépendance entre paquets : `apps/*` → `packages/domain` ; `packages/domain` ne dépend
+ * d'aucun paquet du workspace ; aucune app n'importe une autre app.
+ */
+const DOMAIN_PACKAGE_RESTRICTIONS = [
+  {
+    group: ['@context-hub/*', '**/apps/**'],
+    message: 'packages/domain ne dépend d’aucun paquet du workspace.',
+  },
+  {
+    group: [
+      'react',
+      'react-*',
+      'react/*',
+      '@tanstack/*',
+      'node:*',
+      'hono',
+      'hono/*',
+      'drizzle-orm*',
+    ],
+    message: 'packages/domain est du TS pur, sans framework ni API Node.',
+  },
+]
+
+const APP_PACKAGE_RESTRICTIONS = [
+  {
+    group: ['@context-hub/server', '@context-hub/web'],
+    message: 'Une app n’importe jamais une autre app.',
+  },
+  {
+    group: ['**/apps/server/**', '**/apps/web/**', '**/packages/domain/**'],
+    message:
+      'Passer par le paquet (@context-hub/domain/…), jamais par un chemin relatif vers un autre paquet.',
+  },
+]
+
+const COMMON_RESTRICTED_IMPORTS = {
+  paths: [{ name: 'rehype-raw', message: 'Interdit : contenu non fiable (CLAUDE.md).' }],
+  patterns: [{ group: ['**/design-kit/**'], message: 'design-kit/ ne doit pas être importé.' }],
+}
 
 export const LAYER_POLICIES = {
   default: 'disallow',
@@ -84,10 +137,9 @@ export default tseslint.config(
     ],
     languageOptions: {
       ecmaVersion: 2023,
-      globals: globals.browser,
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: ROOT,
       },
     },
     rules: {
@@ -95,31 +147,47 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'error',
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       'no-restricted-syntax': ['error', ...FORBIDDEN_UNSAFE_HTML],
+      'no-restricted-imports': ['error', COMMON_RESTRICTED_IMPORTS],
+    },
+  },
+
+  {
+    files: [`${WEB}/src/**/*.{ts,tsx}`, 'packages/domain/src/**/*.ts'],
+    plugins: { boundaries },
+    settings: {
+      'boundaries/root-path': ROOT,
+      'boundaries/elements': LAYER_ELEMENTS,
+      'boundaries/files': LAYER_FILES,
+      'boundaries/include': LAYER_INCLUDE,
+      'import/resolver': {
+        typescript: { project: LAYER_TSCONFIGS, noWarnOnMultipleProjects: true },
+      },
+    },
+    rules: {
+      'boundaries/dependencies': ['error', LAYER_POLICIES],
+    },
+  },
+
+  {
+    files: [`${WEB}/**/*.{ts,tsx}`],
+    rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: [{ name: 'rehype-raw', message: 'Interdit : contenu non fiable (CLAUDE.md).' }],
-          patterns: [
-            { group: ['**/design-kit/**'], message: 'design-kit/ ne doit pas être importé.' },
-          ],
+          ...COMMON_RESTRICTED_IMPORTS,
+          patterns: [...COMMON_RESTRICTED_IMPORTS.patterns, ...APP_PACKAGE_RESTRICTIONS],
         },
       ],
     },
   },
 
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: [`${WEB}/src/**/*.{ts,tsx}`],
+    languageOptions: { globals: globals.browser },
     plugins: {
-      boundaries,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'jsx-a11y': jsxA11y,
-    },
-    settings: {
-      'boundaries/elements': LAYER_ELEMENTS,
-      'boundaries/files': LAYER_FILES,
-      'boundaries/include': ['src/**/*'],
-      'import/resolver': { typescript: { project: './tsconfig.app.json' } },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -130,29 +198,24 @@ export default tseslint.config(
         { tags: [], roles: ['tabpanel'], allowExpressionValues: true },
       ],
       'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
-      'boundaries/dependencies': ['error', LAYER_POLICIES],
     },
   },
 
   {
-    files: ['src/domain/**/*.ts'],
+    files: ['packages/domain/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          patterns: [
-            {
-              group: ['react', 'react-*', 'react/*', '@tanstack/*'],
-              message: 'domain/ est du TS pur, sans React.',
-            },
-          ],
+          ...COMMON_RESTRICTED_IMPORTS,
+          patterns: [...COMMON_RESTRICTED_IMPORTS.patterns, ...DOMAIN_PACKAGE_RESTRICTIONS],
         },
       ],
     },
   },
 
   {
-    files: ['*.{js,ts}', 'tests/**/*.ts'],
+    files: ['*.{js,ts}', '{apps,packages}/*/*.{js,ts}', '{apps,packages}/*/tests/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
 
