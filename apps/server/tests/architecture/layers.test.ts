@@ -56,6 +56,12 @@ describe('règle de couches du serveur', () => {
       `${SERVER}/application/probe.ts`,
       '../infrastructure/db/connection.ts',
     ],
+    ['application → interfaces', `${SERVER}/application/probe.ts`, '../interfaces/http/app.ts'],
+    [
+      'infrastructure → interfaces',
+      `${SERVER}/infrastructure/probe.ts`,
+      '../interfaces/http/app.ts',
+    ],
     [
       'interfaces → infrastructure',
       `${SERVER}/interfaces/probe.ts`,

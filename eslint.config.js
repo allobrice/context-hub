@@ -34,7 +34,11 @@ export const LAYER_ELEMENTS = [
 export const LAYER_FILES = [
   { pattern: `${WEB}/src/main.tsx`, category: 'composition-root' },
   { pattern: `${WEB}/src/**/*.test.{ts,tsx}`, category: 'test' },
-  { pattern: `${SERVER}/src/main.ts`, category: 'server-composition-root' },
+  // Points d'assemblage du serveur : démarrage, composition partagée, CLI.
+  {
+    pattern: [`${SERVER}/src/{main,composition}.ts`, `${SERVER}/src/cli/**/*.ts`],
+    category: 'server-composition-root',
+  },
   { pattern: `${SERVER}/src/**/*.test.ts`, category: 'server-test' },
 ]
 
@@ -141,6 +145,11 @@ export const LAYER_POLICIES = {
       from: { element: { type: 'server-test-support' } },
       allow: { to: { element: { types: [...SERVER_LAYERS, 'domain'] } } },
     },
+    // Le support de test réutilise le câblage de composition.ts (un seul câblage).
+    {
+      from: { element: { type: 'server-test-support' } },
+      allow: { to: { file: { categories: 'server-composition-root' } } },
+    },
     // Un test serveur peut utiliser src/test/, qui seul assemble l'infrastructure (base en mémoire).
     {
       from: { file: { categories: 'server-test' } },
@@ -149,6 +158,10 @@ export const LAYER_POLICIES = {
     {
       from: { file: { categories: 'server-composition-root' } },
       allow: { to: { element: { types: [...SERVER_LAYERS, 'domain'] } } },
+    },
+    {
+      from: { file: { categories: 'server-composition-root' } },
+      allow: { to: { file: { categories: 'server-composition-root' } } },
     },
     {
       from: { file: { categories: 'composition-root' } },

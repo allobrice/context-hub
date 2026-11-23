@@ -1,3 +1,5 @@
+import type { ScanFinding } from '../context/scan.ts'
+
 /**
  * Erreurs métier typées. L'UI les distingue par `code` (union discriminée),
  * jamais par le texte du message.
@@ -57,9 +59,24 @@ export type DraftRejection =
   | 'slug-frozen'
   | 'repo-required'
 
+export const DRAFT_REJECTIONS = [
+  'secret-detected',
+  'title-empty',
+  'version-note-empty',
+  'description-too-long',
+  'slug-invalid',
+  'slug-taken',
+  'slug-frozen',
+  'repo-required',
+] as const satisfies readonly DraftRejection[]
+
 export class DraftRejectedError extends DomainError {
   readonly code = 'DRAFT_REJECTED'
-  constructor(readonly reasons: readonly DraftRejection[]) {
+  constructor(
+    readonly reasons: readonly DraftRejection[],
+    /** Findings du scan refait par le serveur (hors faux positifs justifiés), pour l'éditeur. */
+    readonly findings: readonly ScanFinding[] = [],
+  ) {
     super(`Brouillon refusé : ${reasons.join(', ')}`)
     this.name = 'DraftRejectedError'
   }
@@ -72,6 +89,15 @@ export type TaxonomyRuleViolation =
   | 'invalid-tag-name'
   | 'unknown-tag'
   | 'unknown-collection'
+
+export const TAXONOMY_RULE_VIOLATIONS = [
+  'system-collection-immutable',
+  'deletion-target-required',
+  'deletion-target-invalid',
+  'invalid-tag-name',
+  'unknown-tag',
+  'unknown-collection',
+] as const satisfies readonly TaxonomyRuleViolation[]
 
 export class TaxonomyRuleError extends DomainError {
   readonly code = 'TAXONOMY_RULE'

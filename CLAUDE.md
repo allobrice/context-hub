@@ -39,6 +39,7 @@ Appliquée par `no-restricted-imports` et `eslint-plugin-boundaries` dans `eslin
 - `tsconfig.base.json` : TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`…), étendu par chaque paquet. Chaque paquet a un `tsconfig.json` de solution (références) que lit le project service d'ESLint.
 - `eslint.config.js` (racine) : une seule config ; ses motifs sont relatifs à la racine, quel que soit le dossier d'où l'on lance `eslint`.
 - `.prettierrc.json` : sans point-virgule, guillemets simples, 100 colonnes.
+- `workspaceConcurrency: 1` : `pnpm -r` traite un paquet à la fois (trois Vitest en parallèle rendaient les tests d'UI instables).
 - pnpm refuse les scripts de build non approuvés : `allowBuilds` dans `pnpm-workspace.yaml` (`better-sqlite3` et `esbuild` autorisés).
 - Les fixtures de démo (`packages/domain/src/fixtures/`) sont partagées par le front (in-memory) et le seed du serveur.
 
