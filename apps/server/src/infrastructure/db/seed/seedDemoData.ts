@@ -26,6 +26,7 @@ import {
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
 import { publishedMetadataColumns, reindex, scopeColumns } from '../stores/contextRecords.ts'
+import { seedWorkspaces } from './seedWorkspaces.ts'
 
 /** Utilisateur de dev : seul porteur d'un jeton, propriétaire des contextes `personal` de démo. */
 export const DEV_USER = { id: 'brice', name: 'Brice' } as const
@@ -164,6 +165,7 @@ export function seedDemoData(db: SyncDb, { now, searchIndex, token }: SeedOption
       .run()
     for (const record of CONTEXT_FIXTURES) seedContext(tx, record, now)
     for (const record of CONTEXT_FIXTURES) reindex(tx, searchIndex, record.context.id)
+    seedWorkspaces(tx, now)
     insertDevToken(tx, issued, now)
   })
   return { token: issued }

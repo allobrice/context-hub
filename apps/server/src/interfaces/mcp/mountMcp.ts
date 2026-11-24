@@ -8,6 +8,9 @@
  * - 2025 (`initialize`, `Mcp-Session-Id`) → sessions avec état (`LegacySessions`) ;
  * - 2026-07-28 → `createMcpHandler` strict (`legacy: 'reject'`), notifications via `subscriptions/listen`.
  * Une publication ou un archivage notifie les deux (`notifications/resources/list_changed`).
+ * Une nouvelle entrée de workspace notifie `notifications/resources/updated` (`workspace://{slug}`)
+ * aux seules sessions 2025 membres et abonnées : le bus 2026 (`handler.notify.resourceUpdated`)
+ * diffuse à tout flux abonné à l'URI sans contrôle d'appartenance, il n'est donc pas utilisé.
  */
 import type { OpenAPIHono } from '@hono/zod-openapi'
 import { hostHeaderValidation, originValidation } from '@modelcontextprotocol/hono'
@@ -18,6 +21,9 @@ import type { AuthService } from '../../application/auth/AuthService.ts'
 import type { ContextCatalog } from '../../application/mcp/ContextCatalog.ts'
 import type { ContextEvents } from '../../application/ports/ContextEvents.ts'
 import type { Logger } from '../../application/ports/Logger.ts'
+import type { WorkspaceEvents } from '../../application/ports/WorkspaceEvents.ts'
+import type { WorkspaceService } from '../../application/workspaces/WorkspaceService.ts'
+import { workspaceUri } from '@context-hub/domain/workspaces/types.ts'
 import { toUserId, type Viewer } from '../../application/viewer.ts'
 import type { AppEnv } from '../http/env.ts'
 import { authenticate, bearerToken } from '../http/middleware/authenticate.ts'
@@ -27,13 +33,15 @@ import { LegacySessions } from './legacySessions.ts'
 export const MCP_PATH = '/mcp'
 
 const MAX_MCP_BODY_BYTES = 1024 * 1024
-/** Seule capacité exposée : la lecture des contextes publiés. */
-const MCP_SCOPES = ['contexts:read']
+/** Capacités exposées : lecture des contextes publiés, travail dans les workspaces dont on est membre. */
+const MCP_SCOPES = ['contexts:read', 'workspaces:write']
 
 export interface McpMountDependencies {
   readonly auth: AuthService
   readonly catalog: ContextCatalog
   readonly events: ContextEvents
+  readonly workspaces: WorkspaceService
+  readonly workspaceEvents: WorkspaceEvents
   readonly logger: Logger
   /** Noms d'hôte acceptés dans `Host` (sans port). */
   readonly allowedHosts: readonly string[]
@@ -54,7 +62,10 @@ function viewerOf(authInfo: AuthInfo | undefined): Viewer {
 
 export function mountMcp(app: OpenAPIHono<AppEnv>, deps: McpMountDependencies): McpMount {
   const createServer = (viewer: Viewer) =>
-    createContextHubMcpServer({ catalog: deps.catalog, logger: deps.logger }, viewer)
+    createContextHubMcpServer(
+      { catalog: deps.catalog, workspaces: deps.workspaces, logger: deps.logger },
+      viewer,
+    )
   const legacy = new LegacySessions(createServer, deps.logger)
   const modern = createMcpHandler((ctx) => createServer(viewerOf(ctx.authInfo)), {
     legacy: 'reject',
@@ -66,6 +77,10 @@ export function mountMcp(app: OpenAPIHono<AppEnv>, deps: McpMountDependencies): 
   const unsubscribe = deps.events.subscribe(() => {
     legacy.notifyResourcesChanged()
     modern.notify.resourcesChanged()
+  })
+
+  const unsubscribeWorkspaces = deps.workspaceEvents.subscribe(({ slug, memberIds }) => {
+    legacy.notifyWorkspaceUpdated(workspaceUri(slug), memberIds)
   })
 
   app.use(MCP_PATH, hostHeaderValidation([...deps.allowedHosts]))
@@ -88,6 +103,7 @@ export function mountMcp(app: OpenAPIHono<AppEnv>, deps: McpMountDependencies): 
     legacySessions: legacy,
     close: async () => {
       unsubscribe()
+      unsubscribeWorkspaces()
       await Promise.all([legacy.closeAll(), modern.close()])
     },
   }

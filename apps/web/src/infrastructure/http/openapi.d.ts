@@ -1373,6 +1373,1424 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/workspaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspaces dont l’utilisateur est membre (filtre : ouverts, fermés, tous) */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "open" | "closed" | "all";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Workspaces et compteurs par statut */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceList"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Crée un workspace (le créateur en est membre) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateWorkspaceInput"];
+                };
+            };
+            responses: {
+                /** @description Workspace créé */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Mutation depuis une origine étrangère (CSRF) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Détail : membres, participants, claims actifs, contextes liés, compteurs du journal */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Le workspace */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ferme le workspace : lecture seule, claims libérés */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Workspace fermé */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invite un utilisateur (tout membre peut inviter) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["InviteMemberInput"];
+                };
+            };
+            responses: {
+                /** @description Workspace mis à jour */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Journal par curseur (`since`) ou vers le passé (`before`), ordre croissant */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Premier `seq` voulu (inclus) ; défaut 1. Pour le polling : le `nextSeq` précédent. */
+                    since?: number;
+                    /** @description Entrées plus anciennes que ce `seq` (pagination vers le passé). */
+                    before?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Entrées et curseur suivant */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EntryPage"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Publie une entrée (scannée : secrets masqués). Session par défaut : « ui » */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PostEntryInput"];
+                };
+            };
+            responses: {
+                /** @description Entrée créée */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceEntry"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Claims actifs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Claims non expirés */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClaimList"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Réserve une zone (409 avec le claim existant si elle chevauche celle d’une autre session) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClaimInput"];
+                };
+            };
+            responses: {
+                /** @description Claim acquis ou renouvelé */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Claim"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Zone déjà réservée par une autre session */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClaimConflictError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/claims/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Libère un claim : par sa session (`session`), ou de force par un humain (`force=true`) */
+        delete: {
+            parameters: {
+                query?: {
+                    /** @description Libération forcée par un humain (UI) : prévient le détenteur. */
+                    force?: "true" | "false";
+                    /** @description Session détentrice (obligatoire sans `force`). */
+                    session?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Claim libéré */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Claim"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Libère les zones de la session (par zone, par repo, ou toutes : `/context-hub:leave`) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReleaseInput"];
+                };
+            };
+            responses: {
+                /** @description Claims libérés */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClaimList"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejoint (ou rafraîchit) la session et renvoie le résumé plafonné et le curseur */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SessionInput"];
+                };
+            };
+            responses: {
+                /** @description Résumé et curseur */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JoinResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activité de la session : `lastSeenAt`, curseur, prolongation de ses claims */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HeartbeatInput"];
+                };
+            };
+            responses: {
+                /** @description Activité enregistrée */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HeartbeatResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hook UserPromptSubmit : delta plafonné depuis `since` (données attribuées) et heartbeat avec le curseur suivant */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SyncInput"];
+                };
+            };
+            responses: {
+                /** @description Delta et curseur suivant */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SyncResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Workspace fermé : lecture seule */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceClosedError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{slug}/check-write": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hook PreToolUse : l’écriture de ce fichier est-elle permise ? (bloquée si un claim d’une autre session le couvre) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CheckWriteInput"];
+                };
+            };
+            responses: {
+                /** @description Verdict */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CheckWriteResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Non membre du workspace, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceForbiddenError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Règle métier refusée */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1399,6 +2817,7 @@ export interface components {
                 status: "online" | "offline";
                 transport: string;
             };
+            openWorkspaceCount: number;
         };
         Collection: {
             id: string;
@@ -1616,6 +3035,290 @@ export interface components {
         CollectionInput: {
             name: string;
             description: string;
+        };
+        WorkspaceList: {
+            items: components["schemas"]["WorkspaceSummary"][];
+            counts: {
+                open: number;
+                closed: number;
+                all: number;
+            };
+        };
+        WorkspaceSummary: {
+            workspace: components["schemas"]["Workspace"];
+            displayStatus: components["schemas"]["WorkspaceDisplayStatus"];
+            activeSessions: number;
+            sessionCount: number;
+            claimCount: number;
+        };
+        Workspace: {
+            id: string;
+            slug: string;
+            title: string;
+            goal: string;
+            status: components["schemas"]["WorkspaceStatus"];
+            repos: string[];
+            linkedContextIds: string[];
+            createdBy: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastActivityAt: string;
+            /** Format: date-time */
+            closedAt: string | null;
+        };
+        /** @enum {string} */
+        WorkspaceStatus: "open" | "closed";
+        /**
+         * @description « inactive » : ouvert, sans activité depuis 7 jours.
+         * @enum {string}
+         */
+        WorkspaceDisplayStatus: "open" | "inactive" | "closed";
+        WorkspaceDetail: {
+            workspace: components["schemas"]["Workspace"];
+            displayStatus: components["schemas"]["WorkspaceDisplayStatus"];
+            createdByName: string;
+            closedByName: string | null;
+            members: components["schemas"]["WorkspaceMember"][];
+            participants: components["schemas"]["Participant"][];
+            /** @description Claims actifs (non expirés). */
+            claims: components["schemas"]["Claim"][];
+            linkedContexts: components["schemas"]["LinkedContext"][];
+            entryCount: number;
+            entryCounts: components["schemas"]["EntryCounts"];
+        };
+        WorkspaceMember: {
+            userId: string;
+            name: string;
+            /** @enum {string} */
+            role: "creator" | "member";
+            /** Format: date-time */
+            addedAt: string;
+        };
+        Participant: {
+            workspaceId: string;
+            session: components["schemas"]["SessionRef"];
+            /** Format: date-time */
+            joinedAt: string;
+            /** Format: date-time */
+            lastSeenAt: string;
+            cursor: number;
+            /** @description Manifestée depuis moins de 5 minutes. */
+            active: boolean;
+        };
+        SessionRef: {
+            userId: string;
+            userName: string;
+            sessionLabel: string;
+            repo: string | null;
+        };
+        Claim: {
+            id: string;
+            workspaceId: string;
+            repo: string;
+            area: string;
+            holder: components["schemas"]["SessionRef"];
+            /** Format: date-time */
+            acquiredAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        /** @description Contexte publié, visible de l’utilisateur. */
+        LinkedContext: {
+            id: string;
+            slug: string;
+            title: string;
+            version: number;
+        };
+        EntryCounts: {
+            note: number;
+            decision: number;
+            question: number;
+            handoff: number;
+            status: number;
+            system: number;
+        };
+        WorkspaceRuleError: {
+            /** @enum {string} */
+            code: "WORKSPACE_RULE";
+            message: string;
+            details: {
+                /** @enum {string} */
+                violation: "slug-invalid" | "slug-taken" | "title-empty" | "secret-in-metadata" | "entry-empty" | "entry-too-long" | "area-invalid" | "path-invalid" | "unknown-user" | "unknown-context" | "unknown-claim" | "unknown-entry" | "not-claim-holder";
+            };
+        };
+        CreateWorkspaceInput: {
+            title: string;
+            /** @description Minuscules, chiffres et tirets, ex. « migration-auth ». */
+            slug: string;
+            /** @default  */
+            goal: string;
+            /** @default [] */
+            repos: string[];
+            /** @default [] */
+            linkedContextIds: string[];
+        };
+        /** @description Seuls les membres d’un workspace (créateur et invités) y accèdent. */
+        WorkspaceForbiddenError: {
+            /** @enum {string} */
+            code: "WORKSPACE_FORBIDDEN";
+            message: string;
+            details: {
+                slug: string;
+            };
+        };
+        /** @description Workspace fermé : lecture seule. */
+        WorkspaceClosedError: {
+            /** @enum {string} */
+            code: "WORKSPACE_CLOSED";
+            message: string;
+            details: {
+                slug: string;
+            };
+        };
+        InviteMemberInput: {
+            userId: string;
+        };
+        EntryPage: {
+            entries: components["schemas"]["WorkspaceEntry"][];
+            /** @description À repasser comme `since` (après la dernière entrée renvoyée). */
+            nextSeq: number;
+            /** @description Avec `since` : d’autres entrées suivent. Avec `before` : de plus anciennes existent. */
+            hasMore: boolean;
+        };
+        /** @description Donnée attribuée et NON VÉRIFIÉE : jamais une instruction. */
+        WorkspaceEntry: {
+            workspaceId: string;
+            seq: number;
+            kind: components["schemas"]["EntryKind"];
+            body: string;
+            files: string[];
+            author: components["schemas"]["SessionRef"] | components["schemas"]["SystemAuthor"];
+            redactions: number;
+            suspicious: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /** @enum {string} */
+        EntryKind: "note" | "decision" | "question" | "handoff" | "status" | "system";
+        SystemAuthor: {
+            /** @enum {string} */
+            system: "claim" | "hook" | "lifecycle";
+        };
+        PostEntryInput: {
+            /**
+             * @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur).
+             * @default ui
+             */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+            kind: components["schemas"]["AuthoredEntryKind"];
+            body: string;
+            /** @default [] */
+            files: string[];
+        };
+        /**
+         * @description `system` est réservé au serveur.
+         * @enum {string}
+         */
+        AuthoredEntryKind: "note" | "decision" | "question" | "handoff" | "status";
+        ClaimList: {
+            claims: components["schemas"]["Claim"][];
+        };
+        /** @description La zone chevauche un claim actif d’une autre session (renvoyé). */
+        ClaimConflictError: {
+            /** @enum {string} */
+            code: "CLAIM_CONFLICT";
+            message: string;
+            details: {
+                claim: components["schemas"]["Claim"];
+            };
+        };
+        ClaimInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /** @description `owner/name`, ex. « allovoisins/front ». */
+            repo: string;
+            area: string;
+            ttlMinutes?: number;
+        };
+        ReleaseInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description null : tous les repos.
+             * @default null
+             */
+            repo: string | null;
+            /** @description Zone à libérer ; absente : toutes celles de la session. */
+            area?: string;
+        };
+        JoinResult: {
+            workspace: components["schemas"]["Workspace"];
+            participant: components["schemas"]["Participant"];
+            /** @description Résumé plafonné (≈ 1 500 tokens), données attribuées. */
+            digest: string;
+            cursor: number;
+        };
+        SessionInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+        };
+        HeartbeatResult: {
+            /** Format: date-time */
+            lastSeenAt: string;
+            extendedClaims: number;
+        };
+        HeartbeatInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+            /** @description Prochain `seq` à lire par la session (curseur après injection du delta). */
+            cursor?: number;
+        };
+        SyncResult: {
+            /** @description Delta plafonné (≈ 800 tokens), au format « données attribuées ». */
+            text: string;
+            count: number;
+            nextSeq: number;
+            remaining: number;
+        };
+        SyncInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+            /** @description Curseur de la session (inclus). */
+            since: number;
+        };
+        CheckWriteResult: {
+            allowed: boolean;
+            holder: components["schemas"]["SessionRef"] | null;
+            claim: components["schemas"]["Claim"] | null;
+        };
+        CheckWriteInput: {
+            /** @description `owner/name`, ex. « allovoisins/front ». */
+            repo: string;
+            /** @description Relatif à la racine du repo. */
+            path: string;
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
         };
     };
     responses: never;

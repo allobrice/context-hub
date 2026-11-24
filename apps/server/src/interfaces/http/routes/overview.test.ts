@@ -23,6 +23,7 @@ describe('GET /api/workspace', () => {
       contextCount: 42,
       scopeCounts: { personal: 5, project: 12, team: 25 },
       mcpServer: { status: 'online', transport: 'HTTP' },
+      openWorkspaceCount: 3,
     })
     expect(overview.tagNames).toHaveLength(34)
   })

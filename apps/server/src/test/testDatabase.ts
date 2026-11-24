@@ -31,9 +31,18 @@ export interface TestDatabase {
   readonly close: () => void
 }
 
-export function createTestDatabase({ seed = true }: { seed?: boolean } = {}): TestDatabase {
+export interface TestDatabaseOptions {
+  readonly seed?: boolean
+  /** Horloge injectée (ex. `ManualClock`) ; défaut : figée sur `DEMO_NOW`. */
+  readonly clock?: Clock
+}
+
+export function createTestDatabase({
+  seed = true,
+  clock: injected,
+}: TestDatabaseOptions = {}): TestDatabase {
   const { db, close } = openDatabase(MEMORY_DATABASE)
-  const clock: Clock = { now: () => new Date(DEMO_NOW) }
+  const clock: Clock = injected ?? { now: () => new Date(DEMO_NOW) }
   const searchIndex = new Fts5SearchIndex()
   if (seed) seedDemoData(db, { now: clock.now(), searchIndex, token: TEST_TOKEN })
   return {

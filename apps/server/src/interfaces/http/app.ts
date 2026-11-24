@@ -7,7 +7,8 @@ import type { AuthService } from '../../application/auth/AuthService.ts'
 import type { ContextService } from '../../application/contexts/ContextService.ts'
 import type { Logger } from '../../application/ports/Logger.ts'
 import type { TaxonomyService } from '../../application/taxonomy/TaxonomyService.ts'
-import type { WorkspaceService } from '../../application/workspace/WorkspaceService.ts'
+import type { OverviewService } from '../../application/overview/OverviewService.ts'
+import type { WorkspaceService } from '../../application/workspaces/WorkspaceService.ts'
 import type { AppEnv } from './env.ts'
 import { handleError, notFound, validationHook } from './errors.ts'
 import { authenticate } from './middleware/authenticate.ts'
@@ -15,7 +16,8 @@ import { rejectCrossOriginMutations } from './middleware/rejectCrossOriginMutati
 import { requestLogging } from './middleware/requestLogging.ts'
 import { registerContextRoutes } from './routes/contexts.ts'
 import { registerTaxonomyRoutes } from './routes/taxonomy.ts'
-import { HEALTH_PATH, registerWorkspaceRoutes } from './routes/workspace.ts'
+import { registerWorkspaceRoutes } from './routes/workspaces.ts'
+import { HEALTH_PATH, registerOverviewRoutes } from './routes/overview.ts'
 
 export const OPENAPI_PATH = '/api/openapi.json'
 
@@ -26,7 +28,8 @@ export interface HttpAppDependencies {
   readonly auth: AuthService
   readonly contexts: ContextService
   readonly taxonomy: TaxonomyService
-  readonly workspace: WorkspaceService
+  readonly overview: OverviewService
+  readonly workspaces: WorkspaceService
   readonly logger: Logger
   /** Seule origine autorisée par CORS (le front). */
   readonly webOrigin: string
@@ -62,9 +65,10 @@ export function createHttpApp(deps: HttpAppDependencies): OpenAPIHono<AppEnv> {
   app.use('/api/*', bodyLimit({ maxSize: MAX_BODY_BYTES }))
   app.use('/api/*', authenticate(deps.auth, new Set([HEALTH_PATH])))
 
-  registerWorkspaceRoutes(app, deps.workspace)
+  registerOverviewRoutes(app, deps.overview)
   registerContextRoutes(app, deps.contexts)
   registerTaxonomyRoutes(app, deps.taxonomy)
+  registerWorkspaceRoutes(app, deps.workspaces)
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',
