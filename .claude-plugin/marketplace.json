@@ -1,0 +1,12 @@
+{
+  "name": "context-hub",
+  "owner": { "name": "AlloVoisins" },
+  "metadata": { "description": "Plugin Claude Code du monorepo Context Hub." },
+  "plugins": [
+    {
+      "name": "context-hub",
+      "source": "./packages/claude-plugin",
+      "description": "Workspaces Context Hub : journal partagé entre sessions Claude Code et zones du code réservées."
+    }
+  ]
+}

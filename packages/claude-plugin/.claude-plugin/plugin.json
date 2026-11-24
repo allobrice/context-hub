@@ -1,0 +1,8 @@
+{
+  "name": "context-hub",
+  "version": "0.1.0",
+  "description": "Workspaces Context Hub : sessions Claude Code qui partagent un journal (décisions, questions, passations) et réservent les zones du code qu'elles modifient.",
+  "author": { "name": "AlloVoisins" },
+  "license": "UNLICENSED",
+  "keywords": ["context-hub", "workspaces", "mcp", "collaboration"]
+}
