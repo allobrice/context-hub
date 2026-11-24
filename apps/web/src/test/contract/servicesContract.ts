@@ -13,6 +13,8 @@ import {
   DraftRejectedError,
   TaxonomyRuleError,
   VersionConflictError,
+  WorkspaceClosedError,
+  WorkspaceNotFoundError,
 } from '@context-hub/domain/shared/errors.ts'
 import {
   DEFAULT_LIBRARY_CRITERIA,
@@ -214,16 +216,134 @@ export function describeServicesContract(
 
     describe('navigation', () => {
       it('getOverview : utilisateur, compteurs de portées et tags', async () => {
-        const overview = await services.workspace.getOverview()
+        const overview = await services.overview.getOverview()
         expect(overview).toMatchObject({
           workspaceName: 'Espace AlloVoisins',
           currentUser: { name: 'Brice' },
           contextCount: 42,
           scopeCounts: { personal: 5, project: 12, team: 25 },
           mcpServer: { status: 'online' },
+          openWorkspaceCount: 3,
         })
         expect(overview.tagNames).toHaveLength(34)
       })
     })
+
+    describe('workspaces', () => {
+      const SLUG = 'migration-auth'
+
+      it('list : ouverts par défaut (maquette 23), compteurs par statut', async () => {
+        const list = await services.workspaces.list('open')
+        expect(list.counts).toEqual({ open: 3, closed: 1, all: 4 })
+        expect(
+          list.items.map((item) => [
+            item.workspace.slug,
+            item.activeSessions,
+            item.sessionCount,
+            item.claimCount,
+            item.displayStatus,
+          ]),
+        ).toEqual([
+          ['migration-auth', 3, 4, 2, 'open'],
+          ['refonte-recherche', 1, 2, 1, 'open'],
+          ['perf-lcp-home', 0, 1, 0, 'inactive'],
+        ])
+        const closed = await services.workspaces.list('closed')
+        expect(closed.items.map((item) => item.workspace.slug)).toEqual(['upgrade-node-24'])
+      })
+
+      it('get : participants, claims actifs, contextes liés, compteurs (maquette 26)', async () => {
+        const detail = await services.workspaces.get(SLUG)
+        expect(detail.entryCount).toBe(48)
+        expect(detail.createdByName).toBe('Brice')
+        expect(detail.participants.map((p) => [p.session.sessionLabel, p.active])).toEqual([
+          ['web-1', true],
+          ['web-2', true],
+          ['api-1', true],
+          ['tests-1', false],
+        ])
+        expect(detail.claims.map((claim) => claim.area).sort()).toEqual([
+          'apps/web/src/auth/**',
+          'server/api/auth/**',
+        ])
+        expect(detail.linkedContexts.map((context) => [context.title, context.version])).toEqual([
+          ['Conventions Nuxt 4 — composables & auto-imports', 4],
+          ['Checklist accessibilité des composants', 2],
+        ])
+      })
+
+      it('get : un slug inconnu lève WorkspaceNotFoundError', async () => {
+        await expect(services.workspaces.get('inconnu')).rejects.toBeInstanceOf(
+          WorkspaceNotFoundError,
+        )
+      })
+
+      it('readEntries : par curseur et vers le passé', async () => {
+        const latest = await services.workspaces.readEntries(SLUG, { before: 49, limit: 7 })
+        expect(latest.entries.map((entry) => entry.seq)).toEqual([42, 43, 44, 45, 46, 47, 48])
+        expect(latest.hasMore).toBe(true)
+        const forward = await services.workspaces.readEntries(SLUG, { since: 47, limit: 10 })
+        expect(forward).toMatchObject({ nextSeq: 49, hasMore: false })
+        expect(forward.entries[0]).toMatchObject({
+          seq: 47,
+          kind: 'decision',
+          author: { sessionLabel: 'api-1', userName: 'Brice', repo: 'allovoisins/api' },
+        })
+      })
+
+      it('postEntry : publiée comme brice · ui, secret masqué par le serveur', async () => {
+        const entry = await services.workspaces.postEntry(SLUG, {
+          kind: 'note',
+          body: 'Clé STRIPE=sk_live_51HxAbCdEfGh123',
+        })
+        expect(entry).toMatchObject({
+          seq: 49,
+          body: 'Clé STRIPE=[secret masqué]',
+          redactions: 1,
+          author: { userName: 'Brice', sessionLabel: 'ui' },
+        })
+        const page = await services.workspaces.readEntries(SLUG, { since: 49, limit: 5 })
+        expect(page.entries.map((e) => e.seq)).toEqual([49])
+      })
+
+      it('forceReleaseClaim : le claim disparaît, une entrée système prévient le détenteur', async () => {
+        const [claim] = (await services.workspaces.get(SLUG)).claims
+        if (!claim) throw new Error('claim de fixture manquant')
+        await services.workspaces.forceReleaseClaim(SLUG, claim.id)
+        const detail = await services.workspaces.get(SLUG)
+        expect(detail.claims.map((held) => held.id)).not.toContain(claim.id)
+        const [entry] = (await services.workspaces.readEntries(SLUG, { since: 49, limit: 1 }))
+          .entries
+        expect(entry).toMatchObject({ kind: 'system', author: { system: 'claim' } })
+        expect(entry?.body).toContain(`a libéré de force ${claim.area}`)
+      })
+
+      it('create puis close : lecture seule ensuite (WorkspaceClosedError)', async () => {
+        const created = await services.workspaces.create({
+          title: 'Contrat des adapters',
+          slug: 'contrat-adapters',
+          goal: 'Vérifier les deux adapters',
+          repos: ['allovoisins/front'],
+          linkedContextIds: [],
+        })
+        expect(created).toMatchObject({ displayStatus: 'open', entryCount: 1 })
+        await expect(
+          services.workspaces.create({ ...DRAFT_WORKSPACE, slug: 'contrat-adapters' }),
+        ).rejects.toMatchObject({ violation: 'slug-taken' })
+        const closed = await services.workspaces.close('contrat-adapters')
+        expect(closed).toMatchObject({ displayStatus: 'closed', claims: [], closedByName: 'Brice' })
+        await expect(
+          services.workspaces.postEntry('contrat-adapters', { kind: 'note', body: 'x' }),
+        ).rejects.toBeInstanceOf(WorkspaceClosedError)
+      })
+    })
   })
+}
+
+const DRAFT_WORKSPACE = {
+  title: 'Doublon',
+  slug: 'doublon',
+  goal: '',
+  repos: [],
+  linkedContextIds: [],
 }

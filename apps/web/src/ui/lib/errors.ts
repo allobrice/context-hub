@@ -2,7 +2,9 @@ import { isRepositoryUnavailable, isUnauthorized } from '../../application/error
 import {
   isDomainError,
   TaxonomyRuleError,
+  WorkspaceRuleError,
   type TaxonomyRuleViolation,
+  type WorkspaceRuleViolation,
 } from '@context-hub/domain/shared/errors.ts'
 
 const TAXONOMY_MESSAGES: Readonly<Record<TaxonomyRuleViolation, string>> = {
@@ -12,6 +14,22 @@ const TAXONOMY_MESSAGES: Readonly<Record<TaxonomyRuleViolation, string>> = {
   'invalid-tag-name': 'Nom de tag invalide : minuscules, chiffres et tirets uniquement.',
   'unknown-tag': 'Ce tag n’existe plus : la liste a peut-être changé entre-temps.',
   'unknown-collection': 'Cette collection n’existe plus : la liste a peut-être changé entre-temps.',
+}
+
+const WORKSPACE_MESSAGES: Readonly<Record<WorkspaceRuleViolation, string>> = {
+  'slug-invalid': 'Slug invalide : minuscules, chiffres et tirets uniquement.',
+  'slug-taken': 'Ce slug est déjà pris par un autre workspace.',
+  'title-empty': 'Le titre est obligatoire.',
+  'secret-in-metadata': 'Le titre ou l’objectif contient un secret : retirez-le.',
+  'entry-empty': 'Le message est vide.',
+  'entry-too-long': 'Le message dépasse 4 000 caractères.',
+  'area-invalid': 'Zone invalide.',
+  'path-invalid': 'Chemin invalide.',
+  'unknown-user': 'Utilisateur inconnu.',
+  'unknown-context': 'Un contexte lié n’existe plus ou n’est pas publié.',
+  'unknown-claim': 'Ce claim a déjà été libéré ou a expiré.',
+  'unknown-entry': 'Cette entrée n’existe pas.',
+  'not-claim-holder': 'Seule la session détentrice peut libérer ce claim.',
 }
 
 export const UNAUTHORIZED_TITLE = 'Accès refusé par le serveur Context Hub'
@@ -31,6 +49,7 @@ export function failureMessage(error: unknown): string {
   if (isRepositoryUnavailable(error))
     return `Le stockage n’a pas répondu (${error.summary}). Rien n’a été modifié.`
   if (error instanceof TaxonomyRuleError) return TAXONOMY_MESSAGES[error.violation]
+  if (error instanceof WorkspaceRuleError) return WORKSPACE_MESSAGES[error.violation]
   if (isDomainError(error)) return error.message
   return 'L’opération a échoué. Réessayez dans un instant.'
 }

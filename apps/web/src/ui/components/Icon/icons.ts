@@ -26,6 +26,8 @@ const rect = (x: number, y: number, width: number, height: number, rx: number): 
 })
 
 export const ICONS = {
+  workspace: [rect(3, 4, 18, 16, 2), path('M3 9h18M8 13h3M8 16h6')],
+  lock: [rect(5, 11, 14, 10, 2), path('M8 11V7a4 4 0 0 1 8 0v4')],
   book: [
     path('M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z'),
     path('M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5'),

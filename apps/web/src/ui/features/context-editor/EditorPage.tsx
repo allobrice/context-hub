@@ -41,7 +41,10 @@ function NewContextEditor() {
   return (
     <ContextEditor
       detail={null}
-      initialState={newEditorState(overview.currentUser.name, params.get('title') ?? '')}
+      initialState={newEditorState(overview.currentUser.name, params.get('title') ?? '', {
+        description: params.get('description') ?? '',
+        content: params.get('content') ?? '',
+      })}
       collections={overview.collections}
       tags={tags}
       currentUser={overview.currentUser.name}

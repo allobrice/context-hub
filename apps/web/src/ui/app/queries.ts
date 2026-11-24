@@ -12,6 +12,6 @@ export const queryKeys = {
 
 /** Données de navigation (sidebar, options de filtres). */
 export function useWorkspaceOverview() {
-  const { workspace } = useServices()
-  return useQuery({ queryKey: queryKeys.overview, queryFn: () => workspace.getOverview() })
+  const { overview } = useServices()
+  return useQuery({ queryKey: queryKeys.overview, queryFn: () => overview.getOverview() })
 }
