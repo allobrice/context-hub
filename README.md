@@ -1,5 +1,7 @@
 # Context Hub
 
+**Français** | [English](README.en.md)
+
 Context Hub centralise des **contextes** : des documents Markdown réutilisables, versionnés et
 partagés (conventions de code, règles d'architecture, procédures…), que les sessions **Claude Code**
 lisent via un serveur **MCP**. Il coordonne aussi plusieurs sessions Claude Code qui travaillent en
