@@ -4,8 +4,13 @@
  */
 import { z } from 'zod'
 
-import { DRAFT_REJECTIONS, TAXONOMY_RULE_VIOLATIONS } from '../shared/errors.ts'
+import {
+  DRAFT_REJECTIONS,
+  TAXONOMY_RULE_VIOLATIONS,
+  WORKSPACE_RULE_VIOLATIONS,
+} from '../shared/errors.ts'
 import { orNull, ScanFindingSchema } from './context.ts'
+import { ClaimSchema } from './workspaces.ts'
 
 export const API_ERROR_CODES = [
   'UNAUTHORIZED',
@@ -15,6 +20,10 @@ export const API_ERROR_CODES = [
   'NO_DRAFT',
   'DRAFT_REJECTED',
   'TAXONOMY_RULE',
+  'WORKSPACE_FORBIDDEN',
+  'WORKSPACE_CLOSED',
+  'CLAIM_CONFLICT',
+  'WORKSPACE_RULE',
   'VALIDATION_FAILED',
   'INTERNAL',
 ] as const
@@ -89,6 +98,36 @@ export const TaxonomyRuleErrorSchema = z
   })
   .meta({ id: 'TaxonomyRuleError' })
 
+export const WorkspaceForbiddenErrorSchema = z
+  .object({
+    code: z.literal('WORKSPACE_FORBIDDEN'),
+    message,
+    details: z.object({ slug: z.string() }),
+  })
+  .meta({
+    id: 'WorkspaceForbiddenError',
+    description: 'Seuls les membres d’un workspace (créateur et invités) y accèdent.',
+  })
+
+export const WorkspaceClosedErrorSchema = z
+  .object({ code: z.literal('WORKSPACE_CLOSED'), message, details: z.object({ slug: z.string() }) })
+  .meta({ id: 'WorkspaceClosedError', description: 'Workspace fermé : lecture seule.' })
+
+export const ClaimConflictErrorSchema = z
+  .object({ code: z.literal('CLAIM_CONFLICT'), message, details: z.object({ claim: ClaimSchema }) })
+  .meta({
+    id: 'ClaimConflictError',
+    description: 'La zone chevauche un claim actif d’une autre session (renvoyé).',
+  })
+
+export const WorkspaceRuleErrorSchema = z
+  .object({
+    code: z.literal('WORKSPACE_RULE'),
+    message,
+    details: z.object({ violation: z.enum(WORKSPACE_RULE_VIOLATIONS) }),
+  })
+  .meta({ id: 'WorkspaceRuleError' })
+
 export const ValidationErrorSchema = z
   .object({
     code: z.literal('VALIDATION_FAILED'),
@@ -112,6 +151,10 @@ export const ApiErrorSchema = z
     NoDraftErrorSchema,
     DraftRejectedErrorSchema,
     TaxonomyRuleErrorSchema,
+    WorkspaceForbiddenErrorSchema,
+    WorkspaceClosedErrorSchema,
+    ClaimConflictErrorSchema,
+    WorkspaceRuleErrorSchema,
     ValidationErrorSchema,
     InternalErrorSchema,
   ])

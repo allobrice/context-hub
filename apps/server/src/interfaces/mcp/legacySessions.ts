@@ -14,6 +14,7 @@ import {
 
 import type { Logger } from '../../application/ports/Logger.ts'
 import type { UserId, Viewer } from '../../application/viewer.ts'
+import { subscribedUris } from './workspaceSurface.ts'
 
 /** Garde-fou mémoire : au-delà, une nouvelle session est refusée (503). */
 export const MAX_LEGACY_SESSIONS = 500
@@ -81,6 +82,22 @@ export class LegacySessions {
   /** Pousse `notifications/resources/list_changed` à toutes les sessions ouvertes. */
   notifyResourcesChanged(): void {
     for (const session of this.sessions.values()) session.server.sendResourceListChanged()
+  }
+
+  /**
+   * Pousse `notifications/resources/updated` pour `uri` aux seules sessions ouvertes par un membre et
+   * abonnées à cette URI (le slug d'un workspace n'est pas public).
+   */
+  notifyWorkspaceUpdated(uri: string, memberIds: readonly UserId[]): void {
+    const members = new Set(memberIds)
+    for (const session of this.sessions.values()) {
+      if (!members.has(session.userId) || !subscribedUris(session.server).has(uri)) continue
+      session.server.server.sendResourceUpdated({ uri }).catch((error: unknown) => {
+        this.logger.error('mcp.notify_failed', {
+          error: error instanceof Error ? error.name : 'unknown',
+        })
+      })
+    }
   }
 
   async closeAll(): Promise<void> {

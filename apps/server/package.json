@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/infrastructure/db/cli/migrate.ts",
+    "db:init": "tsx src/infrastructure/db/cli/init.ts",
     "db:seed": "tsx src/infrastructure/db/cli/seed.ts",
     "openapi:export": "tsx src/cli/exportOpenApi.ts"
   },

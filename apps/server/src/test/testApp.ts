@@ -5,6 +5,7 @@
 import { toContextId, type ContextId } from '@context-hub/domain/context/types.ts'
 
 import { hashApiToken } from '../application/auth/apiToken.ts'
+import type { Clock } from '../application/ports/Clock.ts'
 import type { LogFields, Logger } from '../application/ports/Logger.ts'
 import { toUserId } from '../application/viewer.ts'
 import { composeServer } from '../composition.ts'
@@ -48,6 +49,8 @@ export interface TestApp {
   /** `fetch` en process vers l'app (avec un Host local), pour le client MCP du SDK. */
   readonly fetch: (input: string | URL, init?: RequestInit) => Promise<Response>
   readonly mcp: ReturnType<typeof composeServer>['mcp']
+  /** Cas d'usage des workspaces (fermeture automatique, appelée par le job de `main.ts`). */
+  readonly workspaces: ReturnType<typeof composeServer>['workspaces']
   close(): Promise<void>
 }
 
@@ -59,8 +62,21 @@ function sequentialId(): ContextId {
   return toContextId(`ctx-test-${sequence}`)
 }
 
-export async function createTestApp(): Promise<TestApp> {
-  const database = createTestDatabase()
+export interface TestAppOptions {
+  /** Horloge injectée (ex. `ManualClock`) ; défaut : figée sur `DEMO_NOW`. */
+  readonly clock?: Clock
+}
+
+let workspaceSequence = 0
+
+/** Identifiants prévisibles pour les workspaces et claims créés pendant un test. */
+function sequentialWorkspaceId(prefix: 'ws' | 'claim'): string {
+  workspaceSequence += 1
+  return `${prefix}-test-${workspaceSequence}`
+}
+
+export async function createTestApp({ clock }: TestAppOptions = {}): Promise<TestApp> {
+  const database = createTestDatabase(clock ? { clock } : {})
   await database.users.createToken({
     userId: toUserId('camille'),
     tokenHash: hashApiToken(CAMILLE_TOKEN),
@@ -68,13 +84,14 @@ export async function createTestApp(): Promise<TestApp> {
     at: database.clock.now(),
   })
   const { logger, logs } = captureLogger()
-  const { app, mcp } = composeServer(database.db, {
+  const { app, mcp, workspaces } = composeServer(database.db, {
     clock: database.clock,
     logger,
     webOrigin: WEB_ORIGIN,
     workspaceName: 'Espace AlloVoisins',
     allowedHosts: ['localhost', '127.0.0.1'],
     newContextId: sequentialId,
+    newWorkspaceId: sequentialWorkspaceId,
   })
   return {
     database,
@@ -99,6 +116,7 @@ export async function createTestApp(): Promise<TestApp> {
       return Promise.resolve(app.request(url.href, { ...init, headers }))
     },
     mcp,
+    workspaces,
     close: async () => {
       await mcp.close()
       database.close()

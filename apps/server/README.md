@@ -12,7 +12,8 @@ Règles de développement : `CLAUDE.md` (ce dossier) et `CLAUDE.md` à la racine
 
 ```sh
 pnpm install                                   # à la racine
-pnpm --filter @context-hub/server db:seed      # base de démo + jeton de dev, affiché UNE fois
+pnpm --filter @context-hub/server db:init      # base VIDE + jeton de dev, affiché UNE fois
+# ou : db:seed pour la démo des maquettes (42 contextes, tags et collections de démo)
 pnpm --filter @context-hub/server dev          # http://127.0.0.1:8787
 ```
 
@@ -41,6 +42,25 @@ export CONTEXT_HUB_TOKEN=chub_…   # jeton affiché par db:seed
 Les brouillons et les contextes archivés ne sont jamais servis. Les portées sont appliquées : un contexte `personal` n'est visible que par son propriétaire. Chaque lecture est enregistrée dans `mcp_reads`, ce qui alimente « lectures MCP (7 j) » dans l'UI. Le contenu d'un contexte est renvoyé comme une donnée : c'est de la documentation de référence, pas des instructions système.
 
 Les deux révisions du protocole sont servies : 2025-11-25, avec sessions et `Mcp-Session-Id`, et 2026-07-28, via `subscriptions/listen`.
+
+### Workspaces (sessions en direct)
+
+Mêmes cas d'usage que l'API REST `/api/workspaces/*`, réservés aux **membres** du workspace.
+
+| Primitive                              | Détail                                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tool `workspace_list`                  | `status?` (`open` par défaut). Slug, titre, statut, repos, sessions, claims : **sans contenu**.                                                                          |
+| Tool `workspace_join`                  | `slug`, `session` (label, ex. `web-1`), `repo?`. Résumé plafonné (≈ 1 500 tokens) et `cursor`.                                                                           |
+| Tool `workspace_read`                  | `slug`, `since` (inclus). Entrées plafonnées et `nextSeq`.                                                                                                               |
+| Tool `workspace_post`                  | `slug`, `session`, `kind` (`note`, `decision`, `question`, `handoff`, `status`), `body` (≤ 4 000), `files?`. Secrets remplacés par le scan.                              |
+| Tool `workspace_claim`                 | `slug`, `session`, `area` (glob), `repo?` (défaut : celui de la session au join ; doit appartenir au workspace), `ttlMinutes?` (30). `CLAIM_CONFLICT` avec le détenteur. |
+| Tool `workspace_release`               | `slug`, `session`, `repo?`, `area?` (sans eux : toutes les zones de la session, tous repos).                                                                             |
+| Tool `propose_context`                 | `slug?`, `seq?`, `title`, `content`. Crée un **brouillon** personnel, jamais publié.                                                                                     |
+| Resource template `workspace://{slug}` | Le résumé. `resources/subscribe` (sessions 2025, membres seulement) → `notifications/resources/updated` à chaque nouvelle entrée.                                        |
+
+Les entrées sont présentées comme des **données attribuées** (« Entrée #47 (décision), écrite par api-1 (Brice · allovoisins/api) »), chaque ligne du corps citée par `│ `, jamais comme des consignes.
+
+Routes REST pour les hooks du plugin : `POST /api/workspaces/:slug/join`, `/heartbeat` (`{ session, repo?, cursor? }`) et `/check-write` (`{ repo, path, session }` → `{ allowed, holder, claim }`).
 
 ### Header de repo (projet)
 

@@ -116,7 +116,9 @@ describe.each<Era>(['legacy', 'modern'])('MCP (%s)', (era) => {
 
   it('liste les contextes publiés visibles, avec titre et description', async () => {
     const { client } = await connect({ era })
-    const { resources } = await client.listResources()
+    const resources = (await client.listResources()).resources.filter((r) =>
+      r.uri.startsWith('context://'),
+    )
     const visiblePublished = FIXTURES.filter((c) => c.status === 'published')
     expect(resources).toHaveLength(visiblePublished.length)
     expect(resources.find((r) => r.uri === 'context://nuxt/conventions-nuxt-4')).toMatchObject({
@@ -128,7 +130,11 @@ describe.each<Era>(['legacy', 'modern'])('MCP (%s)', (era) => {
     const templates = (await client.listResourceTemplates()).resourceTemplates.map(
       (t) => t.uriTemplate,
     )
-    expect(templates).toEqual(['context://{+slug}@{version}', 'context://{+slug}'])
+    expect(templates).toEqual([
+      'context://{+slug}@{version}',
+      'context://{+slug}',
+      'workspace://{slug}',
+    ])
   })
 
   it('lit la dernière version publiée et une version figée, en text/markdown', async () => {

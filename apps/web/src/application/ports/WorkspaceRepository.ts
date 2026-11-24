@@ -1,20 +1,43 @@
-import type { ScopeKind } from '@context-hub/domain/context/types.ts'
-import type { Collection } from '@context-hub/domain/taxonomy/types.ts'
+import type {
+  AuthoredEntryKind,
+  EntryPage,
+  WorkspaceDetail,
+  WorkspaceEntry,
+  WorkspaceList,
+  WorkspaceStatus,
+} from '@context-hub/domain/workspaces/types.ts'
 
-export type McpServerStatus = 'online' | 'offline'
+/** Filtre de la liste (dans l'URL : `?status=open|closed|all`). */
+export type WorkspaceListFilter = WorkspaceStatus | 'all'
 
-/** Données de navigation (sidebar) : légères, indépendantes de l'écran affiché. */
-export interface WorkspaceOverview {
-  readonly workspaceName: string
-  readonly currentUser: { readonly name: string }
-  readonly contextCount: number
-  /** Collections avec leurs compteurs, système (« Sans collection ») comprise. */
-  readonly collections: readonly Collection[]
-  readonly scopeCounts: Readonly<Record<ScopeKind, number>>
-  readonly tagNames: readonly string[]
-  readonly mcpServer: { readonly status: McpServerStatus; readonly transport: string }
+export interface CreateWorkspaceCommand {
+  readonly title: string
+  readonly slug: string
+  readonly goal: string
+  readonly repos: readonly string[]
+  readonly linkedContextIds: readonly string[]
 }
 
+/** Lecture du journal : vers l'avant depuis `since` (polling), ou vers le passé avant `before`. */
+export type EntryQuery =
+  | { readonly since: number; readonly limit: number }
+  | { readonly before: number; readonly limit: number }
+
+/**
+ * Workspaces (SPEC §7). Erreurs : `WorkspaceNotFoundError`, `WorkspaceForbiddenError` (non membre),
+ * `WorkspaceClosedError` (écriture dans un workspace fermé), `WorkspaceRuleError`.
+ */
 export interface WorkspaceRepository {
-  getOverview(): Promise<WorkspaceOverview>
+  list(filter: WorkspaceListFilter): Promise<WorkspaceList>
+  get(slug: string): Promise<WorkspaceDetail>
+  create(command: CreateWorkspaceCommand): Promise<WorkspaceDetail>
+  close(slug: string): Promise<WorkspaceDetail>
+  readEntries(slug: string, query: EntryQuery): Promise<EntryPage>
+  /** Entrée humaine, publiée comme `<utilisateur> · ui` ; le serveur la scanne. */
+  postEntry(
+    slug: string,
+    entry: { readonly kind: AuthoredEntryKind; readonly body: string },
+  ): Promise<WorkspaceEntry>
+  /** Libération forcée par un humain : une entrée système prévient la session détentrice. */
+  forceReleaseClaim(slug: string, claimId: string): Promise<void>
 }

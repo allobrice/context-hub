@@ -2,11 +2,11 @@ import { createRoute, type OpenAPIHono } from '@hono/zod-openapi'
 
 import { WorkspaceOverviewSchema } from '@context-hub/domain/schemas/workspace.ts'
 
-import type { WorkspaceService } from '../../../application/workspace/WorkspaceService.ts'
+import type { OverviewService } from '../../../application/overview/OverviewService.ts'
 import type { AppEnv } from '../env.ts'
 import { ERROR_RESPONSES, HealthSchema, json } from '../schemas.ts'
 
-const workspaceRoute = createRoute({
+const overviewRoute = createRoute({
   method: 'get',
   path: '/api/workspace',
   tags: ['Espace'],
@@ -29,10 +29,7 @@ const healthRoute = createRoute({
   responses: { 200: json(HealthSchema, 'Le serveur répond') },
 })
 
-export function registerWorkspaceRoutes(
-  app: OpenAPIHono<AppEnv>,
-  workspace: WorkspaceService,
-): void {
+export function registerOverviewRoutes(app: OpenAPIHono<AppEnv>, overview: OverviewService): void {
   app.openapi(healthRoute, (c) => c.json({ status: 'ok' as const }, 200))
-  app.openapi(workspaceRoute, async (c) => c.json(await workspace.overview(c.var.user), 200))
+  app.openapi(overviewRoute, async (c) => c.json(await overview.overview(c.var.user), 200))
 }

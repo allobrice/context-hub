@@ -157,3 +157,148 @@ export const mcpReads = sqliteTable(
   },
   (table) => [index('mcp_reads_context_at_idx').on(table.contextId, table.at)],
 )
+
+// ── Workspaces (SPEC §7) ──────────────────────────────────────────────────────
+
+/**
+ * Workspaces. `next_seq` est le compteur des entrées : lu et incrémenté dans la transaction
+ * IMMEDIATE de chaque insertion (jamais de `MAX(seq) + 1`), d'où des `seq` sans trou ni doublon.
+ */
+export const workspaces = sqliteTable(
+  'workspaces',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    goal: text('goal').notNull(),
+    status: text('status', { enum: ['open', 'closed'] }).notNull(),
+    /** Repos du workspace, en JSON (`string[]`). */
+    repos: text('repos').notNull().default('[]'),
+    createdBy: text('created_by')
+      .notNull()
+      .references(() => users.id),
+    createdAt: text('created_at').notNull(),
+    lastActivityAt: text('last_activity_at').notNull(),
+    closedAt: text('closed_at'),
+    closedBy: text('closed_by').references(() => users.id),
+    /** Prochain `seq` à attribuer (commence à 1). */
+    nextSeq: integer('next_seq').notNull().default(1),
+  },
+  (table) => [index('workspaces_status_activity_idx').on(table.status, table.lastActivityAt)],
+)
+
+/** Qui a accès à un workspace : son créateur et les invités. */
+export const workspaceMembers = sqliteTable(
+  'workspace_members',
+  {
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspaces.id),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    role: text('role', { enum: ['creator', 'member'] }).notNull(),
+    addedAt: text('added_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceId, table.userId] }),
+    index('workspace_members_user_idx').on(table.userId),
+  ],
+)
+
+/** Contextes liés à un workspace (inclus dans le résumé injecté aux sessions). */
+export const workspaceLinkedContexts = sqliteTable(
+  'workspace_linked_contexts',
+  {
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspaces.id),
+    contextId: text('context_id')
+      .notNull()
+      .references(() => contexts.id),
+    position: integer('position').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.workspaceId, table.contextId] })],
+)
+
+/**
+ * Journal. Le corps est stocké APRÈS le scan : un secret n'est jamais écrit en base. Auteur : une
+ * session (`author_user_id`, `author_session_label`, `author_repo`) ou le serveur (`system_source`).
+ */
+export const workspaceEntries = sqliteTable(
+  'workspace_entries',
+  {
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspaces.id),
+    seq: integer('seq').notNull(),
+    kind: text('kind', {
+      enum: ['note', 'decision', 'question', 'handoff', 'status', 'system'],
+    }).notNull(),
+    body: text('body').notNull(),
+    /** Fichiers cités, en JSON (`string[]`). */
+    files: text('files').notNull().default('[]'),
+    authorUserId: text('author_user_id').references(() => users.id),
+    authorSessionLabel: text('author_session_label'),
+    authorRepo: text('author_repo'),
+    systemSource: text('system_source', { enum: ['claim', 'hook', 'lifecycle'] }),
+    redactions: integer('redactions').notNull().default(0),
+    suspicious: integer('suspicious', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceId, table.seq] }),
+    index('workspace_entries_kind_idx').on(table.workspaceId, table.kind),
+  ],
+)
+
+/** Zones réservées. Un claim expiré n'est plus opposable ; il est purgé (avec une entrée système). */
+export const workspaceClaims = sqliteTable(
+  'workspace_claims',
+  {
+    id: text('id').primaryKey(),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspaces.id),
+    repo: text('repo').notNull(),
+    area: text('area').notNull(),
+    holderUserId: text('holder_user_id')
+      .notNull()
+      .references(() => users.id),
+    holderSessionLabel: text('holder_session_label').notNull(),
+    holderRepo: text('holder_repo'),
+    acquiredAt: text('acquired_at').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    /** Durée de renouvellement par l'activité de la session. */
+    ttlMinutes: integer('ttl_minutes').notNull(),
+  },
+  (table) => [
+    index('workspace_claims_lookup_idx').on(table.workspaceId, table.repo, table.expiresAt),
+    index('workspace_claims_holder_idx').on(
+      table.workspaceId,
+      table.holderUserId,
+      table.holderSessionLabel,
+    ),
+    index('workspace_claims_expires_idx').on(table.expiresAt),
+  ],
+)
+
+/** Sessions qui ont rejoint un workspace : une par (utilisateur, label). */
+export const workspaceParticipants = sqliteTable(
+  'workspace_participants',
+  {
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspaces.id),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    sessionLabel: text('session_label').notNull(),
+    repo: text('repo'),
+    joinedAt: text('joined_at').notNull(),
+    lastSeenAt: text('last_seen_at').notNull(),
+    /** Prochain `seq` à lire. */
+    cursor: integer('cursor').notNull().default(1),
+  },
+  (table) => [primaryKey({ columns: [table.workspaceId, table.userId, table.sessionLabel] })],
+)

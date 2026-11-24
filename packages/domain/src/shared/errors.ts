@@ -1,11 +1,20 @@
 import type { ScanFinding } from '../context/scan.ts'
+import type { Claim } from '../workspaces/types.ts'
 
 /**
  * Erreurs métier typées. L'UI les distingue par `code` (union discriminée),
  * jamais par le texte du message.
  */
 export type DomainErrorCode =
-  'CONTEXT_NOT_FOUND' | 'VERSION_CONFLICT' | 'DRAFT_REJECTED' | 'TAXONOMY_RULE'
+  | 'CONTEXT_NOT_FOUND'
+  | 'VERSION_CONFLICT'
+  | 'DRAFT_REJECTED'
+  | 'TAXONOMY_RULE'
+  | 'WORKSPACE_NOT_FOUND'
+  | 'WORKSPACE_FORBIDDEN'
+  | 'WORKSPACE_CLOSED'
+  | 'CLAIM_CONFLICT'
+  | 'WORKSPACE_RULE'
 
 export abstract class DomainError extends Error {
   abstract readonly code: DomainErrorCode
@@ -110,6 +119,86 @@ export class TaxonomyRuleError extends DomainError {
   constructor(readonly violation: TaxonomyRuleViolation) {
     super(`Règle de taxonomie violée : ${violation}`)
     this.name = 'TaxonomyRuleError'
+  }
+}
+
+export class WorkspaceNotFoundError extends DomainError {
+  readonly code = 'WORKSPACE_NOT_FOUND'
+  constructor(readonly slug: string) {
+    super(`Workspace introuvable : ${slug}`)
+    this.name = 'WorkspaceNotFoundError'
+  }
+}
+
+/** Seuls les membres d'un workspace (créateur et invités) y accèdent. */
+export class WorkspaceForbiddenError extends DomainError {
+  readonly code = 'WORKSPACE_FORBIDDEN'
+  constructor(readonly slug: string) {
+    super(`Accès refusé au workspace ${slug}`)
+    this.name = 'WorkspaceForbiddenError'
+  }
+}
+
+/** Écriture dans un workspace fermé (lecture seule). */
+export class WorkspaceClosedError extends DomainError {
+  readonly code = 'WORKSPACE_CLOSED'
+  constructor(readonly slug: string) {
+    super(`Workspace fermé (lecture seule) : ${slug}`)
+    this.name = 'WorkspaceClosedError'
+  }
+}
+
+/** La zone demandée chevauche un claim actif d'une autre session. */
+export class ClaimConflictError extends DomainError {
+  readonly code = 'CLAIM_CONFLICT'
+  constructor(readonly claim: Claim) {
+    super(
+      `Zone déjà réservée : ${claim.area} (${claim.repo}) par ${claim.holder.sessionLabel} jusqu’à ${claim.expiresAt}`,
+    )
+    this.name = 'ClaimConflictError'
+  }
+}
+
+export type WorkspaceRuleViolation =
+  | 'slug-invalid'
+  | 'slug-taken'
+  | 'title-empty'
+  | 'secret-in-metadata'
+  | 'entry-empty'
+  | 'entry-too-long'
+  | 'area-invalid'
+  | 'path-invalid'
+  | 'repo-required'
+  | 'repo-not-in-workspace'
+  | 'unknown-user'
+  | 'unknown-context'
+  | 'unknown-claim'
+  | 'unknown-entry'
+  | 'not-claim-holder'
+
+export const WORKSPACE_RULE_VIOLATIONS = [
+  'slug-invalid',
+  'slug-taken',
+  'title-empty',
+  'secret-in-metadata',
+  'entry-empty',
+  'entry-too-long',
+  'area-invalid',
+  'path-invalid',
+  'repo-required',
+  'repo-not-in-workspace',
+  'unknown-user',
+  'unknown-context',
+  'unknown-claim',
+  'unknown-entry',
+  'not-claim-holder',
+] as const satisfies readonly WorkspaceRuleViolation[]
+
+export class WorkspaceRuleError extends DomainError {
+  readonly code = 'WORKSPACE_RULE'
+  constructor(readonly violation: WorkspaceRuleViolation) {
+    super(`Règle de workspace violée : ${violation}`)
+    this.name = 'WorkspaceRuleError'
   }
 }
 

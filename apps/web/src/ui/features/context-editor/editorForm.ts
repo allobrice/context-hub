@@ -1,3 +1,4 @@
+import { DESCRIPTION_MAX_LENGTH } from '@context-hub/domain/context/types.ts'
 import type { ContextDetail } from '../../../application/ports/ContextRepository.ts'
 import type { LocalDraft } from '../../../application/ports/DraftStorage.ts'
 import type { ContextDraftInput, FalsePositive } from '@context-hub/domain/context/editing.ts'
@@ -166,15 +167,23 @@ export function stateFromDetail({ context }: ContextDetail): EditorState {
 }
 
 /** État initial d'une création (maquette 14) : portée Personnel, titre éventuellement prérempli. */
-export function newEditorState(currentUser: string, title = ''): EditorState {
+/**
+ * État d'un nouveau contexte, éventuellement prérempli (« Proposer comme contexte » depuis un
+ * workspace) : rien n'est enregistré tant que l'utilisateur ne l'a pas fait, et seul un humain publie.
+ */
+export function newEditorState(
+  currentUser: string,
+  title = '',
+  prefill: { readonly description?: string; readonly content?: string } = {},
+): EditorState {
   const values: ContextDraftInput = {
     title,
     slug: generateSlug({ title, collectionName: null }),
-    description: '',
+    description: (prefill.description ?? '').slice(0, DESCRIPTION_MAX_LENGTH),
     collectionId: null,
     tags: [],
     scope: { kind: 'personal', owner: currentUser.toLowerCase() },
-    content: '',
+    content: prefill.content ?? '',
     versionNote: '',
   }
   const empty: ContextDraftInput = { ...values, title: '', slug: '' }

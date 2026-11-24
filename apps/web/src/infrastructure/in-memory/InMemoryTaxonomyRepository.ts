@@ -22,7 +22,7 @@ import { UNCATEGORIZED_COLLECTION_ID } from '@context-hub/domain/taxonomy/types.
 import type { Clock } from '../../application/ports/Clock.ts'
 import type { InMemoryState } from './InMemoryStore.ts'
 import { visibleState } from './InMemoryStore.ts'
-import { toCollection } from './InMemoryWorkspaceRepository.ts'
+import { toCollection } from './InMemoryOverviewRepository.ts'
 import { simulateMutation, simulatePrimary, type SimulationOptions } from './simulation.ts'
 
 export class InMemoryTaxonomyRepository implements TaxonomyRepository {

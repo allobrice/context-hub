@@ -2,23 +2,24 @@
 
 Serveur Node (Hono) : API REST `/api/*` pour l'UI, serveur MCP Streamable HTTP `/mcp` pour les sessions Claude Code, persistance SQLite (Drizzle + better-sqlite3). Règles communes : `CLAUDE.md` racine.
 
-> Construit par phases : 2 (persistance), 3 (REST) et 4 (MCP). Connexion des clients MCP : `README.md`.
+> Construit par phases : 2 (persistance), 3 (REST), 4 (MCP) et 7 (Workspaces). Connexion des clients MCP : `README.md`.
 
 ## Commandes
 
 Depuis `apps/server` (ou `pnpm --filter @context-hub/server <script>` depuis la racine) :
 
-| Commande              | Rôle                                                                                    |
-| --------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`            | Serveur en watch (`tsx watch`), lit `.env.local` s'il existe (voir `.env.example`)      |
-| `pnpm start`          | Serveur sans watch                                                                      |
-| `pnpm openapi:export` | Réécrit `openapi.json` (contrat commité, source des types du front)                     |
-| `pnpm typecheck`      | `tsc` sur `src` (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`)             |
-| `pnpm lint`           | ESLint (config racine)                                                                  |
-| `pnpm test`           | Vitest : bases SQLite en mémoire, seedées                                               |
-| `pnpm db:generate`    | `drizzle-kit generate` : migration SQL depuis `schema.ts`, à commiter dans `drizzle/`   |
-| `pnpm db:migrate`     | Applique les migrations à la base (`CONTEXT_HUB_DB_PATH`, défaut `data/context-hub.db`) |
-| `pnpm db:seed`        | Migre puis seede une base **vide** ; affiche le jeton de dev une seule fois             |
+| Commande              | Rôle                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`            | Serveur en watch (`tsx watch`), lit `.env.local` s'il existe (voir `.env.example`)       |
+| `pnpm start`          | Serveur sans watch                                                                       |
+| `pnpm openapi:export` | Réécrit `openapi.json` (contrat commité, source des types du front)                      |
+| `pnpm typecheck`      | `tsc` sur `src` (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`)              |
+| `pnpm lint`           | ESLint (config racine)                                                                   |
+| `pnpm test`           | Vitest : bases SQLite en mémoire, seedées                                                |
+| `pnpm db:generate`    | `drizzle-kit generate` : migration SQL depuis `schema.ts`, à commiter dans `drizzle/`    |
+| `pnpm db:migrate`     | Applique les migrations à la base (`CONTEXT_HUB_DB_PATH`, défaut `data/context-hub.db`)  |
+| `pnpm db:seed`        | Migre puis seede une base **vide** ; affiche le jeton de dev une seule fois              |
+| `pnpm db:init`        | Migre puis prépare une base **vide** (utilisateur, jeton, collection système), sans démo |
 
 Le code est exécuté par `tsx` (pas d'étape de build) : le domaine partagé est consommé en sources TS.
 
@@ -29,10 +30,12 @@ src/
   main.ts           # démarrage : config, base migrée, composition, écoute 127.0.0.1
   composition.ts    # câblage unique (stores → cas d'usage → app Hono), partagé par main, CLI et tests
   cli/              # exportOpenApi.ts
-  application/      # cas d'usage (ContextService, TaxonomyService, WorkspaceService, AuthService, mcp/ContextCatalog),
-                    # ports (ContextStore, TaxonomyStore, UserStore, McpReadLog, Clock, Logger), Viewer ; sans Hono ni Drizzle
+  application/      # cas d'usage (ContextService, TaxonomyService, OverviewService (sidebar), workspaces/WorkspaceService,
+                    # AuthService, mcp/ContextCatalog), ports (ContextStore, TaxonomyStore, WorkspaceStore, UserStore,
+                    # McpReadLog, ContextEvents, WorkspaceEvents, Clock, Logger), Viewer ; sans Hono ni Drizzle
   interfaces/http/  # app.ts (middlewares, routes, OpenAPI), routes/*, schemas.ts (transport), errors.ts, middleware/
-  interfaces/mcp/   # mountMcp.ts (aiguillage 2025 / 2026-07-28), legacySessions.ts, contextHubServer.ts (surface MCP)
+  interfaces/mcp/   # mountMcp.ts (aiguillage 2025 / 2026-07-28), legacySessions.ts, contextHubServer.ts (surface MCP),
+                    # workspaceSurface.ts (outils workspace_*, propose_context, workspace://{slug})
   infrastructure/config/ # env.ts : configuration validée par Zod
   infrastructure/logging/ # logger JSON
   infrastructure/db/
@@ -42,8 +45,9 @@ src/
     stores/         # Drizzle*Store : implémentations des ports
     seed/           # seedDemoData : fixtures du domaine + jeton de dev
     cli/            # migrate.ts, seed.ts
-  test/             # support de test : base en mémoire seedée (createTestDatabase), app complète (createTestApp)
-drizzle/            # migrations : 0000 générée, 0001 custom (FTS5 + trigger d'immuabilité)
+  test/             # support de test : base en mémoire seedée (createTestDatabase), app complète (createTestApp),
+                    # ManualClock, workspaceWorker.ts (tests de concurrence en worker_threads)
+drizzle/            # migrations : 0000 générée, 0001 custom (FTS5 + trigger d'immuabilité), 0004 workspaces
 tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versions
 ```
 
@@ -94,3 +98,22 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 - Collection inconnue : 422 `TAXONOMY_RULE` (`unknown-collection`), pas une erreur de clé étrangère.
 - Sessions MCP 2025 : 20 par utilisateur au plus (429), 500 au total (503).
 - Scan : répétitions bornées dans les règles d'instructions suspectes (pas de ReDoS) ; jetons `chub_` détectés. Tests de non-régression : `src/interfaces/http/security.test.ts`.
+
+## Workspaces (phase 7, SPEC §7)
+
+Ne pas confondre : `OverviewService` / `GET /api/workspace` (singulier) = navigation de la sidebar ; `WorkspaceService` / `/api/workspaces/*` = espaces de travail en direct.
+
+- **Accès** : seuls les membres (`workspace_members` : créateur + invités). Non-membre : 403 `WORKSPACE_FORBIDDEN` ; slug inconnu : 404. Tout membre peut inviter, libérer de force et fermer.
+- **Fermé** : lecture seule ; toute écriture (entrée, claim, join, heartbeat, invitation) : 410 `WORKSPACE_CLOSED`. `check-write` reste permis (plus aucun claim).
+- **`seq` sans trou** : attribué depuis `workspaces.next_seq` dans une transaction **IMMEDIATE** (`{ behavior: 'immediate' }`), jamais de `MAX(seq) + 1`. Postgres : `SELECT … FOR UPDATE` sur la ligne `workspaces`.
+- **Claims atomiques** : purge des expirés (une entrée `system/claim` chacun), vérification du chevauchement (`claimsOverlap`, règle conservatrice) et insertion dans une même transaction IMMEDIATE. Une session qui reprend exactement sa zone la renouvelle ; elle peut réserver une zone incluse dans la sienne.
+- **Repo d'un claim** : par défaut celui que la session a déclaré à son join (le plugin le déduit du remote git), jamais retapé par le modèle : un repo mal saisi rendrait le claim inopérant, puisque `check-write` interroge avec le repo de la session. Un repo hors du workspace (s'il en déclare) : 422 `repo-not-in-workspace` ; aucun repo connu : 422 `repo-required`.
+- **TTL** : 30 min par défaut, renouvelé par l'activité de la session (entrée postée, heartbeat, claim). Un claim expiré n'est plus opposable même avant sa purge.
+- **Scan** : chaque entrée passe par `redactEntry` : secrets **remplacés** (`[secret masqué]`, rien n'est stocké), injection suspecte conservée mais signalée (`suspicious`). Titre ou objectif avec un secret : 422 `secret-in-metadata`.
+- **`check-write`** : lecture indexée (`workspace_claims_lookup_idx`) ; en cas de blocage, le serveur journalise lui-même l'entrée `system/hook`, au plus une fois par 5 min par (claim, session), dédupliquée en mémoire du processus.
+- **Résumé et delta** : `buildDigest` / `buildDelta` du domaine, plafonnés en tokens ; entrées attribuées, corps cités ligne à ligne (`│ `) : un corps ne peut pas imiter un en-tête.
+- **Maintenance** : `main.ts` appelle `closeIdleWorkspaces()` au démarrage puis toutes les heures (fermeture à 30 j sans activité, purge des claims expirés).
+- **Notifications** : `WorkspaceEvents` → `LegacySessions.notifyWorkspaceUpdated` (sessions 2025 membres et abonnées à `workspace://{slug}`). Le bus 2026 n'est pas utilisé (pas de contrôle d'appartenance, voir ROADMAP).
+- **Journal** : outil, slug, résultat, utilisateur ; jamais le corps d'une entrée (testé).
+- **Tests de concurrence** : `DrizzleWorkspaceStore.concurrency.test.ts` lance des `worker_threads` (`--import tsx`), une connexion SQLite chacun sur un fichier WAL, libérés ensemble par une barrière `Atomics`. Dans un seul thread, better-sqlite3 étant synchrone, des appels « concurrents » seraient sérialisés et ne prouveraient rien. Les mêmes scénarios passent aussi par REST et par le client MCP.
+- **Seed** : `seedWorkspaces` (fixtures des maquettes 23 à 30), dates décalées de `DEMO_NOW` vers le « maintenant » du seed.

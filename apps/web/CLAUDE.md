@@ -36,7 +36,7 @@ src/
   ui/
     app/           # router (lazy), providers, layout
     components/    # composants génériques
-    features/      # library/ context-detail/ context-editor/ taxonomy/
+    features/      # library/ context-detail/ context-editor/ taxonomy/ mcp/ workspaces/
     styles/        # tokens, thèmes, mixins, reset
   test/            # setup Vitest, helpers de rendu
 tests/architecture # garde-fous : couches, dépendances du paquet, couleurs en dur, types OpenAPI à jour
@@ -53,17 +53,18 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 
 ## Données et états simulés
 
-- Ports dans `src/application/ports/` (`ContextRepository`, `WorkspaceRepository`, `Clock`) ; l'UI les reçoit via `useServices()`, jamais en import direct.
+- Ports dans `src/application/ports/` (`ContextRepository`, `TaxonomyRepository`, `OverviewRepository` pour la navigation, `WorkspaceRepository` pour les Workspaces, `Clock`) ; l'UI les reçoit via `useServices()`, jamais en import direct.
 - Fixtures dans `packages/domain/src/fixtures/` (partagées avec le seed du serveur) : les textes et compteurs des maquettes **sont** les fixtures. `contexts.test.ts` (à côté) vérifie chaque compteur visible (statuts, collections, portées, tags, fusion) : le mettre à jour avec toute modification des fixtures.
 - Horloge figée au 23/11/2026 11:12 (`demoClock`, sur `DEMO_NOW` du domaine) pour que « il y a 2 h », « hier »… correspondent aux maquettes. Les tests tournent en `TZ=Europe/Paris`.
 - Le repository in-memory joue le rôle du serveur : il revalide le brouillon (`draftRejections`) et rescanne le contenu à la publication (`publishRejections`) ; l'UI n'est jamais seule juge.
 - Copie locale des brouillons (`DraftStorage`, `localStorage` validé par garde de type) : autosave 2 s, conservée sur conflit, effacée après enregistrement serveur.
 - `?mock=conflict` : à l'enregistrement d'un contexte publié, « Camille » publie la version suivante juste avant → `VersionConflictError` ; « Repartir de la vN » débloque.
 - `?mock=empty|loading|error|slow|conflict` : relu à chaque appel. Il ne touche que la requête **principale** de l'écran ; la navigation (sidebar) reste disponible (maquettes 05 et 06).
+- Workspaces : `?mock=ws-empty` (aucun workspace, maquette 24), `ws-closed` (tout workspace présenté fermé, maquette 28), `ws-forbidden` (accès refusé au détail, maquette 30) ; `loading` et `error` s'appliquent à la liste et au détail (maquettes 25, 29). Utilisateur de la démo : Brice (membre des 4 workspaces des fixtures).
 
 ## Données réelles (mode `http`)
 
-- `HttpContextRepository`, `HttpTaxonomyRepository`, `HttpWorkspaceRepository` implémentent les **mêmes ports** que l'in-memory. Client `openapi-fetch` typé par `openapi.d.ts`, **généré** depuis le contrat commité du serveur (`pnpm api:generate`) : jamais d'import du code serveur, jamais de modification à la main. `tests/architecture/openapi-types.test.ts` échoue s'il n'est plus à jour.
+- `HttpContextRepository`, `HttpTaxonomyRepository`, `HttpOverviewRepository`, `HttpWorkspaceRepository` implémentent les **mêmes ports** que l'in-memory. Client `openapi-fetch` typé par `openapi.d.ts`, **généré** depuis le contrat commité du serveur (`pnpm api:generate`) : jamais d'import du code serveur, jamais de modification à la main. `tests/architecture/openapi-types.test.ts` échoue s'il n'est plus à jour.
 - Erreurs d'API → erreurs du domaine dans `http/apiClient.ts` (`unwrap`) : 404 → `ContextNotFoundError`, 409 → `VersionConflictError` (écran de conflit), 422 → `DraftRejectedError` avec les **findings du serveur** (fusionnés au scan local dans l'éditeur, `mergeFindings`), 401 → `UnauthorizedError` (message dédié, sans « Réessayer », `LoadErrorState`), réseau / 5xx → `RepositoryUnavailableError`.
 - `VITE_DATA_SOURCE` est comparé **dans `main.tsx`** sur `import.meta.env` : Vite remplace la valeur au build et la branche inutilisée sort du bundle (les fixtures en mode http, le client HTTP en mode memory). Le domaine est `sideEffects: false` pour la même raison.
 - Dev : `pnpm dev` à la racine lance serveur et front. Le proxy Vite envoie `/api` vers `CONTEXT_HUB_API_TARGET` (défaut `http://127.0.0.1:8787`) et **injecte le jeton côté Node** (`CONTEXT_HUB_DEV_TOKEN`, sans préfixe `VITE_`, dans `.env.local`) : il n'entre jamais dans le bundle ni dans le navigateur. Voir `.env.example`.
@@ -72,7 +73,7 @@ Les fichiers `*.test.ts(x)` peuvent importer `src/test/` ; seul `src/test/` asse
 
 ## Routes
 
-`/` Bibliothèque · `/contexts/new` · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/mcp` · `/__components` (dev uniquement). Tous les écrans de la SPEC sont implémentés.
+`/` Bibliothèque · `/contexts/new` (`?title=&description=&content=` : préremplissage, « Proposer comme contexte ») · `/contexts/:id` · `/contexts/:id/edit` · `/taxonomy?tab=tags|collections` · `/workspaces?status=open|closed|all` · `/workspaces/:slug` · `/mcp` · `/__components` (dev uniquement). Tous les écrans de la SPEC sont implémentés.
 Taxonomie : renommer vers un nom existant = fusionner ; l'impact d'une fusion est calculé par le repository (`previewTagMerge`) ; toute mutation de taxonomie invalide les caches `taxonomy`, `contexts` et la navigation. Chemins centralisés dans `src/ui/app/paths.ts`, routes lazy dans `src/ui/app/routes.tsx`.
 `/contexts/:id` accepte un identifiant ou un slug encodé (`nuxt%2Fconventions-nuxt-4`) ; une référence inconnue donne la 404 de la maquette 11.
 La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`libraryParams.ts`) ; les paramètres inconnus (`mock`) sont conservés.
@@ -109,6 +110,13 @@ La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`library
 - CLS : un en-tête dont le contenu change au chargement ne doit pas passer à la ligne (`flex-wrap: nowrap` en desktop, contenus compressibles) ; `scrollbar-gutter: stable` sur `html`. Mesurer avec un `PerformanceObserver('layout-shift')` sur le build (`pnpm build && pnpm preview`), pas en dev.
 - Ne pas mémoïser sans mesure : une mémoïsation de la gouttière de l'Éditeur n'apportait rien (12,5 ms par frappe à 400 lignes avec ou sans) et a été retirée.
 - Le parser Markdown doit rester hors du bundle principal (chunk partagé Détail / Éditeur).
+
+### Workspaces (phase 9, SPEC §7)
+
+- Journal : une première page (`before`, les 20 plus récentes), **jamais rechargée en entier** ; puis un polling `since=<prochain seq>` (`refetchInterval` 3 s, `refetchIntervalInBackground: false` : arrêté onglet masqué, et pour un workspace fermé) qui **fusionne** les entrées dans le cache (`journal.ts`, `mergeEntries` : par `seq`, sans doublon). « Charger les entrées précédentes » fusionne de même. Intervalle configurable (`AppConfig.workspacePollMs`, court en test).
+- La page ne doit pas lire `data` / `dataUpdatedAt` de la requête de polling : ils changent à chaque passage et re-rendaient toute la page toutes les 3 s (mesuré : 13 rendus en 400 ms, contre 1). L'heure de synchronisation est lue par `useLastSync` dans l'indicateur « En direct », qui se re-rend seul chaque seconde ; les heures relatives du journal, toutes les 30 s.
+- Le corps d'une entrée est une **donnée non fiable** écrite par une session : rendu en texte brut (`white-space: pre-wrap`), jamais en Markdown ; « Proposer comme contexte » ne fait que préremplir l'éditeur (brouillon, publié par un humain après scan).
+- Une nouvelle entrée reçue invalide le détail (claims, participants, compteurs) ; sinon le détail est rafraîchi toutes les 30 s.
 
 ### Erreurs
 

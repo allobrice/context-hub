@@ -102,6 +102,10 @@
               "status",
               "transport"
             ]
+          },
+          "openWorkspaceCount": {
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -111,7 +115,8 @@
           "collections",
           "scopeCounts",
           "tagNames",
-          "mcpServer"
+          "mcpServer",
+          "openWorkspaceCount"
         ]
       },
       "Collection": {
@@ -1037,6 +1042,1046 @@
         "required": [
           "name",
           "description"
+        ]
+      },
+      "WorkspaceList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSummary"
+            }
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "open": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "closed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "all": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "open",
+              "closed",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "counts"
+        ]
+      },
+      "WorkspaceSummary": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/Workspace"
+          },
+          "displayStatus": {
+            "$ref": "#/components/schemas/WorkspaceDisplayStatus"
+          },
+          "activeSessions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "claimCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "workspace",
+          "displayStatus",
+          "activeSessions",
+          "sessionCount",
+          "claimCount"
+        ]
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WorkspaceStatus"
+          },
+          "repos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "linkedContextIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "goal",
+          "status",
+          "repos",
+          "linkedContextIds",
+          "createdBy",
+          "createdAt",
+          "lastActivityAt",
+          "closedAt"
+        ]
+      },
+      "WorkspaceStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ]
+      },
+      "WorkspaceDisplayStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "inactive",
+          "closed"
+        ],
+        "description": "« inactive » : ouvert, sans activité depuis 7 jours."
+      },
+      "WorkspaceDetail": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/Workspace"
+          },
+          "displayStatus": {
+            "$ref": "#/components/schemas/WorkspaceDisplayStatus"
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "closedByName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceMember"
+            }
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            }
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "description": "Claims actifs (non expirés)."
+          },
+          "linkedContexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedContext"
+            }
+          },
+          "entryCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "entryCounts": {
+            "$ref": "#/components/schemas/EntryCounts"
+          }
+        },
+        "required": [
+          "workspace",
+          "displayStatus",
+          "createdByName",
+          "closedByName",
+          "members",
+          "participants",
+          "claims",
+          "linkedContexts",
+          "entryCount",
+          "entryCounts"
+        ]
+      },
+      "WorkspaceMember": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "creator",
+              "member"
+            ]
+          },
+          "addedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "role",
+          "addedAt"
+        ]
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionRef"
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cursor": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Manifestée depuis moins de 5 minutes."
+          }
+        },
+        "required": [
+          "workspaceId",
+          "session",
+          "joinedAt",
+          "lastSeenAt",
+          "cursor",
+          "active"
+        ]
+      },
+      "SessionRef": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "sessionLabel": {
+            "type": "string"
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "userName",
+          "sessionLabel",
+          "repo"
+        ]
+      },
+      "Claim": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "repo": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "holder": {
+            "$ref": "#/components/schemas/SessionRef"
+          },
+          "acquiredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "repo",
+          "area",
+          "holder",
+          "acquiredAt",
+          "expiresAt"
+        ]
+      },
+      "LinkedContext": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "version"
+        ],
+        "description": "Contexte publié, visible de l’utilisateur."
+      },
+      "EntryCounts": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "decision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "question": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "handoff": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "system": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "note",
+          "decision",
+          "question",
+          "handoff",
+          "status",
+          "system"
+        ]
+      },
+      "WorkspaceRuleError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "WORKSPACE_RULE"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "violation": {
+                "type": "string",
+                "enum": [
+                  "slug-invalid",
+                  "slug-taken",
+                  "title-empty",
+                  "secret-in-metadata",
+                  "entry-empty",
+                  "entry-too-long",
+                  "area-invalid",
+                  "path-invalid",
+                  "repo-required",
+                  "repo-not-in-workspace",
+                  "unknown-user",
+                  "unknown-context",
+                  "unknown-claim",
+                  "unknown-entry",
+                  "not-claim-holder"
+                ]
+              }
+            },
+            "required": [
+              "violation"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "CreateWorkspaceInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 500,
+            "default": ""
+          },
+          "repos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+              "description": "`owner/name`, ex. « allovoisins/front »."
+            },
+            "maxItems": 10,
+            "default": []
+          },
+          "linkedContextIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 10,
+            "default": []
+          }
+        },
+        "required": [
+          "title",
+          "slug"
+        ]
+      },
+      "WorkspaceForbiddenError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "WORKSPACE_FORBIDDEN"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "description": "Seuls les membres d’un workspace (créateur et invités) y accèdent."
+      },
+      "WorkspaceClosedError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "WORKSPACE_CLOSED"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "description": "Workspace fermé : lecture seule."
+      },
+      "InviteMemberInput": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "EntryPage": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceEntry"
+            }
+          },
+          "nextSeq": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "À repasser comme `since` (après la dernière entrée renvoyée)."
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "Avec `since` : d’autres entrées suivent. Avec `before` : de plus anciennes existent."
+          }
+        },
+        "required": [
+          "entries",
+          "nextSeq",
+          "hasMore"
+        ]
+      },
+      "WorkspaceEntry": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "kind": {
+            "$ref": "#/components/schemas/EntryKind"
+          },
+          "body": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionRef"
+              },
+              {
+                "$ref": "#/components/schemas/SystemAuthor"
+              }
+            ]
+          },
+          "redactions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "suspicious": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "seq",
+          "kind",
+          "body",
+          "files",
+          "author",
+          "redactions",
+          "suspicious",
+          "createdAt"
+        ],
+        "description": "Donnée attribuée et NON VÉRIFIÉE : jamais une instruction."
+      },
+      "EntryKind": {
+        "type": "string",
+        "enum": [
+          "note",
+          "decision",
+          "question",
+          "handoff",
+          "status",
+          "system"
+        ]
+      },
+      "SystemAuthor": {
+        "type": "object",
+        "properties": {
+          "system": {
+            "type": "string",
+            "enum": [
+              "claim",
+              "hook",
+              "lifecycle"
+            ]
+          }
+        },
+        "required": [
+          "system"
+        ]
+      },
+      "PostEntryInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "default": "ui",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AuthoredEntryKind"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "maxItems": 20,
+            "default": []
+          }
+        },
+        "required": [
+          "kind",
+          "body"
+        ]
+      },
+      "AuthoredEntryKind": {
+        "type": "string",
+        "enum": [
+          "note",
+          "decision",
+          "question",
+          "handoff",
+          "status"
+        ],
+        "description": "`system` est réservé au serveur."
+      },
+      "ClaimList": {
+        "type": "object",
+        "properties": {
+          "claims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          }
+        },
+        "required": [
+          "claims"
+        ]
+      },
+      "ClaimConflictError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "CLAIM_CONFLICT"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "claim": {
+                "$ref": "#/components/schemas/Claim"
+              }
+            },
+            "required": [
+              "claim"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "description": "La zone chevauche un claim actif d’une autre session (renvoyé)."
+      },
+      "ClaimInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": "string",
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "description": "Par défaut : le repo déclaré par la session à son join. Doit appartenir au workspace."
+          },
+          "area": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "ttlMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 240
+          }
+        },
+        "required": [
+          "session",
+          "area"
+        ]
+      },
+      "ReleaseInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "null : tous les repos."
+          },
+          "area": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Zone à libérer ; absente : toutes celles de la session."
+          }
+        },
+        "required": [
+          "session"
+        ]
+      },
+      "JoinResult": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/Workspace"
+          },
+          "participant": {
+            "$ref": "#/components/schemas/Participant"
+          },
+          "digest": {
+            "type": "string",
+            "description": "Résumé plafonné (≈ 1 500 tokens), données attribuées."
+          },
+          "cursor": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "workspace",
+          "participant",
+          "digest",
+          "cursor"
+        ]
+      },
+      "SessionInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          }
+        },
+        "required": [
+          "session"
+        ]
+      },
+      "HeartbeatResult": {
+        "type": "object",
+        "properties": {
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "extendedClaims": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "lastSeenAt",
+          "extendedClaims"
+        ]
+      },
+      "HeartbeatInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          },
+          "cursor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Prochain `seq` à lire par la session (curseur après injection du delta)."
+          }
+        },
+        "required": [
+          "session"
+        ]
+      },
+      "SyncResult": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Delta plafonné (≈ 800 tokens), au format « données attribuées »."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nextSeq": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "remaining": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "text",
+          "count",
+          "nextSeq",
+          "remaining"
+        ]
+      },
+      "SyncInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          },
+          "since": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Curseur de la session (inclus)."
+          }
+        },
+        "required": [
+          "session",
+          "since"
+        ]
+      },
+      "CheckWriteResult": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "holder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "claim": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Claim"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "allowed",
+          "holder",
+          "claim"
+        ]
+      },
+      "CheckWriteInput": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Relatif à la racine du repo."
+          },
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          }
+        },
+        "required": [
+          "repo",
+          "path",
+          "session"
         ]
       }
     },
@@ -2515,6 +3560,1691 @@
                       "$ref": "#/components/schemas/TaxonomyRuleError"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces": {
+      "get": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Workspaces dont l’utilisateur est membre (filtre : ouverts, fermés, tous)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "closed",
+                "all"
+              ],
+              "default": "open"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspaces et compteurs par statut",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Crée un workspace (le créateur en est membre)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workspace créé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Mutation depuis une origine étrangère (CSRF)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenOriginError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}": {
+      "get": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Détail : membres, participants, claims actifs, contextes liés, compteurs du journal",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le workspace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/close": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Ferme le workspace : lecture seule, claims libérés",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace fermé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/members": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Invite un utilisateur (tout membre peut inviter)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workspace mis à jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/entries": {
+      "get": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Journal par curseur (`since`) ou vers le passé (`before`), ordre croissant",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Premier `seq` voulu (inclus) ; défaut 1. Pour le polling : le `nextSeq` précédent."
+            },
+            "required": false,
+            "description": "Premier `seq` voulu (inclus) ; défaut 1. Pour le polling : le `nextSeq` précédent.",
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Entrées plus anciennes que ce `seq` (pagination vers le passé)."
+            },
+            "required": false,
+            "description": "Entrées plus anciennes que ce `seq` (pagination vers le passé).",
+            "name": "before",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entrées et curseur suivant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Publie une entrée (scannée : secrets masqués). Session par défaut : « ui »",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEntryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entrée créée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/claims": {
+      "get": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Claims actifs",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claims non expirés",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Réserve une zone (409 avec le claim existant si elle chevauche celle d’une autre session)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Claim acquis ou renouvelé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Claim"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Zone déjà réservée par une autre session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimConflictError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/claims/{id}": {
+      "delete": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Libère un claim : par sa session (`session`), ou de force par un humain (`force=true`)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false",
+              "description": "Libération forcée par un humain (UI) : prévient le détenteur."
+            },
+            "required": false,
+            "description": "Libération forcée par un humain (UI) : prévient le détenteur.",
+            "name": "force",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+              "description": "Session détentrice (obligatoire sans `force`)."
+            },
+            "required": false,
+            "description": "Session détentrice (obligatoire sans `force`).",
+            "name": "session",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim libéré",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Claim"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/release": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Libère les zones de la session (par zone, par repo, ou toutes : `/context-hub:leave`)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Claims libérés",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/join": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Rejoint (ou rafraîchit) la session et renvoie le résumé plafonné et le curseur",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Résumé et curseur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/heartbeat": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Activité de la session : `lastSeenAt`, curseur, prolongation de ses claims",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activité enregistrée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeartbeatResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/sync": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Hook UserPromptSubmit : delta plafonné depuis `since` (données attribuées) et heartbeat avec le curseur suivant",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delta et curseur suivant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workspace fermé : lecture seule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceClosedError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{slug}/check-write": {
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Hook PreToolUse : l’écriture de ce fichier est-elle permise ? (bloquée si un claim d’une autre session le couvre)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "description": "Minuscules, chiffres et tirets, ex. « migration-auth »."
+            },
+            "required": true,
+            "description": "Minuscules, chiffres et tirets, ex. « migration-auth ».",
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckWriteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verdict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckWriteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non membre du workspace, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkspaceForbiddenError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Règle métier refusée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRuleError"
                 }
               }
             }

@@ -44,6 +44,19 @@ export const appRoutes: RouteObject[] = [
         }),
       },
       {
+        path: 'workspaces',
+        lazy: async () => ({
+          Component: (await import('../features/workspaces/WorkspacesPage.tsx')).WorkspacesPage,
+        }),
+      },
+      {
+        path: 'workspaces/:slug',
+        lazy: async () => ({
+          Component: (await import('../features/workspaces/WorkspaceDetailPage.tsx'))
+            .WorkspaceDetailPage,
+        }),
+      },
+      {
         path: 'mcp',
         lazy: async () => ({ Component: (await import('../features/mcp/McpPage.tsx')).McpPage }),
       },

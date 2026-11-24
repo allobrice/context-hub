@@ -105,6 +105,28 @@ export function maskSecretsIn(text: string): string {
   )
 }
 
+/** Bloc de clé privée complet (en-tête, corps base64, pied ou fin du texte). */
+const PRIVATE_KEY_BLOCK =
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g
+
+/**
+ * REMPLACE chaque secret reconnu par `replacement` (contrairement à `maskSecretsIn`, rien de la valeur
+ * ne subsiste) et compte les remplacements. Une clé privée est retirée en entier, corps compris.
+ */
+export function redactSecrets(text: string, replacement: string): { text: string; count: number } {
+  let count = 0
+  const replace = (): string => {
+    count += 1
+    return replacement
+  }
+  const redacted = SECRET_RULES.reduce(
+    (current, rule) =>
+      current.replace(new RegExp(rule.regex.source, `${rule.regex.flags}g`), replace),
+    text.replace(PRIVATE_KEY_BLOCK, replace),
+  )
+  return { text: redacted, count }
+}
+
 export interface VariableReplacement {
   /** Nom de la variable proposée, ex. NUXT_API_KEY. */
   readonly variable: string

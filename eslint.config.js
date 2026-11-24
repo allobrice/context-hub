@@ -194,7 +194,8 @@ export default tseslint.config(
   },
 
   {
-    files: ['**/*.{ts,tsx}'],
+    // Les scripts du plugin Claude Code sont du JavaScript ESM typé en JSDoc (`checkJs`) : mêmes règles.
+    files: ['**/*.{ts,tsx}', 'packages/claude-plugin/**/*.mjs'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.strictTypeChecked,
@@ -285,6 +286,7 @@ export default tseslint.config(
       '{apps,packages}/*/*.{js,ts}',
       '{apps,packages}/*/tests/**/*.ts',
       `${SERVER}/src/**/*.ts`,
+      'packages/claude-plugin/**/*.mjs',
     ],
     languageOptions: { globals: globals.node },
   },

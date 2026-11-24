@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { isCollectionListed } from '@context-hub/domain/taxonomy/collections.ts'
-import type { WorkspaceOverview } from '../../../application/ports/WorkspaceRepository.ts'
+import type { WorkspaceOverview } from '../../../application/ports/OverviewRepository.ts'
 import { CONTEXT_STATUSES, SCOPE_KINDS } from '@context-hub/domain/context/types.ts'
 import { LIBRARY_SORTS, type LibrarySort } from '@context-hub/domain/library/criteria.ts'
 import { Icon } from '../../components/Icon/Icon.tsx'

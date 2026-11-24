@@ -5,6 +5,12 @@
 import type { ContextDraftInput } from '@context-hub/domain/context/editing.ts'
 import { toContextId, type Context } from '@context-hub/domain/context/types.ts'
 import type { Collection } from '@context-hub/domain/taxonomy/types.ts'
+import type {
+  Claim,
+  Workspace,
+  WorkspaceDetail,
+  WorkspaceList,
+} from '@context-hub/domain/workspaces/types.ts'
 
 import type {
   ContextDetail,
@@ -34,4 +40,23 @@ export function toCollection({ system, ...rest }: Schemas['Collection']): Collec
 /** Corps d'un brouillon : le contrat attend des tableaux modifiables. */
 export function toDraftBody(draft: ContextDraftInput): Schemas['ContextDraftInput'] {
   return { ...draft, tags: [...draft.tags] }
+}
+
+export function toWorkspace(dto: Schemas['Workspace']): Workspace {
+  return { ...dto, linkedContextIds: dto.linkedContextIds.map(toContextId) }
+}
+
+export function toWorkspaceList(dto: Schemas['WorkspaceList']): WorkspaceList {
+  return {
+    ...dto,
+    items: dto.items.map((item) => ({ ...item, workspace: toWorkspace(item.workspace) })),
+  }
+}
+
+export function toWorkspaceDetail(dto: Schemas['WorkspaceDetail']): WorkspaceDetail {
+  return { ...dto, workspace: toWorkspace(dto.workspace) }
+}
+
+export function toClaim(dto: Schemas['Claim']): Claim {
+  return dto
 }

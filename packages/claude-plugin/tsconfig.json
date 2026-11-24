@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Les scripts sont du JavaScript (ESM) exécuté tel quel par `node`, typé en JSDoc et vérifié ici.
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["scripts", "tests", "vitest.config.ts"]
+}

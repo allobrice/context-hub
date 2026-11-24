@@ -7,11 +7,16 @@ import createClient from 'openapi-fetch'
 
 import { RepositoryUnavailableError, UnauthorizedError } from '../../application/errors.ts'
 import {
+  ClaimConflictError,
   ContextNotFoundError,
   DraftRejectedError,
   TaxonomyRuleError,
   VersionConflictError,
+  WorkspaceClosedError,
+  WorkspaceForbiddenError,
+  WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
+import { toClaim } from './mappers.ts'
 import type { components, paths } from './openapi.d.ts'
 
 export type ApiClient = ReturnType<typeof createClient<paths>>
@@ -27,6 +32,10 @@ export type ApiErrorBody =
   | Schemas['NoDraftError']
   | Schemas['DraftRejectedError']
   | Schemas['TaxonomyRuleError']
+  | Schemas['WorkspaceForbiddenError']
+  | Schemas['WorkspaceClosedError']
+  | Schemas['ClaimConflictError']
+  | Schemas['WorkspaceRuleError']
   | Schemas['ValidationError']
   | Schemas['InternalError']
 
@@ -42,6 +51,10 @@ const API_ERROR_CODES: ReadonlySet<string> = new Set<ApiErrorBody['code']>([
   'NO_DRAFT',
   'DRAFT_REJECTED',
   'TAXONOMY_RULE',
+  'WORKSPACE_FORBIDDEN',
+  'WORKSPACE_CLOSED',
+  'CLAIM_CONFLICT',
+  'WORKSPACE_RULE',
   'VALIDATION_FAILED',
   'INTERNAL',
 ])
@@ -85,6 +98,14 @@ export function toError(body: ApiErrorBody, response: Response): Error {
       return new DraftRejectedError(body.details.reasons, body.details.findings)
     case 'TAXONOMY_RULE':
       return new TaxonomyRuleError(body.details.violation)
+    case 'WORKSPACE_FORBIDDEN':
+      return new WorkspaceForbiddenError(body.details.slug)
+    case 'WORKSPACE_CLOSED':
+      return new WorkspaceClosedError(body.details.slug)
+    case 'CLAIM_CONFLICT':
+      return new ClaimConflictError(toClaim(body.details.claim))
+    case 'WORKSPACE_RULE':
+      return new WorkspaceRuleError(body.details.violation)
     case 'FORBIDDEN_ORIGIN':
     case 'NO_DRAFT':
     case 'VALIDATION_FAILED':

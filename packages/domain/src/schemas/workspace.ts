@@ -16,5 +16,7 @@ export const WorkspaceOverviewSchema = z
     }),
     tagNames: z.array(z.string()).readonly(),
     mcpServer: z.object({ status: z.enum(['online', 'offline']), transport: z.string() }),
+    /** Workspaces ouverts (Inactifs compris) dont l'utilisateur est membre. */
+    openWorkspaceCount: z.number().int().nonnegative(),
   })
   .meta({ id: 'WorkspaceOverview' })

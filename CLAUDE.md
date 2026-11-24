@@ -8,6 +8,7 @@ Des « contextes » Markdown réutilisables, versionnés et partagés, que les s
 apps/web/          # UI React (Vite) : voir apps/web/CLAUDE.md
 apps/server/       # serveur Hono : API REST /api, MCP /mcp, SQLite (voir apps/server/CLAUDE.md)
 packages/domain/   # @context-hub/domain : types, schémas, règles pures (SPEC §2), tests à côté des sources
+packages/claude-plugin/ # plugin Claude Code « context-hub » (Workspaces, SPEC §7) : voir son README.md
 design-kit/        # référence de design, lecture seule (SPEC.md = source de vérité)
 ```
 
@@ -29,6 +30,7 @@ Un script d'un seul paquet : `pnpm --filter @context-hub/<paquet> <script>` (ex.
 
 - `apps/web` → `packages/domain` ; `apps/server` → `packages/domain`.
 - `packages/domain` ne dépend d'aucun paquet du workspace ; sa seule dépendance externe autorisée est `zod`. Ni React, ni Hono, ni Drizzle, ni API Node (`node:*`).
+- `packages/claude-plugin` ne dépend d'aucun paquet (ni du workspace, ni externe) : ses scripts sont du JavaScript ESM typé en JSDoc (`checkJs`), exécutés tels quels par `node` dans les repos des utilisateurs ; il ne parle au serveur que par l'API REST et MCP. Vérifié par `packages/claude-plugin/tests/architecture.test.ts`.
 - Une app n'importe jamais une autre app. Le front consomme l'API via le contrat OpenAPI (types générés), jamais le code serveur.
 - Toujours importer le domaine par le paquet (`@context-hub/domain/context/types.ts`), jamais par un chemin relatif vers `packages/`.
 

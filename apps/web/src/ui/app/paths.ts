@@ -7,6 +7,12 @@ export const paths = {
   mcp: '/mcp',
   newContext: (title?: string) =>
     title ? `/contexts/new?${new URLSearchParams({ title }).toString()}` : '/contexts/new',
+  /** Éditeur prérempli depuis un workspace (« Proposer comme contexte ») : brouillon, jamais publié. */
+  proposeContext: (prefill: { title: string; description: string; content: string }) =>
+    `/contexts/new?${new URLSearchParams(prefill).toString()}`,
+  workspaces: (status: 'open' | 'closed' | 'all' = 'open') =>
+    status === 'open' ? '/workspaces' : `/workspaces?status=${status}`,
+  workspace: (slug: string) => `/workspaces/${encodeURIComponent(slug)}`,
   context: (id: ContextId) => `/contexts/${encodeURIComponent(id)}`,
   editContext: (id: ContextId) => `/contexts/${encodeURIComponent(id)}/edit`,
 } as const

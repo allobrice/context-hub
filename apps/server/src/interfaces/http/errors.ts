@@ -11,10 +11,15 @@ import type { z } from 'zod'
 
 import type { ApiError } from '@context-hub/domain/schemas/errors.ts'
 import {
+  ClaimConflictError,
   ContextNotFoundError,
   DraftRejectedError,
   TaxonomyRuleError,
   VersionConflictError,
+  WorkspaceClosedError,
+  WorkspaceForbiddenError,
+  WorkspaceNotFoundError,
+  WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
 
 import { NoDraftError } from '../../application/errors.ts'
@@ -87,6 +92,8 @@ export function knownErrorResponse(error: unknown, requestId: string): ErrorResp
       },
     }
   }
+  const workspace = workspaceErrorResponse(error, requestId)
+  if (workspace) return workspace
   // JSON malformé, corps trop gros… levés par Hono avant la validation Zod.
   if (error instanceof HTTPException && error.status < 500) {
     return {
@@ -95,6 +102,49 @@ export function knownErrorResponse(error: unknown, requestId: string): ErrorResp
         code: 'VALIDATION_FAILED',
         message: error.message || 'Requête invalide.',
         details: { issues: [] },
+      },
+    }
+  }
+  return null
+}
+
+/** Erreurs des Workspaces : 404, 403 (non membre), 410 (fermé), 409 (claim), 422 (règle). */
+function workspaceErrorResponse(error: unknown, requestId: string): ErrorResponse | null {
+  if (error instanceof WorkspaceNotFoundError) {
+    return {
+      status: 404,
+      body: {
+        code: 'NOT_FOUND',
+        message: error.message,
+        details: { reference: error.slug, requestId },
+      },
+    }
+  }
+  if (error instanceof WorkspaceForbiddenError) {
+    return {
+      status: 403,
+      body: { code: 'WORKSPACE_FORBIDDEN', message: error.message, details: { slug: error.slug } },
+    }
+  }
+  if (error instanceof WorkspaceClosedError) {
+    return {
+      status: 410,
+      body: { code: 'WORKSPACE_CLOSED', message: error.message, details: { slug: error.slug } },
+    }
+  }
+  if (error instanceof ClaimConflictError) {
+    return {
+      status: 409,
+      body: { code: 'CLAIM_CONFLICT', message: error.message, details: { claim: error.claim } },
+    }
+  }
+  if (error instanceof WorkspaceRuleError) {
+    return {
+      status: 422,
+      body: {
+        code: 'WORKSPACE_RULE',
+        message: error.message,
+        details: { violation: error.violation },
       },
     }
   }

@@ -1,5 +1,15 @@
 /** États reproduisibles des maquettes via `?mock=` (PROMPT.md). */
-export const MOCK_MODES = ['empty', 'loading', 'error', 'slow', 'conflict'] as const
+export const MOCK_MODES = [
+  'empty',
+  'loading',
+  'error',
+  'slow',
+  'conflict',
+  // Workspaces (maquettes 24, 28, 30) : liste vide, workspace fermé, accès refusé.
+  'ws-empty',
+  'ws-closed',
+  'ws-forbidden',
+] as const
 export type MockMode = (typeof MOCK_MODES)[number] | 'normal'
 
 export const MOCK_PARAM = 'mock'

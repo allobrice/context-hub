@@ -57,16 +57,16 @@ describe('InMemoryContextRepository.search', () => {
   })
 })
 
-describe('InMemoryWorkspaceRepository.getOverview', () => {
+describe('InMemoryOverviewRepository.getOverview', () => {
   it('reste disponible en mode error et loading (sidebar des maquettes 05/06)', async () => {
     for (const mode of ['error', 'loading'] as const) {
-      const overview = await servicesIn(mode).workspace.getOverview()
+      const overview = await servicesIn(mode).overview.getOverview()
       expect(overview.contextCount).toBe(42)
     }
   })
 
   it('expose collections, portées et tags', async () => {
-    const overview = await servicesIn('normal').workspace.getOverview()
+    const overview = await servicesIn('normal').overview.getOverview()
     expect(overview.collections.map((c) => [c.name, c.contextCount])).toEqual([
       ['Nuxt', 9],
       ['Vue', 8],
@@ -80,7 +80,7 @@ describe('InMemoryWorkspaceRepository.getOverview', () => {
   })
 
   it('mode empty : aucun compteur', async () => {
-    const overview = await servicesIn('empty').workspace.getOverview()
+    const overview = await servicesIn('empty').overview.getOverview()
     expect(overview).toMatchObject({
       contextCount: 0,
       collections: [],
