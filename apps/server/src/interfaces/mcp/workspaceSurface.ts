@@ -86,7 +86,9 @@ const PostInput = z.object({
 const ClaimInput = z.object({
   slug: SlugParam,
   session: SessionParam,
-  repo: RepoSchema,
+  repo: RepoSchema.optional().describe(
+    'À omettre : le serveur prend le repo déclaré par cette session à son join (déduit du remote git).',
+  ),
   area: z
     .string()
     .min(1)
@@ -98,7 +100,9 @@ const ClaimInput = z.object({
 const ReleaseInput = z.object({
   slug: SlugParam,
   session: SessionParam,
-  repo: RepoSchema,
+  repo: RepoSchema.optional().describe(
+    'À omettre : toutes les zones de la session, tous repos confondus.',
+  ),
   area: z
     .string()
     .min(1)
@@ -353,8 +357,9 @@ export function registerWorkspaceSurface(
     {
       title: 'Réserver une zone du code',
       description:
-        'Réserve un glob d’un repo pour cette session (TTL 30 min par défaut, prolongé par son activité). ' +
-        'En cas de chevauchement avec la zone d’une autre session : CLAIM_CONFLICT et le détenteur.',
+        'Réserve un glob pour cette session (TTL 30 min par défaut, prolongé par son activité). Ne pas ' +
+        'passer `repo` : le serveur prend celui de la session. En cas de chevauchement avec la zone ' +
+        'd’une autre session : CLAIM_CONFLICT et le détenteur.',
       inputSchema: ClaimInput,
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
     },
@@ -371,13 +376,20 @@ export function registerWorkspaceSurface(
     {
       title: 'Libérer une zone',
       description:
-        'Libère une zone réservée par cette session (ou toutes ses zones du repo si `area` est absent).',
+        'Libère une zone réservée par cette session, ou toutes ses zones si `area` est absent. ' +
+        'Ne pas passer `repo` : sans lui, la libération porte sur tous les repos de la session.',
       inputSchema: ReleaseInput,
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
     },
     async ({ slug, session, repo, area }) =>
       run('workspace_release', slug, async () =>
-        json({ released: await workspaces.releaseClaims(viewer, slug, { session, repo, area }) }),
+        json({
+          released: await workspaces.releaseClaims(viewer, slug, {
+            session,
+            repo: repo ?? null,
+            area,
+          }),
+        }),
       ),
   )
 

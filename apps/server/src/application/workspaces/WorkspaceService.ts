@@ -92,7 +92,8 @@ export interface PostEntryInput extends SessionInput {
 
 export interface ClaimInput {
   readonly session: string
-  readonly repo: string
+  /** Absent : le repo déclaré par la session à son join (pas de saisie par le modèle). */
+  readonly repo?: string | undefined
   readonly area: string
   readonly ttlMinutes?: number | undefined
 }
@@ -409,19 +410,23 @@ export class WorkspaceService {
 
   // ── Claims ─────────────────────────────────────────────────────────────────
 
-  /** @throws ClaimConflictError (avec le claim existant), WorkspaceRuleError('area-invalid') */
+  /**
+   * @throws ClaimConflictError (avec le claim existant), WorkspaceRuleError ('area-invalid',
+   * 'repo-required', 'repo-not-in-workspace')
+   */
   async acquireClaim(viewer: Viewer, slug: string, input: ClaimInput): Promise<Claim> {
     const record = await this.writable(viewer, slug)
     const normalized = normalizeArea(input.area)
     if ('violation' in normalized) throw new WorkspaceRuleError('area-invalid')
+    const repo = await this.claimRepo(viewer, record, input.session, input.repo)
     const ttlMinutes = input.ttlMinutes ?? CLAIM_TTL_DEFAULT_MINUTES
-    const session = sessionKey(viewer, input)
+    const session = sessionKey(viewer, { session: input.session, repo })
     const now = this.clock.now()
     const result = await this.store.acquireClaim({
       workspaceId: record.workspace.id,
       id: this.newId('claim'),
-      session: { ...session, repo: input.repo },
-      repo: input.repo,
+      session,
+      repo,
       area: normalized.area,
       ttlMinutes,
       at: now,
@@ -594,6 +599,32 @@ export class WorkspaceService {
   }
 
   // ── Interne ────────────────────────────────────────────────────────────────
+
+  /**
+   * Repo d'un claim. Absent, c'est celui que la session a déclaré à son join (déduit du remote git
+   * par le plugin) : un repo retapé par le modèle peut être faux, et le claim
+   * ne protégerait alors rien. Un repo hors du workspace (s'il en déclare) est refusé.
+   */
+  private async claimRepo(
+    viewer: Viewer,
+    record: WorkspaceRecord,
+    sessionLabel: string,
+    explicit: string | undefined,
+  ): Promise<string> {
+    let repo = explicit ?? null
+    if (repo === null) {
+      const participant = (await this.store.participants(record.workspace.id)).find(
+        ({ session }) => session.userId === viewer.userId && session.sessionLabel === sessionLabel,
+      )
+      repo = participant?.session.repo ?? null
+    }
+    if (repo === null) throw new WorkspaceRuleError('repo-required')
+    const { repos } = record.workspace
+    if (repos.length > 0 && !repos.includes(repo)) {
+      throw new WorkspaceRuleError('repo-not-in-workspace')
+    }
+    return repo
+  }
 
   /** @throws WorkspaceNotFoundError, WorkspaceForbiddenError */
   private async access(viewer: Viewer, slug: string): Promise<WorkspaceRecord> {

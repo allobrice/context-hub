@@ -268,6 +268,34 @@ describe('claims : TTL et heartbeat (horloge injectée)', () => {
     ).resolves.toMatchObject({ area: 'apps/web/src/search/a.ts' })
   })
 
+  it('sans repo : prend celui que la session a déclaré à son join', async () => {
+    await service().join(CAMILLE, SLUG, { session: 'web-7', repo: FRONT })
+    const acquired = await service().acquireClaim(CAMILLE, SLUG, {
+      session: 'web-7',
+      area: 'apps/web/src/payments/**',
+    })
+    expect(acquired.repo).toBe(FRONT)
+    const verdict = await service().checkWrite(BRICE, SLUG, {
+      repo: FRONT,
+      path: 'apps/web/src/payments/x.ts',
+      session: 'web-1',
+    })
+    expect(verdict.allowed).toBe(false)
+  })
+
+  it('refuse un repo mal saisi (hors du workspace) : le claim ne protégerait rien', async () => {
+    // Une faute de frappe (« allovoisi ») : le claim ne protégerait rien.
+    await expect(
+      service().acquireClaim(BRICE, SLUG, { ...claim, repo: 'allovoisi/front' }),
+    ).rejects.toEqual(new WorkspaceRuleError('repo-not-in-workspace'))
+  })
+
+  it('sans repo ni join préalable : repo-required', async () => {
+    await expect(
+      service().acquireClaim(BRICE, SLUG, { session: 'inconnue', area: 'apps/x/**' }),
+    ).rejects.toEqual(new WorkspaceRuleError('repo-required'))
+  })
+
   it('refuse une zone invalide', async () => {
     await expect(
       service().acquireClaim(BRICE, SLUG, { ...claim, area: '../secrets/**' }),

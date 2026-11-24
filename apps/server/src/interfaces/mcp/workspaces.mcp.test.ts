@@ -177,6 +177,25 @@ describe.each(['legacy', 'modern'] as const)('MCP workspaces (%s)', (era) => {
     expect(lastJson(released)).toMatchObject({ released: [{ area: 'apps/web/src/search/**' }] })
   })
 
+  it('workspace_claim sans repo : celui de la session (join) ; repo hors workspace refusé', async () => {
+    const client = await connect({ era })
+    await client.callTool({
+      name: 'workspace_join',
+      arguments: { slug: SLUG, session: 'web-7', repo: FRONT },
+    })
+    const ok = await client.callTool({
+      name: 'workspace_claim',
+      arguments: { slug: SLUG, session: 'web-7', area: 'apps/web/src/payments/**' },
+    })
+    expect(lastJson(ok)).toMatchObject({ claim: { repo: FRONT, area: 'apps/web/src/payments/**' } })
+    const typo = await client.callTool({
+      name: 'workspace_claim',
+      arguments: { slug: SLUG, session: 'web-7', repo: 'allovoisi/front', area: 'apps/x/**' },
+    })
+    expect(typo.isError).toBe(true)
+    expect(texts(typo).join('')).toContain('repo-not-in-workspace')
+  })
+
   it('10 workspace_claim concurrents qui se chevauchent : exactement un succès', async () => {
     const client = await connect({ era })
     const results = await Promise.all(

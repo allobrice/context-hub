@@ -25,6 +25,8 @@ const WORKSPACE_MESSAGES: Readonly<Record<WorkspaceRuleViolation, string>> = {
   'entry-too-long': 'Le message dépasse 4 000 caractères.',
   'area-invalid': 'Zone invalide.',
   'path-invalid': 'Chemin invalide.',
+  'repo-required': 'Repo inconnu pour cette session : rejoindre le workspace avec un repo.',
+  'repo-not-in-workspace': 'Ce repo n’appartient pas au workspace.',
   'unknown-user': 'Utilisateur inconnu.',
   'unknown-context': 'Un contexte lié n’existe plus ou n’est pas publié.',
   'unknown-claim': 'Ce claim a déjà été libéré ou a expiré.',

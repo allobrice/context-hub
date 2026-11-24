@@ -3144,7 +3144,7 @@ export interface components {
             message: string;
             details: {
                 /** @enum {string} */
-                violation: "slug-invalid" | "slug-taken" | "title-empty" | "secret-in-metadata" | "entry-empty" | "entry-too-long" | "area-invalid" | "path-invalid" | "unknown-user" | "unknown-context" | "unknown-claim" | "unknown-entry" | "not-claim-holder";
+                violation: "slug-invalid" | "slug-taken" | "title-empty" | "secret-in-metadata" | "entry-empty" | "entry-too-long" | "area-invalid" | "path-invalid" | "repo-required" | "repo-not-in-workspace" | "unknown-user" | "unknown-context" | "unknown-claim" | "unknown-entry" | "not-claim-holder";
             };
         };
         CreateWorkspaceInput: {
@@ -3241,8 +3241,8 @@ export interface components {
         ClaimInput: {
             /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
             session: string;
-            /** @description `owner/name`, ex. « allovoisins/front ». */
-            repo: string;
+            /** @description Par défaut : le repo déclaré par la session à son join. Doit appartenir au workspace. */
+            repo?: string;
             area: string;
             ttlMinutes?: number;
         };

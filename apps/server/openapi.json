@@ -1468,6 +1468,8 @@
                   "entry-too-long",
                   "area-invalid",
                   "path-invalid",
+                  "repo-required",
+                  "repo-not-in-workspace",
                   "unknown-user",
                   "unknown-context",
                   "unknown-claim",
@@ -1826,7 +1828,7 @@
             "type": "string",
             "maxLength": 200,
             "pattern": "^[\\w.-]+\\/[\\w.-]+$",
-            "description": "`owner/name`, ex. « allovoisins/front »."
+            "description": "Par défaut : le repo déclaré par la session à son join. Doit appartenir au workspace."
           },
           "area": {
             "type": "string",
@@ -1841,7 +1843,6 @@
         },
         "required": [
           "session",
-          "repo",
           "area"
         ]
       },

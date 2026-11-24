@@ -152,6 +152,7 @@ describe('/context-hub:join', () => {
     expect(text).toContain('<context-hub>')
     expect(text).toContain('Workspace migration-auth : résumé…')
     expect(text).toContain('session="web-1"')
+    expect(text).toContain('sans `repo`')
   })
 
   it('deux sessions du même repo gardent chacune leur état (web-1 / web-2)', async () => {

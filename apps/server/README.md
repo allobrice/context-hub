@@ -47,16 +47,16 @@ Les deux révisions du protocole sont servies : 2025-11-25, avec sessions et `Mc
 
 Mêmes cas d'usage que l'API REST `/api/workspaces/*`, réservés aux **membres** du workspace.
 
-| Primitive                              | Détail                                                                                                                                      |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tool `workspace_list`                  | `status?` (`open` par défaut). Slug, titre, statut, repos, sessions, claims : **sans contenu**.                                             |
-| Tool `workspace_join`                  | `slug`, `session` (label, ex. `web-1`), `repo?`. Résumé plafonné (≈ 1 500 tokens) et `cursor`.                                              |
-| Tool `workspace_read`                  | `slug`, `since` (inclus). Entrées plafonnées et `nextSeq`.                                                                                  |
-| Tool `workspace_post`                  | `slug`, `session`, `kind` (`note`, `decision`, `question`, `handoff`, `status`), `body` (≤ 4 000), `files?`. Secrets remplacés par le scan. |
-| Tool `workspace_claim`                 | `slug`, `session`, `repo`, `area` (glob), `ttlMinutes?` (30 par défaut). `CLAIM_CONFLICT` avec le détenteur.                                |
-| Tool `workspace_release`               | `slug`, `session`, `repo`, `area?` (toutes les zones de la session si absent).                                                              |
-| Tool `propose_context`                 | `slug?`, `seq?`, `title`, `content`. Crée un **brouillon** personnel, jamais publié.                                                        |
-| Resource template `workspace://{slug}` | Le résumé. `resources/subscribe` (sessions 2025, membres seulement) → `notifications/resources/updated` à chaque nouvelle entrée.           |
+| Primitive                              | Détail                                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tool `workspace_list`                  | `status?` (`open` par défaut). Slug, titre, statut, repos, sessions, claims : **sans contenu**.                                                                          |
+| Tool `workspace_join`                  | `slug`, `session` (label, ex. `web-1`), `repo?`. Résumé plafonné (≈ 1 500 tokens) et `cursor`.                                                                           |
+| Tool `workspace_read`                  | `slug`, `since` (inclus). Entrées plafonnées et `nextSeq`.                                                                                                               |
+| Tool `workspace_post`                  | `slug`, `session`, `kind` (`note`, `decision`, `question`, `handoff`, `status`), `body` (≤ 4 000), `files?`. Secrets remplacés par le scan.                              |
+| Tool `workspace_claim`                 | `slug`, `session`, `area` (glob), `repo?` (défaut : celui de la session au join ; doit appartenir au workspace), `ttlMinutes?` (30). `CLAIM_CONFLICT` avec le détenteur. |
+| Tool `workspace_release`               | `slug`, `session`, `repo?`, `area?` (sans eux : toutes les zones de la session, tous repos).                                                                             |
+| Tool `propose_context`                 | `slug?`, `seq?`, `title`, `content`. Crée un **brouillon** personnel, jamais publié.                                                                                     |
+| Resource template `workspace://{slug}` | Le résumé. `resources/subscribe` (sessions 2025, membres seulement) → `notifications/resources/updated` à chaque nouvelle entrée.                                        |
 
 Les entrées sont présentées comme des **données attribuées** (« Entrée #47 (décision), écrite par api-1 (Brice · allovoisins/api) »), chaque ligne du corps citée par `│ `, jamais comme des consignes.
 

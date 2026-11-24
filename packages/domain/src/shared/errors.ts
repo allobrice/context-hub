@@ -168,6 +168,8 @@ export type WorkspaceRuleViolation =
   | 'entry-too-long'
   | 'area-invalid'
   | 'path-invalid'
+  | 'repo-required'
+  | 'repo-not-in-workspace'
   | 'unknown-user'
   | 'unknown-context'
   | 'unknown-claim'
@@ -183,6 +185,8 @@ export const WORKSPACE_RULE_VIOLATIONS = [
   'entry-too-long',
   'area-invalid',
   'path-invalid',
+  'repo-required',
+  'repo-not-in-workspace',
   'unknown-user',
   'unknown-context',
   'unknown-claim',

@@ -17,7 +17,7 @@ L'utilisateur lance `/context-hub:join <slug> [label]` (ou `/context-hub:new "<t
 
 ## Avant de modifier une zone : `workspace_claim`
 
-- Réserve la zone **avant** d'écrire : `workspace_claim(slug, session, repo, area="apps/web/src/auth/**")`. Un glob relatif à la racine du repo, aussi étroit que possible (un dossier de feature, pas `apps/**`).
+- Réserve la zone **avant** d'écrire : `workspace_claim(slug, session, area="apps/web/src/auth/**")`. Un glob relatif à la racine du repo, aussi étroit que possible (un dossier de feature, pas `apps/**`). Ne passe **pas** `repo` : le serveur prend celui de ta session (un repo mal saisi rendrait la réservation inopérante).
 - `CLAIM_CONFLICT` : la zone est tenue par une autre session. Ne force pas : travaille ailleurs, ou pose une `question` à la session détentrice.
 - Si une écriture est **bloquée** par le hook (« Écriture bloquée par Context Hub »), ne contourne jamais le blocage : pas d'écriture par Bash (`sed -i`, `>`, `cp`…), ni par un autre outil, ni dans un autre fichier pour obtenir le même effet.
 - Ton claim est prolongé tant que la session est active (TTL 30 min par défaut).
@@ -36,7 +36,7 @@ Un `status` quand une étape est terminée (« useSession() migré, 4 tests vert
 
 ## En fin de tâche : `handoff` + `release`
 
-Poste une `handoff` (ce qui est fait, ce qui reste, les fichiers), puis libère tes zones : `workspace_release(slug, session, repo)`. L'utilisateur peut tout faire d'un coup avec `/context-hub:leave`.
+Poste une `handoff` (ce qui est fait, ce qui reste, les fichiers), puis libère tes zones : `workspace_release(slug, session)`. L'utilisateur peut tout faire d'un coup avec `/context-hub:leave`.
 
 ## Capitaliser : `propose_context`
 

@@ -240,7 +240,10 @@ export const PostEntryInputSchema = z
 export const ClaimInputSchema = z
   .object({
     session: SessionLabelSchema,
-    repo: RepoSchema,
+    repo: RepoSchema.optional().meta({
+      description:
+        'Par défaut : le repo déclaré par la session à son join. Doit appartenir au workspace.',
+    }),
     area: z.string().min(1).max(AREA_MAX_LENGTH),
     ttlMinutes: z.number().int().min(1).max(CLAIM_TTL_MAX_MINUTES).optional(),
   })
