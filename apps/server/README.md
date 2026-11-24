@@ -17,7 +17,7 @@ pnpm --filter @context-hub/server db:init      # base VIDE + jeton de dev, affic
 pnpm --filter @context-hub/server dev          # http://127.0.0.1:8787
 ```
 
-Le seed n'écrit que dans une base vide (`data/context-hub.db` par défaut). Pour repartir des données de démo, supprimer ce fichier puis relancer `db:seed`. Seul le hash sha-256 du jeton est stocké : un jeton perdu ne se retrouve pas, on en génère un nouveau avec une nouvelle base.
+Le seed n'écrit que dans une base vide (`data/context-hub.db` par défaut). Pour repartir des données de démo, supprimer ce fichier puis relancer `db:seed`. Seul le hash sha-256 du jeton est stocké : un jeton perdu ne se retrouve pas, mais `pnpm --filter @context-hub/server db:token [--user <id>] [--label <libellé>]` en émet un nouveau sur la base existante, sans toucher aux données ni aux autres jetons.
 
 Pour l'UI branchée sur ce serveur : dans `apps/web/.env.local`, `VITE_DATA_SOURCE=http` et `CONTEXT_HUB_DEV_TOKEN=<jeton>` (injecté par le proxy Vite, jamais envoyé par le navigateur), puis `pnpm dev` à la racine.
 
