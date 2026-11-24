@@ -137,7 +137,7 @@ describe('hook.mjs (processus)', () => {
       'PreToolUse',
       preToolUse(`${ROOT}/apps/web/src/auth/a.ts`),
       {
-        CONTEXT_HUB_URL: 'http://127.0.0.1:9',
+        CONTEXT_HUB_URL: 'http://127.0.0.1:59999',
         CONTEXT_HUB_TOKEN: 'chub_test',
       },
     )
@@ -146,6 +146,7 @@ describe('hook.mjs (processus)', () => {
       '"systemMessage":"context-hub : écriture de apps/web/src/auth/a.ts non vérifiée',
     )
     expect(stdout).not.toContain('deny')
+    expect(stdout).toContain('connexion refusée')
     expect(Date.now() - start).toBeLessThan(5000)
   })
 

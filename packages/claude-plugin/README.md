@@ -78,7 +78,7 @@ Les hooks sortent toujours en code 0 et n'écrivent sur stdout que du JSON. Dél
 
 - Le blocage porte sur les outils d'édition de fichiers. Une écriture par Bash (`sed -i`, redirection `>`) n'est pas interceptée : le skill interdit ce contournement, mais ce n'est pas une garantie technique.
 - Un fichier hors du repo de la session (autre repo, `/tmp`) n'est jamais vérifié.
-- Fail-open par défaut : si le serveur est injoignable, l'écriture passe avec un avertissement.
+- Fail-open par défaut : si le serveur est injoignable, l'écriture passe avec un avertissement (`systemMessage`, parfois discret). Le fichier est aussi mémorisé dans l'état de la session et signalé au modèle au premier prompt où le serveur répond, pour qu'il prévienne l'utilisateur et les autres sessions.
 - Les notifications MCP `resources/updated` ne sont envoyées qu'aux clients du protocole 2025 ; le plugin n'en dépend pas (il synchronise à chaque prompt).
 
 ## Développement

@@ -147,6 +147,26 @@ describe('journal', () => {
     expect(stored.entries[0]?.body).not.toContain('51Hx')
   })
 
+  it('sans repo : celui de la session (join), même après son départ ; aucun pour l’UI', async () => {
+    await service().join(CAMILLE, SLUG, { session: 'web-7', repo: FRONT })
+    const handoff = await service().postEntry(CAMILLE, SLUG, {
+      session: 'web-7',
+      repo: null,
+      kind: 'handoff',
+      body: 'Passation',
+      files: [],
+    })
+    expect(handoff.author).toMatchObject({ sessionLabel: 'web-7', repo: FRONT })
+    const human = await service().postEntry(CAMILLE, SLUG, {
+      session: 'ui',
+      repo: null,
+      kind: 'note',
+      body: 'Depuis l’UI',
+      files: [],
+    })
+    expect(human.author).toMatchObject({ sessionLabel: 'ui', repo: null })
+  })
+
   it('refuse une entrée vide', async () => {
     await expect(
       service().postEntry(BRICE, SLUG, {

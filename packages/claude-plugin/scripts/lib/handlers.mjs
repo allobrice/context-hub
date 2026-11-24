@@ -15,6 +15,8 @@ import { deleteState, readState, writeState } from './state.mjs'
 /** Plafond de `additionalContext` (10 000 caractères côté Claude Code), avec une marge. */
 const MAX_CONTEXT_CHARS = 9_500
 const TIMEOUT_MS = { join: 4_000, sync: 3_000, checkWrite: 1_500, status: 3_000 }
+/** Écritures non vérifiées mémorisées au plus (les plus récentes). */
+const MAX_UNVERIFIED = 20
 
 /**
  * @typedef {object} HookInput
@@ -226,15 +228,16 @@ export async function onUserPromptSubmit(input, deps) {
   )
   if (result.kind === 'ok' && isRecord(result.body)) {
     const { text, count, nextSeq } = result.body
-    if (typeof nextSeq === 'number') {
-      writeState(deps.config.dataDir, input.session_id, { ...state, cursor: nextSeq })
-    }
-    return context(
-      'UserPromptSubmit',
-      typeof count === 'number' && count > 0 && typeof text === 'string'
-        ? `${identityLine(state)}\n\n${text}`
-        : identityLine(state),
-    )
+    // Le serveur répond de nouveau : les écritures non vérifiées sont signalées une fois, puis oubliées.
+    const { unverified = [], ...synced } = state
+    writeState(deps.config.dataDir, input.session_id, {
+      ...synced,
+      cursor: typeof nextSeq === 'number' ? nextSeq : state.cursor,
+    })
+    const parts = [identityLine(state)]
+    if (unverified.length > 0) parts.push(unverifiedNotice(state, unverified))
+    if (typeof count === 'number' && count > 0 && typeof text === 'string') parts.push(text)
+    return context('UserPromptSubmit', parts.join('\n\n'))
   }
   if (isGone(result)) {
     deleteState(deps.config.dataDir, input.session_id)
@@ -448,5 +451,22 @@ export async function onPreToolUse(input, deps) {
       `Écriture bloquée : vérification Context Hub impossible (${why}) et CONTEXT_HUB_FAIL_MODE=closed.`,
     )
   }
+  const unverified = [...new Set([...(state.unverified ?? []), path])].slice(-MAX_UNVERIFIED)
+  writeState(deps.config.dataDir, input.session_id, { ...state, unverified })
   return { systemMessage: `context-hub : écriture de ${path} non vérifiée (${why}).` }
+}
+
+/**
+ * Fail-open : l'avertissement `systemMessage` peut passer inaperçu. Les fichiers écrits sans
+ * vérification sont donc aussi signalés au modèle, au premier prompt où le serveur répond.
+ * @param {SessionState} state
+ * @param {readonly string[]} paths
+ */
+function unverifiedNotice(state, paths) {
+  return (
+    `Écritures faites pendant que Context Hub était injoignable, NON vérifiées contre les zones réservées : ` +
+    `${paths.join(', ')}. Signale-les à l’utilisateur, vérifie qu’aucune autre session ne réservait ces ` +
+    `fichiers, et poste une note : workspace_post(slug="${state.workspace}", session="${state.label}", ` +
+    `kind="note", files=[…]).`
+  )
 }

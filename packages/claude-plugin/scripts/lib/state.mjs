@@ -22,6 +22,8 @@ const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/
  * @property {string} repoRoot racine locale du repo (chemins relatifs des claims)
  * @property {number} cursor prochain `seq` à injecter
  * @property {string} joinedAt
+ * @property {string[]} [unverified] fichiers écrits pendant que le serveur était injoignable
+ *   (fail-open), à signaler au prochain prompt synchronisé
  */
 
 /**
@@ -37,7 +39,10 @@ function isSessionState(value) {
     typeof value.repo === 'string' &&
     typeof value.repoRoot === 'string' &&
     typeof value.cursor === 'number' &&
-    typeof value.joinedAt === 'string'
+    typeof value.joinedAt === 'string' &&
+    (value.unverified === undefined ||
+      (Array.isArray(value.unverified) &&
+        value.unverified.every((path) => typeof path === 'string')))
   )
 }
 

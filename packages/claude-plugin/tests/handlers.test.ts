@@ -405,6 +405,24 @@ describe('PreToolUse', () => {
     expect(calls).toEqual([])
   })
 
+  it('fail-open : l’écriture non vérifiée est signalée au modèle au prochain prompt synchronisé', async () => {
+    const file = `${ROOT}/apps/web/src/autre.ts`
+    await onPreToolUse(write(file), deps())
+    expect(readState(dataDir, SESSION_B)?.unverified).toEqual(['apps/web/src/autre.ts'])
+
+    // Le serveur répond de nouveau : signalement une fois, puis oubli.
+    routes.set('POST /api/workspaces/migration-auth/sync', () =>
+      ok({ text: '', count: 0, nextSeq: 49, remaining: 0 }),
+    )
+    const text = contextOf(await onUserPromptSubmit(input(SESSION_B, { prompt: 'suite' }), deps()))
+    expect(text).toContain('NON vérifiées contre les zones réservées : apps/web/src/autre.ts')
+    expect(readState(dataDir, SESSION_B)?.unverified).toBeUndefined()
+    const again = contextOf(
+      await onUserPromptSubmit(input(SESSION_B, { prompt: 'encore' }), deps()),
+    )
+    expect(again).not.toContain('NON vérifiées')
+  })
+
   it('serveur injoignable : fail-open (avertit) par défaut, fail-closed sur demande', async () => {
     const file = `${ROOT}/apps/web/src/auth/useSession.ts`
     const open = await onPreToolUse(write(file), deps())

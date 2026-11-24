@@ -27,6 +27,7 @@ import { buildDelta, buildDigest, type Delta } from '@context-hub/domain/workspa
 import { containsSecret, redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
 import {
   CLAIM_TTL_DEFAULT_MINUTES,
+  UI_SESSION_LABEL,
   DELTA_BUDGET_TOKENS,
   DIGEST_BUDGET_TOKENS,
   ENTRY_MAX_LENGTH,
@@ -393,7 +394,14 @@ export class WorkspaceService {
     if (input.body.trim() === '') throw new WorkspaceRuleError('entry-empty')
     if (input.body.length > ENTRY_MAX_LENGTH) throw new WorkspaceRuleError('entry-too-long')
     const scanned = redactEntry(input.body, input.files)
-    const session = sessionKey(viewer, input)
+    // Comme pour un claim : sans repo explicite, celui que la session a déclaré à son join (une
+    // passation postée après `/context-hub:leave` garde ainsi son repo). L'UI n'en a pas.
+    const repo =
+      input.repo ??
+      (input.session === UI_SESSION_LABEL
+        ? null
+        : await this.sessionRepo(viewer, record, input.session))
+    const session = sessionKey(viewer, { session: input.session, repo })
     return this.append(
       record,
       {
@@ -611,19 +619,25 @@ export class WorkspaceService {
     sessionLabel: string,
     explicit: string | undefined,
   ): Promise<string> {
-    let repo = explicit ?? null
-    if (repo === null) {
-      const participant = (await this.store.participants(record.workspace.id)).find(
-        ({ session }) => session.userId === viewer.userId && session.sessionLabel === sessionLabel,
-      )
-      repo = participant?.session.repo ?? null
-    }
+    const repo = explicit ?? (await this.sessionRepo(viewer, record, sessionLabel))
     if (repo === null) throw new WorkspaceRuleError('repo-required')
     const { repos } = record.workspace
     if (repos.length > 0 && !repos.includes(repo)) {
       throw new WorkspaceRuleError('repo-not-in-workspace')
     }
     return repo
+  }
+
+  /** Repo déclaré par la session à son join (participant), ou null. */
+  private async sessionRepo(
+    viewer: Viewer,
+    record: WorkspaceRecord,
+    sessionLabel: string,
+  ): Promise<string | null> {
+    const participant = (await this.store.participants(record.workspace.id)).find(
+      ({ session }) => session.userId === viewer.userId && session.sessionLabel === sessionLabel,
+    )
+    return participant?.session.repo ?? null
   }
 
   /** @throws WorkspaceNotFoundError, WorkspaceForbiddenError */

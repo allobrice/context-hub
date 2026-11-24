@@ -21,6 +21,30 @@ export function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** Codes système d'un échec de connexion → libellé. */
+const NETWORK_CODES = new Map([
+  ['ECONNREFUSED', 'connexion refusée'],
+  ['ECONNRESET', 'connexion interrompue'],
+  ['ENOTFOUND', 'hôte introuvable'],
+  ['EAI_AGAIN', 'hôte introuvable'],
+  ['EHOSTUNREACH', 'hôte inaccessible'],
+  ['ETIMEDOUT', 'délai dépassé'],
+])
+
+/**
+ * Raison lisible d'un échec réseau. `fetch` lève un TypeError (« fetch failed ») dont la cause
+ * porte le code système ; le délai d'AbortSignal.timeout lève un TimeoutError.
+ * @param {unknown} error
+ * @returns {string}
+ */
+export function networkReason(error) {
+  if (!(error instanceof Error)) return 'erreur réseau'
+  if (error.name === 'TimeoutError' || error.name === 'AbortError') return 'délai dépassé'
+  const cause = error.cause
+  const code = isRecord(cause) && typeof cause.code === 'string' ? cause.code : ''
+  return NETWORK_CODES.get(code) ?? 'erreur réseau'
+}
+
 /**
  * Chemin d'API d'un workspace, slug encodé.
  * @param {string} slug
@@ -73,7 +97,7 @@ export function createApi(config, fetchImpl) {
             : `HTTP ${response.status}`,
       }
     } catch (error) {
-      return { kind: 'unreachable', reason: error instanceof Error ? error.name : 'inconnue' }
+      return { kind: 'unreachable', reason: networkReason(error) }
     }
   }
 
