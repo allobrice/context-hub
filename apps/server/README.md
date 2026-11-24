@@ -12,7 +12,8 @@ Règles de développement : `CLAUDE.md` (ce dossier) et `CLAUDE.md` à la racine
 
 ```sh
 pnpm install                                   # à la racine
-pnpm --filter @context-hub/server db:seed      # base de démo + jeton de dev, affiché UNE fois
+pnpm --filter @context-hub/server db:init      # base VIDE + jeton de dev, affiché UNE fois
+# ou : db:seed pour la démo des maquettes (42 contextes, tags et collections de démo)
 pnpm --filter @context-hub/server dev          # http://127.0.0.1:8787
 ```
 

@@ -8,6 +8,7 @@ import { titleSortKey } from '@context-hub/domain/library/criteria.ts'
 import { COLLECTION_FIXTURES } from '@context-hub/domain/fixtures/collections.ts'
 import { CONTEXT_FIXTURES, type ContextRecord } from '@context-hub/domain/fixtures/contexts.ts'
 import { TAG_FIXTURES } from '@context-hub/domain/fixtures/tags.ts'
+import { UNCATEGORIZED_COLLECTION_ID } from '@context-hub/domain/taxonomy/types.ts'
 
 import { generateApiToken, hashApiToken } from '../../../application/auth/apiToken.ts'
 import type { SyncDb } from '../connection.ts'
@@ -163,15 +164,48 @@ export function seedDemoData(db: SyncDb, { now, searchIndex, token }: SeedOption
       .run()
     for (const record of CONTEXT_FIXTURES) seedContext(tx, record, now)
     for (const record of CONTEXT_FIXTURES) reindex(tx, searchIndex, record.context.id)
-    tx.insert(apiTokens)
-      .values({
-        tokenHash: hashApiToken(issued),
-        userId: DEV_USER.id,
-        label: 'Jeton de dev (seed)',
-        createdAt: isoDate(now),
-        lastUsedAt: null,
-      })
-      .run()
+    insertDevToken(tx, issued, now)
+  })
+  return { token: issued }
+}
+
+/** Collection système « Sans collection » : requise par l'UI (filtre, cible de suppression). */
+const SYSTEM_COLLECTION = {
+  id: UNCATEGORIZED_COLLECTION_ID,
+  name: 'Sans collection',
+  description: 'Vue système : contextes non classés',
+  system: true,
+  position: 0,
+} as const
+
+function insertDevToken(db: SyncDb, token: string, now: Date): void {
+  db.insert(apiTokens)
+    .values({
+      tokenHash: hashApiToken(token),
+      userId: DEV_USER.id,
+      label: 'Jeton de dev',
+      createdAt: isoDate(now),
+      lastUsedAt: null,
+    })
+    .run()
+}
+
+export interface EmptyWorkspaceOptions {
+  readonly now: Date
+  /** Jeton imposé (tests) ; sinon un jeton aléatoire est généré. */
+  readonly token?: string
+}
+
+/**
+ * Espace de travail VIDE, sans aucune donnée de démo : l'utilisateur de dev, son jeton et la
+ * collection système. Pour utiliser Context Hub avec ses propres contextes.
+ */
+export function seedEmptyWorkspace(db: SyncDb, { now, token }: EmptyWorkspaceOptions): SeedResult {
+  const issued = token ?? generateApiToken()
+  db.transaction((tx) => {
+    tx.insert(users).values({ id: DEV_USER.id, name: DEV_USER.name }).run()
+    tx.insert(collections).values(SYSTEM_COLLECTION).run()
+    insertDevToken(tx, issued, now)
   })
   return { token: issued }
 }

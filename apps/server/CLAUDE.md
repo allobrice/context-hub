@@ -8,17 +8,18 @@ Serveur Node (Hono) : API REST `/api/*` pour l'UI, serveur MCP Streamable HTTP `
 
 Depuis `apps/server` (ou `pnpm --filter @context-hub/server <script>` depuis la racine) :
 
-| Commande              | Rôle                                                                                    |
-| --------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`            | Serveur en watch (`tsx watch`), lit `.env.local` s'il existe (voir `.env.example`)      |
-| `pnpm start`          | Serveur sans watch                                                                      |
-| `pnpm openapi:export` | Réécrit `openapi.json` (contrat commité, source des types du front)                     |
-| `pnpm typecheck`      | `tsc` sur `src` (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`)             |
-| `pnpm lint`           | ESLint (config racine)                                                                  |
-| `pnpm test`           | Vitest : bases SQLite en mémoire, seedées                                               |
-| `pnpm db:generate`    | `drizzle-kit generate` : migration SQL depuis `schema.ts`, à commiter dans `drizzle/`   |
-| `pnpm db:migrate`     | Applique les migrations à la base (`CONTEXT_HUB_DB_PATH`, défaut `data/context-hub.db`) |
-| `pnpm db:seed`        | Migre puis seede une base **vide** ; affiche le jeton de dev une seule fois             |
+| Commande              | Rôle                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`            | Serveur en watch (`tsx watch`), lit `.env.local` s'il existe (voir `.env.example`)       |
+| `pnpm start`          | Serveur sans watch                                                                       |
+| `pnpm openapi:export` | Réécrit `openapi.json` (contrat commité, source des types du front)                      |
+| `pnpm typecheck`      | `tsc` sur `src` (`tsconfig.app.json`) et l'outillage (`tsconfig.node.json`)              |
+| `pnpm lint`           | ESLint (config racine)                                                                   |
+| `pnpm test`           | Vitest : bases SQLite en mémoire, seedées                                                |
+| `pnpm db:generate`    | `drizzle-kit generate` : migration SQL depuis `schema.ts`, à commiter dans `drizzle/`    |
+| `pnpm db:migrate`     | Applique les migrations à la base (`CONTEXT_HUB_DB_PATH`, défaut `data/context-hub.db`)  |
+| `pnpm db:seed`        | Migre puis seede une base **vide** ; affiche le jeton de dev une seule fois              |
+| `pnpm db:init`        | Migre puis prépare une base **vide** (utilisateur, jeton, collection système), sans démo |
 
 Le code est exécuté par `tsx` (pas d'étape de build) : le domaine partagé est consommé en sources TS.
 
