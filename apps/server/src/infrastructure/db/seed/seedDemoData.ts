@@ -10,11 +10,10 @@ import { CONTEXT_FIXTURES, type ContextRecord } from '@context-hub/domain/fixtur
 import { TAG_FIXTURES } from '@context-hub/domain/fixtures/tags.ts'
 import { UNCATEGORIZED_COLLECTION_ID } from '@context-hub/domain/taxonomy/types.ts'
 
-import { generateApiToken, hashApiToken } from '../../../application/auth/apiToken.ts'
+import { generateApiToken } from '../../../application/auth/apiToken.ts'
 import type { SyncDb } from '../connection.ts'
 import { isoDate, toUtcIso } from '../dates.ts'
 import {
-  apiTokens,
   collections,
   contextDrafts,
   contexts,
@@ -26,6 +25,7 @@ import {
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
 import { publishedMetadataColumns, reindex, scopeColumns } from '../stores/contextRecords.ts'
+import { issueApiToken } from './issueApiToken.ts'
 import { seedWorkspaces } from './seedWorkspaces.ts'
 
 /** Utilisateur de dev : seul porteur d'un jeton, propriétaire des contextes `personal` de démo. */
@@ -181,15 +181,7 @@ const SYSTEM_COLLECTION = {
 } as const
 
 function insertDevToken(db: SyncDb, token: string, now: Date): void {
-  db.insert(apiTokens)
-    .values({
-      tokenHash: hashApiToken(token),
-      userId: DEV_USER.id,
-      label: 'Jeton de dev',
-      createdAt: isoDate(now),
-      lastUsedAt: null,
-    })
-    .run()
+  issueApiToken(db, { userId: DEV_USER.id, label: 'Jeton de dev', now, token })
 }
 
 export interface EmptyWorkspaceOptions {

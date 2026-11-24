@@ -20,6 +20,7 @@ Depuis `apps/server` (ou `pnpm --filter @context-hub/server <script>` depuis la 
 | `pnpm db:migrate`     | Applique les migrations à la base (`CONTEXT_HUB_DB_PATH`, défaut `data/context-hub.db`)  |
 | `pnpm db:seed`        | Migre puis seede une base **vide** ; affiche le jeton de dev une seule fois              |
 | `pnpm db:init`        | Migre puis prépare une base **vide** (utilisateur, jeton, collection système), sans démo |
+| `pnpm db:token`       | Émet un nouveau jeton (`--user`, défaut `brice` ; `--label`) sur une base existante      |
 
 Le code est exécuté par `tsx` (pas d'étape de build) : le domaine partagé est consommé en sources TS.
 
@@ -44,7 +45,7 @@ src/
     search/         # ContextSearchIndex (interface) + Fts5SearchIndex : SEUL SQL propre à SQLite
     stores/         # Drizzle*Store : implémentations des ports
     seed/           # seedDemoData : fixtures du domaine + jeton de dev
-    cli/            # migrate.ts, seed.ts
+    cli/            # migrate.ts, seed.ts, init.ts, token.ts
   test/             # support de test : base en mémoire seedée (createTestDatabase), app complète (createTestApp),
                     # ManualClock, workspaceWorker.ts (tests de concurrence en worker_threads)
 drizzle/            # migrations : 0000 générée, 0001 custom (FTS5 + trigger d'immuabilité), 0004 workspaces
@@ -64,7 +65,7 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 - **Portées** : `visibleTo(viewer)` sur toutes les lectures. `personal` réservé à son propriétaire (`scope_value` = id utilisateur), `team` et `project` visibles de tout utilisateur authentifié. Un contexte hors portée est introuvable (null, donc 404), pas interdit.
 - **Concurrence optimiste** : `saveDraft` et `publish` vérifient `expectedPublishedVersion` dans la transaction de l'écriture et lèvent `VersionConflictError` avec la version publiée entre-temps.
 - **Recherche** : FTS5, termes en préfixe, sans accents, tous requis ; chaque terme est quoté (aucun opérateur FTS5 injectable). Scope `published` (MCP) sans le contenu du brouillon. L'index est mis à jour dans la transaction de chaque écriture (`reindex`).
-- **Jetons** : `generateApiToken` (`chub_` + 256 bits), seul le sha-256 est stocké (`hashApiToken`). Le jeton n'est affiché qu'une fois, par `db:seed`.
+- **Jetons** : `generateApiToken` (`chub_` + 256 bits), seul le sha-256 est stocké (`hashApiToken`). Le jeton n'est affiché qu'une fois, par `db:seed`, `db:init` ou `db:token` (`issueApiToken`, qui n'en révoque aucun autre).
 - `mcpReads7d` = nombre de lignes `mcp_reads` des 7 derniers jours (horloge injectée).
 - better-sqlite3 est synchrone ; les ports sont asynchrones (portabilité) : `deferred()` convertit, une exception devient un rejet.
 

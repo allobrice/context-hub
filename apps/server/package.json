@@ -14,6 +14,7 @@
     "db:migrate": "tsx src/infrastructure/db/cli/migrate.ts",
     "db:init": "tsx src/infrastructure/db/cli/init.ts",
     "db:seed": "tsx src/infrastructure/db/cli/seed.ts",
+    "db:token": "tsx src/infrastructure/db/cli/token.ts",
     "openapi:export": "tsx src/cli/exportOpenApi.ts"
   },
   "dependencies": {
