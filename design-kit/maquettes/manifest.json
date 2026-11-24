@@ -238,5 +238,89 @@
     "html": "maquettes/html/22-collections-suppression.html",
     "png": "maquettes/png/22-collections-suppression.png",
     "source": "sources/Taxonomy.dc.html"
+  },
+  {
+    "id": "23-workspaces",
+    "titre": "Workspaces — liste",
+    "ecran": "Workspaces",
+    "props": {},
+    "html": "maquettes/html/23-workspaces.html",
+    "png": "maquettes/png/23-workspaces.png",
+    "source": "sources/Workspaces.dc.html"
+  },
+  {
+    "id": "24-workspaces-vide",
+    "titre": "Workspaces — état vide",
+    "ecran": "Workspaces",
+    "props": {
+      "etat": "vide"
+    },
+    "html": "maquettes/html/24-workspaces-vide.html",
+    "png": "maquettes/png/24-workspaces-vide.png",
+    "source": "sources/Workspaces.dc.html"
+  },
+  {
+    "id": "25-workspaces-chargement",
+    "titre": "Workspaces — chargement",
+    "ecran": "Workspaces",
+    "props": {
+      "etat": "chargement"
+    },
+    "html": "maquettes/html/25-workspaces-chargement.html",
+    "png": "maquettes/png/25-workspaces-chargement.png",
+    "source": "sources/Workspaces.dc.html"
+  },
+  {
+    "id": "26-workspace",
+    "titre": "Workspace — journal, claims, participants",
+    "ecran": "Workspace",
+    "props": {},
+    "html": "maquettes/html/26-workspace.html",
+    "png": "maquettes/png/26-workspace.png",
+    "source": "sources/Workspace.dc.html"
+  },
+  {
+    "id": "27-workspace-sombre",
+    "titre": "Workspace — thème sombre",
+    "ecran": "Workspace",
+    "props": {
+      "theme": "dark"
+    },
+    "html": "maquettes/html/27-workspace-sombre.html",
+    "png": "maquettes/png/27-workspace-sombre.png",
+    "source": "sources/Workspace.dc.html"
+  },
+  {
+    "id": "28-workspace-ferme",
+    "titre": "Workspace — fermé (lecture seule)",
+    "ecran": "Workspace",
+    "props": {
+      "statut": "ferme"
+    },
+    "html": "maquettes/html/28-workspace-ferme.html",
+    "png": "maquettes/png/28-workspace-ferme.png",
+    "source": "sources/Workspace.dc.html"
+  },
+  {
+    "id": "29-workspace-chargement",
+    "titre": "Workspace — chargement",
+    "ecran": "Workspace",
+    "props": {
+      "etat": "chargement"
+    },
+    "html": "maquettes/html/29-workspace-chargement.html",
+    "png": "maquettes/png/29-workspace-chargement.png",
+    "source": "sources/Workspace.dc.html"
+  },
+  {
+    "id": "30-workspace-acces-refuse",
+    "titre": "Workspace — accès refusé (403)",
+    "ecran": "Workspace",
+    "props": {
+      "etat": "erreur"
+    },
+    "html": "maquettes/html/30-workspace-acces-refuse.html",
+    "png": "maquettes/png/30-workspace-acces-refuse.png",
+    "source": "sources/Workspace.dc.html"
   }
 ]

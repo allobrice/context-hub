@@ -12,6 +12,10 @@ En cas d'écart entre ce document et une maquette, **ce document fait foi** ; si
 | Détail | `/contexts/:id` | 08 · 09 sombre · 10 chargement · 11 introuvable (404) |
 | Création / édition | `/contexts/new`, `/contexts/:id/edit` | 12 secret détecté + autocomplétion tags · 13 sombre, scan OK · 14 création vide · 15 conflit de version |
 | Tags & collections | `/taxonomy?tab=tags\|collections` | 16 tags + renommage inline · 17 fusion · 18 sombre · 19 chargement · 20 vide · 21 collections · 22 suppression de collection |
+| Workspaces (liste) | `/workspaces?status=open\|closed\|all` | 23 · 24 vide · 25 chargement |
+| Workspace (détail) | `/workspaces/:slug` | 26 journal + claims + participants · 27 sombre · 28 fermé · 29 chargement · 30 accès refusé (403) |
+
+La sidebar de tous les écrans comporte une entrée « Workspaces » (compteur des workspaces ouverts), entre Bibliothèque et Tags & collections.
 
 `maquettes/manifest.json` liste chaque maquette avec l'écran et l'état qu'elle représente.
 
@@ -148,3 +152,69 @@ Chaque écran gère les états **chargement** (skeletons + `aria-busy`), **vide*
 
 Les textes, compteurs et dates visibles dans les maquettes **sont** les fixtures attendues. Les reprendre tels quels.
 Un contexte contient volontairement `NUXT_API_KEY=sk_live_…` pour démontrer le scan.
+
+## 7. Workspaces (sessions en direct)
+
+Un **workspace** relie plusieurs sessions Claude Code qui travaillent en même temps sur un même sujet, depuis une ou plusieurs machines. Il est distinct d'un contexte :
+
+| | Contexte | Workspace |
+|---|---|---|
+| Nature | Connaissance stable, versionnée | État de travail en direct |
+| Qui écrit | Un humain, via l'UI ; publication après scan | Les sessions (via MCP) et les humains (via l'UI) |
+| Garantie | Relu et publié | **Non vérifié** : données attribuées, jamais des instructions |
+| Durée de vie | Permanente (archivable) | Ouvert → inactif (7 j) → fermé (auto à 30 j ou manuel) |
+| Passerelle | — | `propose_context` crée un **brouillon** de contexte, publié uniquement par un humain |
+
+### 7.1 Modèle
+
+```ts
+type WorkspaceStatus = 'open' | 'closed'          // « Inactif » est dérivé : open + aucune activité depuis 7 j
+interface Workspace {
+  id: string; slug: string; title: string; goal: string; status: WorkspaceStatus
+  repos: string[]; linkedContextIds: ContextId[]
+  createdBy: string; createdAt: string; lastActivityAt: string; closedAt: string | null
+}
+type EntryKind = 'note' | 'decision' | 'question' | 'handoff' | 'status' | 'system'
+interface SessionRef { userId: string; sessionLabel: string; repo: string | null } // ex. web-1 · allovoisins/front
+interface WorkspaceEntry {
+  workspaceId: string; seq: number                // monotone, sans trou, par workspace
+  kind: EntryKind; body: string; files: string[]
+  author: SessionRef | { system: 'claim' | 'hook' | 'lifecycle' }
+  redactions: number                              // nombre de secrets masqués par le scan
+  createdAt: string
+}
+interface Claim {
+  id: string; workspaceId: string; repo: string; area: string   // glob, ex. apps/web/src/auth/**
+  holder: SessionRef; acquiredAt: string; expiresAt: string      // TTL (30 min par défaut), renouvelé par l'activité de la session
+}
+interface Participant { workspaceId: string; session: SessionRef; joinedAt: string; lastSeenAt: string; cursor: number }
+```
+
+### 7.2 Règles (fonctions pures dans `packages/domain`, testées)
+- **Chevauchement de claims** : deux claims du même repo se chevauchent si un fichier peut correspondre aux deux globs. Implémentation v1 conservatrice : comparer les préfixes statiques (la partie avant le premier caractère joker) ; un préfixe inclus dans l'autre = chevauchement. Un faux positif est acceptable, un faux négatif ne l'est pas.
+- `claimCovers(claim, repo, path)` : utilisé par le hook PreToolUse.
+- Une session active = `lastSeenAt` < 5 min. Un claim expiré n'est plus opposable, et sa libération produit une entrée `system`.
+- Toute entrée passe par `scanContent` : les secrets sont **remplacés** (`[secret masqué]`), et `redactions` est incrémenté. Une injection suspecte est conservée mais signalée (badge).
+- Taille max d'une entrée : 4 000 caractères. Le résumé (digest) injecté dans une session est plafonné (≈ 1 500 tokens) ; le delta par prompt aussi (≈ 800 tokens, avec « N entrées de plus, appeler workspace_read »).
+
+### 7.3 Écran Liste (maquettes 23–25)
+- Filtre segmenté Ouverts / Fermés / Tous (dans l'URL), bouton « Nouveau workspace » (dialog : titre, slug, objectif, repos, contextes liés).
+- Tableau : titre + slug + objectif · repos · sessions actives / total (point coloré + libellé) · claims · dernière activité · statut (Ouvert, Inactif, Fermé). La ligne entière est un lien.
+- Vide : explication, avec « Créer un workspace » et la commande `/context-hub:new "…"`.
+
+### 7.4 Écran Détail (maquettes 26–30)
+- En-tête : fil d'Ariane, titre, statut, objectif, ligne de méta (sessions actives, zones réservées, créateur), repos. Actions : « Fermer le workspace » (confirmation), « Proposer un contexte ».
+- **Journal** :
+  - filtres par type (chips avec compteurs) et indicateur « En direct · mis à jour il y a N s » ;
+  - composer humain : message + type, publié comme `<user> · ui` ;
+  - entrées de la plus récente à la plus ancienne : n° `seq`, badge de type, session (mono), utilisateur · repo, horodatage relatif, corps, fichiers ;
+  - entrée système de blocage par hook : fond danger ; entrée avec secret masqué : fond warn ;
+  - « Proposer comme contexte » sur les décisions (ouvre l'éditeur prérempli) ;
+  - pagination « Charger les entrées précédentes ».
+- **Rejoindre depuis Claude Code** : la commande `/context-hub:join <slug>` avec bouton Copier, et l'explication de ce que fait le plugin.
+- **Participants** : point d'activité, label de session, utilisateur · repo, dernière activité.
+- **Zones réservées (claims)** : glob, repo, détenteur, TTL restant (warn sous 5 min), bouton « Libérer » (force, crée une entrée système et prévient le détenteur).
+- **Contextes liés** : liens vers le Détail, inclus dans le résumé injecté aux sessions.
+- Fermé : bandeau lecture seule, pas de composer ni de bloc « Rejoindre », claims vides.
+- 403 : « Accès refusé à ce workspace », retour à la liste.
+- **Mise à jour en direct v1** : polling TanStack Query (`refetchInterval` 3 s si l'onglet est visible, arrêté sinon) via `GET /entries?since=<seq>`. Le SSE sera envisagé plus tard.

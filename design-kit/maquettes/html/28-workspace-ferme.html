@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Workspace — fermé (lecture seule)</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;--shadow:0 12px 32px rgba(16,24,40,.14);font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A;--shadow:0 12px 32px rgba(0,0,0,.55)}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary,.ch a.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.inp:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.b-acc{background:var(--accent-soft);color:var(--accent-text)}
+.b-danger{background:var(--danger-soft);color:var(--danger)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.inp{height:32px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--fg);padding:0 10px;font:400 13px Inter,sans-serif}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.skel{background:var(--surface2);border-radius:4px}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.snip{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px}
+.snip code{flex-grow:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px 'JetBrains Mono',monospace;color:var(--fg)}
+.entry code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:0 4px}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Workspace.dc.html, props {"statut": "ferme"} -->
+
+
+<DIV class="ch " style="min-height: 1040px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav on" href="Workspaces.dc.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 13h3M8 16h6"></path></svg><SPAN style="flex-grow: 1">Workspaces</SPAN><SPAN class="mono" style="font-size: 11px">3</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+
+
+<HEADER style="display: flex; flex-direction: column; gap: 10px; padding: 14px 24px 16px; border-bottom: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><A href="Workspaces.dc.html">Workspaces</A><SPAN aria-hidden="true">/</SPAN><SPAN class="mono" style="font-size: 11px">migration-auth</SPAN></DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px">
+<DIV style="display: flex; flex-direction: column; gap: 8px; margin-right: auto; min-width: 0; max-width: 820px">
+<DIV style="display: flex; align-items: center; gap: 10px"><H1 style="margin: 0; font-size: 20px; font-weight: 700">Migration de l’auth vers les sessions Nitro</H1><SPAN class="badge b-arch"><SPAN class="dot"></SPAN>Fermé</SPAN></DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--fg2)"><STRONG style="color: var(--fg)">Objectif :</STRONG> remplacer le JWT stocké en localStorage par une session httpOnly gérée par Nitro, avec le front et l’API alignés sur le même contrat.</P>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 12px; color: var(--fg2)">
+<SPAN>48 entrées · 3 participants · ouvert pendant 2 h 20</SPAN>
+<SPAN style="display: inline-flex; gap: 4px"><SPAN class="tag">allovoisins/front</SPAN><SPAN class="tag">allovoisins/api</SPAN></SPAN>
+</DIV>
+</DIV>
+
+</DIV>
+
+<DIV role="status" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; background: var(--surface2); color: var(--fg2); font-size: 12px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+<SPAN style="flex-grow: 1">Workspace fermé le 23 nov. 2026 à 17:40 par Brice : lecture seule. Claims libérés, sessions déconnectées. 2 brouillons de contextes ont été proposés.</SPAN>
+<A href="Main.dc.html" style="font-weight: 600">Voir les brouillons</A>
+</DIV>
+
+</HEADER>
+
+<DIV style="flex-grow: 1; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; padding: 20px 24px 28px">
+
+<SECTION aria-labelledby="tl" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<H2 id="tl" style="margin: 0 8px 0 0; font-size: 14px; font-weight: 700">Journal</H2>
+<DIV role="group" aria-label="Filtrer par type" style="display: flex; flex-wrap: wrap; gap: 6px">
+
+<BUTTON type="button" class="chip on" aria-pressed="true">Tout <SPAN class="mono" style="font-size: 11px; opacity: .8">7</SPAN></BUTTON>
+
+<BUTTON type="button" class="chip " aria-pressed="false">Décisions <SPAN class="mono" style="font-size: 11px; opacity: .8">1</SPAN></BUTTON>
+
+<BUTTON type="button" class="chip " aria-pressed="false">Questions <SPAN class="mono" style="font-size: 11px; opacity: .8">1</SPAN></BUTTON>
+
+<BUTTON type="button" class="chip " aria-pressed="false">Passations <SPAN class="mono" style="font-size: 11px; opacity: .8">1</SPAN></BUTTON>
+
+<BUTTON type="button" class="chip " aria-pressed="false">Statuts <SPAN class="mono" style="font-size: 11px; opacity: .8">1</SPAN></BUTTON>
+
+<BUTTON type="button" class="chip " aria-pressed="false">Système <SPAN class="mono" style="font-size: 11px; opacity: .8">2</SPAN></BUTTON>
+
+</DIV>
+<SPAN role="status" style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><SPAN class="dot" style="color: var(--fg3)"></SPAN>Archivé</SPAN>
+</DIV>
+
+
+
+<OL aria-label="Entrées du journal, de la plus récente à la plus ancienne" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--danger); background: var(--danger-soft)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#48</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-danger">Système</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">context-hub</SPAN>
+<SPAN style="color: var(--fg3)">hook PreToolUse</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 40 s</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">Écriture bloquée : la session web-2 a tenté de modifier apps/web/src/auth/useSession.ts, dans une zone réservée par web-1.</P>
+<DIV style="display: flex; flex-wrap: wrap; gap: 4px"><SPAN class="tag">apps/web/src/auth/useSession.ts</SPAN></DIV>
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--bg)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#47</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-acc">Décision</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">api-1</SPAN>
+<SPAN style="color: var(--fg3)">Brice · allovoisins/api</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 2 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">Le cookie de session s’appelle av_session (httpOnly, SameSite=Lax, 30 jours glissants). POST /auth/session remplace POST /auth/token, qui reste disponible jusqu’à la fin de la migration.</P>
+<DIV style="display: flex; flex-wrap: wrap; gap: 4px"><SPAN class="tag">server/api/auth/session.post.ts</SPAN></DIV>
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--bg)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#46</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-draft">Question</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">web-1</SPAN>
+<SPAN style="color: var(--fg3)">Brice · allovoisins/front</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 4 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">À l’expiration de la session : refresh silencieux côté client, ou redirection vers /login avec retour à la page courante ?</P>
+
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--bg)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#45</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-arch">Statut</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">web-1</SPAN>
+<SPAN style="color: var(--fg3)">Brice · allovoisins/front</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 6 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">useSession() migré vers le cookie, 4 tests verts. Reste : le middleware de route et la suppression du stockage du token.</P>
+<DIV style="display: flex; flex-wrap: wrap; gap: 4px"><SPAN class="tag">apps/web/src/auth/useSession.ts</SPAN><SPAN class="tag">apps/web/src/auth/useSession.test.ts</SPAN></DIV>
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--bg)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#44</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-pub">Passation</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">api-1</SPAN>
+<SPAN style="color: var(--fg3)">Brice · allovoisins/api</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 11 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">Contrat de POST /auth/session prêt et testé. À intégrer côté web : réponse 204, cookie posé par le serveur, aucun token dans le corps.</P>
+<DIV style="display: flex; flex-wrap: wrap; gap: 4px"><SPAN class="tag">openapi/auth.yaml</SPAN></DIV>
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--bg)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#43</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-arch">Système</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">context-hub</SPAN>
+<SPAN style="color: var(--fg3)">claim</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 14 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">web-1 a réservé apps/web/src/auth/** pour 30 min.</P>
+
+
+</DIV>
+</LI>
+
+<LI class="panel entry" style="display: flex; gap: 12px; padding: 12px 14px; border-color: var(--border); background: var(--warn-soft)">
+<SPAN class="mono" style="flex: none; width: 34px; padding-top: 2px; font-size: 11px; color: var(--fg3)">#42</SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px">
+<SPAN class="badge b-arch">Note</SPAN>
+<SPAN class="mono" style="font-weight: 500; color: var(--fg)">web-2</SPAN>
+<SPAN style="color: var(--fg3)">Camille · allovoisins/front</SPAN>
+<SPAN style="margin-left: auto; color: var(--fg3)">il y a 18 min</SPAN>
+</DIV>
+<P style="margin: 0; font-size: 13px; line-height: 1.55; color: var(--fg)">Variables d’environnement du staging vérifiées. [1 secret masqué par le scan : motif sk_live_]</P>
+<DIV style="display: flex; flex-wrap: wrap; gap: 4px"><SPAN class="tag">.env.staging</SPAN></DIV>
+
+</DIV>
+</LI>
+
+</OL>
+<BUTTON class="btn btn-sm" type="button" style="align-self: center">Charger les entrées précédentes (#1–#41)</BUTTON>
+</SECTION>
+
+<ASIDE style="flex: 1 1 340px; max-width: 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+
+
+<SECTION class="panel" aria-labelledby="parts" style="display: flex; flex-direction: column">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border)"><H2 id="parts" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Participants</H2><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">3</SPAN></DIV>
+<UL style="list-style: none; margin: 0; padding: 0">
+
+<LI style="display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="dot" style="color: var(--fg3)" aria-hidden="true"></SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<SPAN class="mono" style="font-size: 12px; font-weight: 500">web-1</SPAN>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · allovoisins/front</SPAN>
+</DIV>
+<SPAN style="font-size: 11px; color: var(--fg2); text-align: right">déconnecté</SPAN>
+</LI>
+
+<LI style="display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="dot" style="color: var(--fg3)" aria-hidden="true"></SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<SPAN class="mono" style="font-size: 12px; font-weight: 500">web-2</SPAN>
+<SPAN style="font-size: 11px; color: var(--fg3)">Camille · allovoisins/front</SPAN>
+</DIV>
+<SPAN style="font-size: 11px; color: var(--fg2); text-align: right">déconnecté</SPAN>
+</LI>
+
+<LI style="display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border)">
+<SPAN class="dot" style="color: var(--fg3)" aria-hidden="true"></SPAN>
+<DIV style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<SPAN class="mono" style="font-size: 12px; font-weight: 500">api-1</SPAN>
+<SPAN style="font-size: 11px; color: var(--fg3)">Brice · allovoisins/api</SPAN>
+</DIV>
+<SPAN style="font-size: 11px; color: var(--fg2); text-align: right">déconnecté</SPAN>
+</LI>
+
+</UL>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="claims" style="display: flex; flex-direction: column">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border)"><H2 id="claims" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Zones réservées (claims)</H2><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">0</SPAN></DIV>
+
+<SPAN style="padding: 12px 14px; font-size: 12px; color: var(--fg3)">Aucune zone réservée.</SPAN>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="linked" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<H2 id="linked" style="margin: 0; font-size: 14px; font-weight: 700">Contextes liés</H2>
+<A href="Detail.dc.html" style="font-size: 13px">Conventions Nuxt 4 — composables &amp; auto-imports <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">v4</SPAN></A>
+<A href="Detail.dc.html" style="font-size: 13px">Checklist accessibilité des composants <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">v2</SPAN></A>
+<SPAN style="font-size: 11px; color: var(--fg3)">Ces contextes publiés sont inclus dans le résumé injecté aux sessions.</SPAN>
+</SECTION>
+</ASIDE>
+</DIV>
+
+
+
+
+
+
+</MAIN>
+</DIV>
+
+</body>
+</html>

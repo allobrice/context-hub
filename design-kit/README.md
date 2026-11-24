@@ -6,10 +6,11 @@ Kit de référence pour implémenter l'UI de gestion de Context Hub en React. À
 
 | Chemin | Rôle |
 |---|---|
-| `PROMPT.md` | Prompt à coller dans Claude Code pour lancer l'implémentation |
+| `PROMPT.md` | Prompt d'implémentation de l'UI v1 (bibliothèque) |
+| `PROMPT-WORKSPACES.md` | Prompt des phases 7–9 : Workspaces côté serveur, plugin Claude Code, écrans Workspaces |
 | `SPEC.md` | Spécification fonctionnelle et visuelle, **source de vérité** |
 | `index.html` | Galerie de toutes les maquettes (ouvrir dans un navigateur) |
-| `maquettes/png/` | 22 captures à 1440 px de large, pleine page : le rendu attendu |
+| `maquettes/png/` | 30 captures à 1440 px de large, pleine page : le rendu attendu |
 | `maquettes/html/` | Les mêmes maquettes en HTML statique (markup, styles inline, SVG), sans JS |
 | `maquettes/manifest.json` | Pour chaque maquette : id, titre, écran, état (props), chemins |
 | `maquettes/fonts/` | Inter et JetBrains Mono (woff2, latin), utilisées par les maquettes |
@@ -25,6 +26,8 @@ Kit de référence pour implémenter l'UI de gestion de Context Hub en React. À
 | 08–11 | Détail | normal, sombre, chargement, introuvable (404) |
 | 12–15 | Création / édition | secret détecté + autocomplétion des tags, sombre (scan OK), création vide, conflit de version |
 | 16–22 | Tags & collections | tags + renommage inline, fusion, sombre, chargement, vide, collections, suppression de collection |
+| 23–25 | Workspaces (liste) | normal, vide, chargement |
+| 26–30 | Workspace (détail) | journal + claims + participants, sombre, fermé, chargement, accès refusé |
 
 ## Limites
 - Les maquettes HTML sont des rendus figés : les interactions (bascules, copie, onglets, thème) sont décrites dans `SPEC.md` §1 et visibles dans `sources/`.
