@@ -273,6 +273,27 @@ versionné :
 export CONTEXT_HUB_TOKEN=chub_…
 ```
 
+La connexion se fait **une fois pour toutes** : Claude Code relit sa configuration MCP à chaque
+démarrage. Trois façons de la déclarer :
+
+| Méthode                            | Portée                              | Jeton                                 | Apporte                                |
+| ---------------------------------- | ----------------------------------- | ------------------------------------- | -------------------------------------- |
+| **Plugin `context-hub`** (conseil) | toutes les sessions, tous les repos | lu dans l'environnement, jamais écrit | MCP, commandes `/context-hub:*`, hooks |
+| `.mcp.json` de projet              | un repo (à recopier dans chacun)    | lu dans l'environnement, jamais écrit | MCP seul                               |
+| `claude mcp add --scope user`      | toutes les sessions, tous les repos | écrit en clair dans `~/.claude.json`  | MCP seul                               |
+
+**Recommandation : le plugin** (voir [Workspaces (plugin)](#workspaces-plugin)). Une seule
+installation, rien à refaire quand le jeton change, et toute la surface d'un coup. Le `.mcp.json`
+reste utile pour un repo partagé où l'équipe veut le MCP sans installer le plugin. Ne pas cumuler
+deux méthodes : le serveur serait déclaré deux fois.
+
+À chaque utilisation, quelle que soit la méthode, il reste seulement :
+
+1. le serveur lancé sur `:8787` (`pnpm dev`) ;
+2. `CONTEXT_HUB_TOKEN` exporté (une ligne dans `~/.zshrc` suffit) ;
+3. si le serveur démarre après Claude Code : `/mcp`, puis reconnecter `context-hub` (ou relancer
+   `claude`).
+
 ### Lire les contextes (MCP seul)
 
 Option 1, un `.mcp.json` de projet, où Claude Code développe `${VAR}` à l'exécution (le jeton n'est
