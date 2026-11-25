@@ -20,6 +20,7 @@ réservées.
 - [Démarrage rapide](#démarrage-rapide)
 - [Configuration](#configuration)
 - [Brancher Claude Code](#brancher-claude-code)
+- [Bonnes pratiques : que mettre dans un contexte](#bonnes-pratiques--que-mettre-dans-un-contexte)
 - [Base de données](#base-de-données)
 - [Commandes](#commandes)
 - [Qualité et tests](#qualité-et-tests)
@@ -351,6 +352,25 @@ Le plugin déclare lui-même le serveur MCP : retirer une éventuelle entrée ma
 Installation, hooks et limites : [`packages/claude-plugin/README.md`](packages/claude-plugin/README.md).
 Scénario de test réel à plusieurs sessions :
 [`packages/claude-plugin/TESTING.md`](packages/claude-plugin/TESTING.md).
+
+## Bonnes pratiques : que mettre dans un contexte
+
+Un contexte est ce qu'une **future session relira** : il doit rester vrai au-delà d'aujourd'hui.
+Exemple type : une session qui vient d'analyser les performances d'un repo.
+
+| Où le mettre                                             | Quoi                                                                                                                                                                                |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Contexte** (portée `project`)                          | Conclusions durables (budgets, points chauds et leur cause), règles qui en découlent (« listes de plus de 100 éléments virtualisées »), décisions et pistes écartées avec la raison |
+| Fichier du repo, ticket ou PR                            | Le rapport complet avec les mesures du jour : une photo datée, vite périmée, qui pollue la recherche                                                                                |
+| Ticket, ou **workspace** si plusieurs sessions corrigent | La liste des tâches : le journal coordonne, les claims évitent que deux sessions éditent les mêmes fichiers                                                                         |
+
+Quand les conclusions changent, publier une **nouvelle version** : l'ancienne reste lisible
+(`context://{slug}@{version}`).
+
+En fin de session, demander par exemple : « distille les conclusions durables en un contexte et
+propose-le avec `propose_context` ». L'outil crée un **brouillon personnel**, jamais publié : le relire
+dans l'UI, passer la portée à `project` si besoin, puis publier (le scan des secrets s'applique à ce
+moment-là).
 
 ## Base de données
 

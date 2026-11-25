@@ -22,6 +22,7 @@ with **Workspaces**: a shared log and reserved areas of code.
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
 - [Connecting Claude Code](#connecting-claude-code)
+- [Best practices: what belongs in a context](#best-practices-what-belongs-in-a-context)
 - [Database](#database)
 - [Commands](#commands)
 - [Quality and tests](#quality-and-tests)
@@ -350,6 +351,24 @@ Then:
 Installation, hooks and limitations: [`packages/claude-plugin/README.md`](packages/claude-plugin/README.md).
 Real multi-session test scenario:
 [`packages/claude-plugin/TESTING.md`](packages/claude-plugin/TESTING.md).
+
+## Best practices: what belongs in a context
+
+A context is what a **future session will read again**: it must stay true beyond today. Typical
+example: a session that has just analysed a repo's performance.
+
+| Where to put it                                           | What                                                                                                                                                              |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Context** (`project` scope)                             | Lasting conclusions (budgets, hotspots and their cause), resulting rules ("lists over 100 items are virtualised"), decisions and rejected options with the reason |
+| Repo file, ticket or PR                                   | The full report with today's measurements: a dated snapshot that goes stale fast and clutters search                                                              |
+| Ticket, or a **workspace** if several sessions fix things | The task list: the log coordinates, claims keep two sessions from editing the same files                                                                          |
+
+When the conclusions change, publish a **new version**: the previous one stays readable
+(`context://{slug}@{version}`).
+
+At the end of the session, ask for instance: "distil the lasting conclusions into a context and
+propose it with `propose_context`". The tool creates a **personal draft**, never published: review it
+in the UI, switch the scope to `project` if needed, then publish (the secret scan runs at that point).
 
 ## Database
 
