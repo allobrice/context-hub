@@ -272,6 +272,27 @@ Export the token in the shell that starts Claude Code (e.g. `~/.zshrc`), never i
 export CONTEXT_HUB_TOKEN=chub_…
 ```
 
+You connect **once and for all**: Claude Code reloads its MCP configuration on every start. There
+are three ways to declare it:
+
+| Method                                 | Scope                            | Token                                     | Provides                              |
+| -------------------------------------- | -------------------------------- | ----------------------------------------- | ------------------------------------- |
+| **`context-hub` plugin** (recommended) | every session, every repo        | read from the environment, never written  | MCP, `/context-hub:*` commands, hooks |
+| Project `.mcp.json`                    | one repo (copy it into each one) | read from the environment, never written  | MCP only                              |
+| `claude mcp add --scope user`          | every session, every repo        | written in clear text to `~/.claude.json` | MCP only                              |
+
+**Recommendation: the plugin** (see [Workspaces (plugin)](#workspaces-plugin)). A single install,
+nothing to redo when the token changes, and the whole surface at once. A `.mcp.json` remains useful
+for a shared repo where the team wants MCP without installing the plugin. Do not combine two
+methods: the server would be declared twice.
+
+On each use, whatever the method, all that remains is:
+
+1. the server running on `:8787` (`pnpm dev`);
+2. `CONTEXT_HUB_TOKEN` exported (one line in `~/.zshrc` is enough);
+3. if the server starts after Claude Code: `/mcp`, then reconnect `context-hub` (or restart
+   `claude`).
+
 ### Reading contexts (MCP only)
 
 Option 1, a project `.mcp.json`, where Claude Code expands `${VAR}` at runtime (the token is written
