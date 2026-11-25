@@ -18,6 +18,7 @@ import { OverviewService } from './application/overview/OverviewService.ts'
 import type { AppDatabase } from './infrastructure/db/connection.ts'
 import { Fts5SearchIndex } from './infrastructure/db/search/Fts5SearchIndex.ts'
 import { DrizzleContextStore } from './infrastructure/db/stores/DrizzleContextStore.ts'
+import { DrizzleMissionStore } from './infrastructure/db/stores/DrizzleMissionStore.ts'
 import { DrizzleMcpReadLog } from './infrastructure/db/stores/DrizzleMcpReadLog.ts'
 import { DrizzleTaxonomyStore } from './infrastructure/db/stores/DrizzleTaxonomyStore.ts'
 import { DrizzleUserStore } from './infrastructure/db/stores/DrizzleUserStore.ts'
@@ -75,6 +76,7 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
     newId: options.newWorkspaceId ?? newWorkspaceId,
     events: workspaceEvents,
   })
+  const missionStore = new DrizzleMissionStore(db)
   const app = createHttpApp({
     auth,
     contexts,
@@ -96,6 +98,11 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
   })
   const maintenance: readonly MaintenanceTask[] = [
     { name: 'workspaces', run: () => workspaces.closeIdleWorkspaces() },
+    {
+      name: 'missions',
+      // Copie littérale : une interface n'est pas assignable à `LogFields` (signature d'index).
+      run: async () => ({ ...(await missionStore.expireDue(options.clock.now())) }),
+    },
   ]
   return { app, mcp, workspaces, maintenance }
 }

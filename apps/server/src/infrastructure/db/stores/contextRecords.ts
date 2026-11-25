@@ -19,10 +19,10 @@ import {
   contextVersions,
   mcpReads,
   tags,
-  users,
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
 import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
+import { userNamesIn } from './userRecords.ts'
 
 export type ContextRow = typeof contexts.$inferSelect
 type VersionRow = typeof contextVersions.$inferSelect
@@ -44,17 +44,6 @@ function groupBy<T, K>(items: readonly T[], keyOf: (item: T) => K): Map<K, T[]> 
     else groups.set(key, [item])
   }
   return groups
-}
-
-/** Nom affiché des auteurs (users.name), par identifiant. */
-function authorNames(db: SyncDb, ids: readonly string[]): Map<string, string> {
-  if (ids.length === 0) return new Map()
-  const rows = db
-    .select({ id: users.id, name: users.name })
-    .from(users)
-    .where(inArray(users.id, [...new Set(ids)]))
-    .all()
-  return new Map(rows.map((row) => [row.id, row.name]))
 }
 
 function toVersion(row: VersionRow, names: ReadonlyMap<string, string>): ContextVersion {
@@ -121,7 +110,7 @@ export function hydrate(db: SyncDb, rows: readonly ContextRow[], now: Date): Con
     .groupBy(mcpReads.contextId)
     .all()
 
-  const names = authorNames(db, [
+  const names = userNamesIn(db, [
     ...rows.map((row) => row.authorId),
     ...published.map((row) => row.authorId),
     ...drafts.map((row) => row.authorId),
@@ -160,7 +149,7 @@ export function history(db: SyncDb, contextId: string): ContextVersion[] {
     .where(eq(contextVersions.contextId, contextId))
     .orderBy(desc(contextVersions.number))
     .all()
-  const names = authorNames(
+  const names = userNamesIn(
     db,
     rows.map((row) => row.authorId),
   )
@@ -175,7 +164,7 @@ export function versionOf(db: SyncDb, contextId: string, number: number): Contex
     .where(and(eq(contextVersions.contextId, contextId), eq(contextVersions.number, number)))
     .get()
   if (!row) return null
-  return toVersion(row, authorNames(db, [row.authorId]))
+  return toVersion(row, userNamesIn(db, [row.authorId]))
 }
 
 /** Déclare les tags au registre (dernier usage = `at`) et réécrit ceux du contexte, dans l'ordre. */

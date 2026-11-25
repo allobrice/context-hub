@@ -2,7 +2,7 @@
 
 Serveur Node (Hono) : API REST `/api/*` pour l'UI, serveur MCP Streamable HTTP `/mcp` pour les sessions Claude Code, persistance SQLite (Drizzle + better-sqlite3). Règles communes : `CLAUDE.md` racine.
 
-> Construit par phases : 2 (persistance), 3 (REST), 4 (MCP) et 7 (Workspaces). Connexion des clients MCP : `README.md`.
+> Construit par phases : 2 (persistance), 3 (REST), 4 (MCP), 7 (Workspaces) et 10 (Missions, en cours). Connexion des clients MCP : `README.md`.
 
 ## Commandes
 
@@ -32,8 +32,9 @@ src/
   composition.ts    # câblage unique (stores → cas d'usage → app Hono), partagé par main, CLI et tests
   cli/              # exportOpenApi.ts
   application/      # cas d'usage (ContextService, TaxonomyService, OverviewService (sidebar), workspaces/WorkspaceService,
-                    # AuthService, mcp/ContextCatalog), ports (ContextStore, TaxonomyStore, WorkspaceStore, UserStore,
-                    # McpReadLog, ContextEvents, WorkspaceEvents, Clock, Logger), Viewer ; sans Hono ni Drizzle
+                    # AuthService, mcp/ContextCatalog), ports (ContextStore, TaxonomyStore, WorkspaceStore, MissionStore,
+                    # UserStore, McpReadLog, ContextEvents, WorkspaceEvents, Clock, Logger), Viewer, sessionKey.ts (session
+                    # qui écrit), maintenance.ts (tâches périodiques nommées) ; sans Hono ni Drizzle
   interfaces/http/  # app.ts (middlewares, routes, OpenAPI), routes/*, schemas.ts (transport), errors.ts, middleware/
   interfaces/mcp/   # mountMcp.ts (aiguillage 2025 / 2026-07-28), legacySessions.ts, contextHubServer.ts (surface MCP),
                     # workspaceSurface.ts (outils workspace_*, propose_context, workspace://{slug})
@@ -43,12 +44,15 @@ src/
     schema.ts       # schéma Drizzle portable (text/integer, dates ISO UTC)
     connection.ts   # openDatabase : pragmas (foreign_keys, WAL) + migrations
     search/         # ContextSearchIndex (interface) + Fts5SearchIndex : SEUL SQL propre à SQLite
-    stores/         # Drizzle*Store : implémentations des ports
+    transactions.ts # IMMEDIATE : transaction verrouillée dès le BEGIN
+    stores/         # Drizzle*Store : implémentations des ports ; scopeRecords.ts (portée commune contextes/missions)
     seed/           # seedDemoData : fixtures du domaine + jeton de dev
     cli/            # migrate.ts, seed.ts, init.ts, token.ts
   test/             # support de test : base en mémoire seedée (createTestDatabase), app complète (createTestApp),
-                    # ManualClock, workspaceWorker.ts (tests de concurrence en worker_threads)
-drizzle/            # migrations : 0000 générée, 0001 custom (FTS5 + trigger d'immuabilité), 0004 workspaces
+                    # ManualClock, concurrency/ (harnais worker_threads + barrière Atomics), workspaceWorker.ts,
+                    # missionWorker.ts, missionFixtures.ts
+drizzle/            # migrations : 0000 générée, 0001 custom (FTS5 + trigger d'immuabilité), 0004 workspaces,
+                    # 0005 missions, 0006 custom (triggers append-only de mission_events)
 tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versions
 ```
 
@@ -58,7 +62,7 @@ tests/architecture/ # garde-fous : couches, dépendances, immuabilité des versi
 
 ## Persistance : règles
 
-- **Portabilité Postgres** : pas de SQL spécifique hors `search/Fts5SearchIndex.ts` et de la migration custom `0001`. Dates en ISO 8601 UTC (`dates.ts` : `isoDate`, `toUtcIso`) : triables lexicographiquement.
+- **Portabilité Postgres** : pas de SQL spécifique hors `search/Fts5SearchIndex.ts` et des migrations custom `0001` (FTS5, immuabilité des versions) et `0006` (journal des missions append-only : triggers `BEFORE UPDATE` / `BEFORE DELETE`, à porter en plpgsql). Dates en ISO 8601 UTC (`dates.ts` : `isoDate`, `toUtcIso`) : triables lexicographiquement.
 - **Versions immuables** : `context_versions` n'est jamais mis à jour ni supprimé (insert seulement). Triggers `BEFORE UPDATE` et `BEFORE DELETE … RAISE(ABORT)` en défense en profondeur ; `immutable-versions.test.ts` le vérifie.
 - **Métadonnées publiées séparées** : `contexts.published_*` (titre, description, collection, portée, tags JSON) ne sont écrites qu'à la **publication**, après le scan ; les colonnes courantes portent le brouillon (UI). MCP (`listPublished`, `findPublished`, `searchPublished`, colonne FTS `published_text`) ne lit **que** les métadonnées publiées et applique la portée publiée. La taxonomie (renommer, fusionner, supprimer) met à jour les deux.
 - **Un seul brouillon par contexte** : `context_drafts` a `context_id` pour clé primaire.
@@ -113,8 +117,19 @@ Ne pas confondre : `OverviewService` / `GET /api/workspace` (singulier) = naviga
 - **Scan** : chaque entrée passe par `redactEntry` : secrets **remplacés** (`[secret masqué]`, rien n'est stocké), injection suspecte conservée mais signalée (`suspicious`). Titre ou objectif avec un secret : 422 `secret-in-metadata`.
 - **`check-write`** : lecture indexée (`workspace_claims_lookup_idx`) ; en cas de blocage, le serveur journalise lui-même l'entrée `system/hook`, au plus une fois par 5 min par (claim, session), dédupliquée en mémoire du processus.
 - **Résumé et delta** : `buildDigest` / `buildDelta` du domaine, plafonnés en tokens ; entrées attribuées, corps cités ligne à ligne (`│ `) : un corps ne peut pas imiter un en-tête.
-- **Maintenance** : `main.ts` appelle `closeIdleWorkspaces()` au démarrage puis toutes les heures (fermeture à 30 j sans activité, purge des claims expirés).
+- **Maintenance** : tâche `workspaces` de la boucle de maintenance (`composition.ts` → `main.ts`, au démarrage puis toutes les heures) : `closeIdleWorkspaces()` (fermeture à 30 j sans activité, purge des claims expirés).
 - **Notifications** : `WorkspaceEvents` → `LegacySessions.notifyWorkspaceUpdated` (sessions 2025 membres et abonnées à `workspace://{slug}`). Le bus 2026 n'est pas utilisé (pas de contrôle d'appartenance, voir ROADMAP).
 - **Journal** : outil, slug, résultat, utilisateur ; jamais le corps d'une entrée (testé).
-- **Tests de concurrence** : `DrizzleWorkspaceStore.concurrency.test.ts` lance des `worker_threads` (`--import tsx`), une connexion SQLite chacun sur un fichier WAL, libérés ensemble par une barrière `Atomics`. Dans un seul thread, better-sqlite3 étant synchrone, des appels « concurrents » seraient sérialisés et ne prouveraient rien. Les mêmes scénarios passent aussi par REST et par le client MCP.
+- **Tests de concurrence** : `DrizzleWorkspaceStore.concurrency.test.ts` lance des `worker_threads` (`--import tsx`) via `test/concurrency/runConcurrently.ts`, une connexion SQLite chacun sur un fichier WAL, libérés ensemble par une barrière `Atomics`. Dans un seul thread, better-sqlite3 étant synchrone, des appels « concurrents » seraient sérialisés et ne prouveraient rien. Les mêmes scénarios passent aussi par REST et par le client MCP.
 - **Seed** : `seedWorkspaces` (fixtures des maquettes 23 à 30), dates décalées de `DEMO_NOW` vers le « maintenant » du seed.
+
+## Missions (phase 10, SPEC §8) — persistance (étape 10.1)
+
+- **Domaine** : `@context-hub/domain/missions/` (`types.ts` : union discriminée par statut ; `lifecycle.ts` : `transition(mission, command, actor, now) → Result<Transition, TransitionError>`, table `MISSION_TRANSITIONS` ; `template.ts` : `validatePromptTemplate`). Le store n'a aucune règle de cycle de vie propre : il applique `transition`.
+- **Atomicité** : chaque écriture (`take`, `apply`, `renew`, `expireDue`) est UNE transaction IMMEDIATE : lecture, `transition`, écriture de la mission et de son événement. Postgres : `SELECT … FOR UPDATE` (et `SKIP LOCKED` pour `next`).
+- **Échu balayé en transaction** : `take` et `expireDue` libèrent d'abord les réservations échues (événement `released`, détail « réservation expirée ») et expirent les missions non prises arrivées à échéance. Une mission ne reste jamais bloquée jusqu'au job (tâche `missions` de la maintenance).
+- **`next`** : prête, visible (portée), qui porte TOUS les tags demandés et le repo s'il est donné ; tri priorité, ancienneté, id.
+- **Jeton de réservation** : `take` stocke le sha-256 du jeton remis à la session (`claim_token_hash`, jamais le jeton). Une session détentrice doit le présenter pour `complete`, `release`, `drop`, `freshness` et `renew` (sinon `token-mismatch`) : deux sessions de même label sur deux machines ne peuvent pas agir l'une pour l'autre. Effacé dès que la réservation disparaît.
+- **Journal append-only** : `mission_events` sans clé étrangère (l'événement de rejet survit à la suppression de la mission ; slug et titre copiés), `id` autoincrémenté pour l'ordre. Triggers (migration `0006`) et `tests/architecture/append-only-mission-events.test.ts`.
+- **Tags** : `mission_tags`, sans lien avec le registre `tags` de la bibliothèque (renommer ou fusionner un tag de contexte ne touche pas les missions).
+- **Tests de concurrence** : `DrizzleMissionStore.concurrency.test.ts` (10 `take` sur une mission → 1 succès ; 10 `next` sur 3 missions → 3 succès distincts, 7 « file vide »).

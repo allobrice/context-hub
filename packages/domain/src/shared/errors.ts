@@ -15,6 +15,8 @@ export type DomainErrorCode =
   | 'WORKSPACE_CLOSED'
   | 'CLAIM_CONFLICT'
   | 'WORKSPACE_RULE'
+  | 'MISSION_NOT_FOUND'
+  | 'MISSION_TRANSITION'
 
 export abstract class DomainError extends Error {
   abstract readonly code: DomainErrorCode

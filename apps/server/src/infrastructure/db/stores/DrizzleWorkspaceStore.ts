@@ -54,6 +54,7 @@ import {
   workspaces,
 } from '../schema.ts'
 import { IMMEDIATE } from '../transactions.ts'
+import { userNameIn } from './userRecords.ts'
 
 type WorkspaceRow = typeof workspaces.$inferSelect
 type EntryRow = typeof workspaceEntries.$inferSelect
@@ -133,10 +134,6 @@ function toParticipant(row: ParticipantRow, userName: string): Participant {
     lastSeenAt: row.lastSeenAt,
     cursor: row.cursor,
   }
-}
-
-function userNameIn(db: SyncDb, userId: string): string | null {
-  return db.select({ name: users.name }).from(users).where(eq(users.id, userId)).get()?.name ?? null
 }
 
 function linkedContextIdsIn(db: SyncDb, workspaceId: string): string[] {
