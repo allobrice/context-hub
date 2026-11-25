@@ -1,6 +1,7 @@
 /** Démarrage du serveur : configuration, base (migrée), composition, écoute HTTP. */
 import { serve } from '@hono/node-server'
 
+import { runMaintenance } from './application/maintenance.ts'
 import { systemClock } from './application/ports/Clock.ts'
 import { composeServer } from './composition.ts'
 import { databasePath } from './infrastructure/db/cli/databasePath.ts'
@@ -10,7 +11,7 @@ import { consoleLogger } from './infrastructure/logging/jsonLogger.ts'
 
 const config = readServerConfig()
 const database = openDatabase(databasePath())
-const { app, mcp, workspaces } = composeServer(database.db, {
+const { app, mcp, maintenance } = composeServer(database.db, {
   clock: systemClock,
   logger: consoleLogger,
   webOrigin: config.webOrigin,
@@ -22,26 +23,22 @@ const server = serve({ fetch: app.fetch, hostname: config.host, port: config.por
   consoleLogger.info('server.listening', { url: `http://${info.address}:${info.port}` })
 })
 
-/** Fermeture automatique des workspaces inactifs depuis 30 jours, et purge des claims expirés. */
+/**
+ * Maintenance au démarrage puis toutes les heures (fermeture des workspaces inactifs, purge des claims
+ * expirés…). La libération des réservations expirées ne dépend pas de cette boucle : elle est aussi
+ * faite dans la transaction des écritures concernées.
+ */
 const MAINTENANCE_INTERVAL_MS = 60 * 60 * 1000
 
-async function maintainWorkspaces(): Promise<void> {
-  try {
-    const result = await workspaces.closeIdleWorkspaces()
-    consoleLogger.info('workspaces.maintenance', result)
-  } catch (error) {
-    consoleLogger.error('workspaces.maintenance_failed', {
-      error: error instanceof Error ? error.name : 'unknown',
-    })
-  }
-}
-
-void maintainWorkspaces()
-const maintenance = setInterval(() => void maintainWorkspaces(), MAINTENANCE_INTERVAL_MS)
-maintenance.unref()
+void runMaintenance(maintenance, consoleLogger)
+const maintenanceTimer = setInterval(
+  () => void runMaintenance(maintenance, consoleLogger),
+  MAINTENANCE_INTERVAL_MS,
+)
+maintenanceTimer.unref()
 
 function shutdown(): void {
-  clearInterval(maintenance)
+  clearInterval(maintenanceTimer)
   // Ferme d'abord les sessions MCP (flux SSE ouverts), sinon `server.close` attendrait leur fin.
   void mcp.close().finally(() => {
     server.close(() => {

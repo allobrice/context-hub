@@ -31,8 +31,3 @@ export function redactEntry(body: string, files: readonly string[] = []): Redact
     ),
   }
 }
-
-/** Un texte libre (titre, objectif) contient-il un secret ? Il est alors refusé, pas masqué. */
-export function containsSecret(text: string): boolean {
-  return scanContent(text).some((finding) => finding.kind === 'secret')
-}

@@ -24,7 +24,8 @@ import {
   users,
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
-import { publishedMetadataColumns, reindex, scopeColumns } from '../stores/contextRecords.ts'
+import { publishedMetadataColumns, reindex } from '../stores/contextRecords.ts'
+import { scopeColumns } from '../stores/scopeRecords.ts'
 import { issueApiToken } from './issueApiToken.ts'
 import { seedWorkspaces } from './seedWorkspaces.ts'
 

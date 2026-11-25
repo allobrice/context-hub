@@ -6,16 +6,16 @@
  */
 import { z } from 'zod'
 
+import { SESSION_LABEL_PATTERN, UI_SESSION_LABEL } from '../sessions/session.ts'
+import { REPO_PATTERN } from '../shared/repo.ts'
+
 import {
   AUTHORED_ENTRY_KINDS,
   CLAIM_TTL_MAX_MINUTES,
   ENTRY_KINDS,
   ENTRY_MAX_FILES,
   ENTRY_MAX_LENGTH,
-  REPO_PATTERN,
-  SESSION_LABEL_PATTERN,
   SYSTEM_SOURCES,
-  UI_SESSION_LABEL,
   WORKSPACE_DISPLAY_STATUSES,
   WORKSPACE_GOAL_MAX_LENGTH,
   WORKSPACE_MAX_LINKED_CONTEXTS,
@@ -27,6 +27,7 @@ import {
 } from '../workspaces/types.ts'
 import { AREA_MAX_LENGTH } from '../workspaces/claims.ts'
 import { orNull } from './context.ts'
+import { SessionRefSchema } from './sessions.ts'
 
 const Timestamp = z.string().meta({ format: 'date-time' })
 
@@ -57,15 +58,6 @@ export const EntryKindSchema = z.enum(ENTRY_KINDS).meta({ id: 'EntryKind' })
 export const AuthoredEntryKindSchema = z
   .enum(AUTHORED_ENTRY_KINDS)
   .meta({ id: 'AuthoredEntryKind', description: '`system` est réservé au serveur.' })
-
-export const SessionRefSchema = z
-  .object({
-    userId: z.string(),
-    userName: z.string(),
-    sessionLabel: z.string(),
-    repo: z.string().nullable(),
-  })
-  .meta({ id: 'SessionRef' })
 
 export const SystemAuthorSchema = z
   .object({ system: z.enum(SYSTEM_SOURCES) })

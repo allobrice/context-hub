@@ -7,7 +7,9 @@
  */
 import { and, asc, count, desc, eq, gt, inArray, lt, lte, gte, ne, or } from 'drizzle-orm'
 
-import { claimsOverlap, isSameSession } from '@context-hub/domain/workspaces/claims.ts'
+import { leaseUntil } from '@context-hub/domain/sessions/lease.ts'
+import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/session.ts'
+import { claimsOverlap } from '@context-hub/domain/workspaces/claims.ts'
 import {
   ENTRY_KINDS,
   type Claim,
@@ -15,7 +17,6 @@ import {
   type EntryCounts,
   type EntryKind,
   type Participant,
-  type SessionRef,
   type Workspace,
   type WorkspaceEntry,
   type WorkspaceMember,
@@ -33,12 +34,12 @@ import type {
   ReleaseClaimResult,
   ReleaseClaimWrite,
   SessionActivity,
-  SessionKey,
   TouchResult,
   WorkspaceListRow,
   WorkspaceRecord,
   WorkspaceStore,
 } from '../../../application/ports/WorkspaceStore.ts'
+import type { SessionKey } from '../../../application/sessionKey.ts'
 import { toUserId, type UserId } from '../../../application/viewer.ts'
 import type { AppDatabase, SyncDb } from '../connection.ts'
 import { isoDate } from '../dates.ts'
@@ -52,9 +53,7 @@ import {
   workspaceParticipants,
   workspaces,
 } from '../schema.ts'
-
-const IMMEDIATE = { behavior: 'immediate' } as const
-const MINUTE_MS = 60 * 1000
+import { IMMEDIATE } from '../transactions.ts'
 
 type WorkspaceRow = typeof workspaces.$inferSelect
 type EntryRow = typeof workspaceEntries.$inferSelect
@@ -64,10 +63,6 @@ type ParticipantRow = typeof workspaceParticipants.$inferSelect
 function parseStrings(json: string): string[] {
   const value: unknown = JSON.parse(json)
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []
-}
-
-function plusMinutes(at: Date, minutes: number): string {
-  return isoDate(new Date(at.getTime() + minutes * MINUTE_MS))
 }
 
 function toWorkspace(row: WorkspaceRow, linkedContextIds: readonly string[]): Workspace {
@@ -221,7 +216,7 @@ function extendSessionClaimsIn(
     .all()
   for (const claim of claims) {
     tx.update(workspaceClaims)
-      .set({ expiresAt: plusMinutes(at, claim.ttlMinutes) })
+      .set({ expiresAt: leaseUntil(at, claim.ttlMinutes) })
       .where(eq(workspaceClaims.id, claim.id))
       .run()
   }
@@ -639,7 +634,7 @@ export class DrizzleWorkspaceStore implements WorkspaceStore {
           (claim) => isSameSession(claim.holder, session) && claim.area === area,
         )
         if (own) {
-          const expiresAt = plusMinutes(at, ttlMinutes)
+          const expiresAt = leaseUntil(at, ttlMinutes)
           tx.update(workspaceClaims)
             .set({ expiresAt, ttlMinutes })
             .where(eq(workspaceClaims.id, own.id))
@@ -659,7 +654,7 @@ export class DrizzleWorkspaceStore implements WorkspaceStore {
           holderSessionLabel: session.sessionLabel,
           holderRepo: session.repo,
           acquiredAt: isoDate(at),
-          expiresAt: plusMinutes(at, ttlMinutes),
+          expiresAt: leaseUntil(at, ttlMinutes),
           ttlMinutes,
         }
         tx.insert(workspaceClaims).values(row).run()

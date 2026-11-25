@@ -10,23 +10,23 @@ import type {
   EntryPage,
   JoinResult,
   ParticipantView,
-  SessionRef,
   Workspace,
   WorkspaceDetail,
   WorkspaceEntry,
   WorkspaceList,
   WorkspaceSummary,
 } from '../workspaces/types.ts'
+import type { SessionRef } from '../sessions/session.ts'
 import type {
   CheckWriteResultSchema,
   EntryPageSchema,
   JoinResultSchema,
   ParticipantSchema,
-  SessionRefSchema,
   WorkspaceDetailSchema,
   WorkspaceListSchema,
   WorkspaceSummarySchema,
 } from './workspaces.ts'
+import type { SessionRefSchema } from './sessions.ts'
 import { ClaimSchema, WorkspaceEntrySchema, WorkspaceSchema } from './workspaces.ts'
 
 describe('schémas des workspaces', () => {

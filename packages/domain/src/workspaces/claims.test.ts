@@ -5,7 +5,6 @@ import {
   claimsOverlap,
   globToRegExp,
   isClaimExpired,
-  isSameSession,
   normalizeArea,
   normalizeRepoPath,
   staticPrefix,
@@ -159,28 +158,5 @@ describe('isClaimExpired', () => {
   it('expiré à l’échéance exacte, pas avant', () => {
     expect(isClaimExpired({ expiresAt: '2026-11-23T10:00:00.000Z' }, now)).toBe(true)
     expect(isClaimExpired({ expiresAt: '2026-11-23T10:00:01.000Z' }, now)).toBe(false)
-  })
-})
-
-describe('isSameSession', () => {
-  it('distingue deux sessions d’un même utilisateur dans le même repo', () => {
-    expect(
-      isSameSession(
-        { userId: 'brice', sessionLabel: 'web-1' },
-        { userId: 'brice', sessionLabel: 'web-2' },
-      ),
-    ).toBe(false)
-    expect(
-      isSameSession(
-        { userId: 'brice', sessionLabel: 'web-1' },
-        { userId: 'camille', sessionLabel: 'web-1' },
-      ),
-    ).toBe(false)
-    expect(
-      isSameSession(
-        { userId: 'brice', sessionLabel: 'web-1' },
-        { userId: 'brice', sessionLabel: 'web-1' },
-      ),
-    ).toBe(true)
   })
 })

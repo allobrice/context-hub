@@ -6,14 +6,18 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Worker } from 'node:worker_threads'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { claimsOverlap } from '@context-hub/domain/workspaces/claims.ts'
 
 import { toUserId } from '../../../application/viewer.ts'
-import type { WorkerInput, WorkerResult, WorkerTask } from '../../../test/workspaceWorker.ts'
+import { failuresOf, runConcurrently } from '../../../test/concurrency/runConcurrently.ts'
+import {
+  isWorkerResult,
+  type WorkerResult,
+  type WorkspaceOperation,
+} from '../../../test/workspaceWorker.ts'
 import { openDatabase } from '../connection.ts'
 import { users } from '../schema.ts'
 import { DrizzleWorkspaceStore } from './DrizzleWorkspaceStore.ts'
@@ -61,44 +65,19 @@ afterEach(() => {
   rmSync(directory, { recursive: true, force: true })
 })
 
-function isWorkerResult(value: unknown): value is WorkerResult {
-  return typeof value === 'object' && value !== null && 'kind' in value
-}
-
-/** Lance un worker par tâche, attend qu'ils soient tous prêts, puis les libère ensemble. */
-async function runTogether(tasks: readonly WorkerTask[]): Promise<WorkerResult[]> {
-  const barrier = new SharedArrayBuffer(8)
-  const flags = new Int32Array(barrier)
-  const workers = tasks.map((task) => {
-    const workerData: WorkerInput = { filename, workspaceId: WORKSPACE_ID, at: AT, barrier, task }
-    return new Worker(WORKER, { workerData, execArgv: ['--import', 'tsx'] })
+/** Lance les opérations ensemble, chacune dans un worker avec sa connexion. */
+function runTogether(operations: readonly WorkspaceOperation[]) {
+  return runConcurrently({
+    worker: WORKER,
+    filename,
+    tasks: operations.map((operation) => ({ ...operation, workspaceId: WORKSPACE_ID, at: AT })),
+    isResult: isWorkerResult,
   })
-  const results = workers.map(
-    (worker) =>
-      new Promise<WorkerResult>((resolve, reject) => {
-        worker.once('message', (message: unknown) => {
-          if (isWorkerResult(message)) resolve(message)
-          else reject(new Error('message de worker inattendu'))
-        })
-        worker.once('error', reject)
-      }),
-  )
-  try {
-    const deadline = Date.now() + 90_000
-    while (Atomics.load(flags, 0) < tasks.length) {
-      if (Date.now() > deadline) throw new Error('workers non prêts')
-      await new Promise((resolve) => setTimeout(resolve, 10))
-    }
-    Atomics.store(flags, 1, 1)
-    Atomics.notify(flags, 1)
-    return await Promise.all(results)
-  } finally {
-    await Promise.all(workers.map((worker) => worker.terminate()))
-  }
 }
 
-function errorsOf(results: readonly WorkerResult[]): string[] {
-  return results.flatMap((result) => (result.kind === 'error' ? [result.message] : []))
+/** Résultats des workers, une fois vérifié qu'aucun n'a échoué. */
+function succeeded(results: Awaited<ReturnType<typeof runTogether>>): WorkerResult[] {
+  return results.flatMap((result) => (isWorkerResult(result) ? [result] : []))
 }
 
 describe('DrizzleWorkspaceStore en concurrence (workers, une connexion chacun)', () => {
@@ -126,8 +105,8 @@ describe('DrizzleWorkspaceStore en concurrence (workers, une connexion chacun)',
     const results = await runTogether(
       areas.map((area, index) => ({ kind: 'claim', session: `web-${index + 1}`, area })),
     )
-    expect(errorsOf(results)).toEqual([])
-    const outcomes = results.map((result) => (result.kind === 'claim' ? result.outcome : 'other'))
+    expect(failuresOf(results)).toEqual([])
+    const outcomes = succeeded(results).map((result) => (result.kind === 'claim' ? result.outcome : 'other'))
     expect(outcomes.filter((outcome) => outcome === 'acquired')).toHaveLength(1)
     expect(outcomes.filter((outcome) => outcome === 'conflict')).toHaveLength(9)
   }, 120_000)
@@ -142,13 +121,13 @@ describe('DrizzleWorkspaceStore en concurrence (workers, une connexion chacun)',
         count: 5,
       })),
     )
-    expect(errorsOf(results)).toEqual([])
-    const seqs = results.flatMap((result) => (result.kind === 'post' ? result.seqs : []))
+    expect(failuresOf(results)).toEqual([])
+    const seqs = succeeded(results).flatMap((result) => (result.kind === 'post' ? result.seqs : []))
     expect([...seqs].sort((a, b) => a - b)).toEqual(Array.from({ length: 50 }, (_, i) => i + 2))
   }, 120_000)
 
   it('lecture par curseur pendant les écritures : aucune entrée perdue ni dupliquée', async () => {
-    const writers: WorkerTask[] = Array.from({ length: 5 }, (_, index) => ({
+    const writers: WorkspaceOperation[] = Array.from({ length: 5 }, (_, index) => ({
       kind: 'post',
       session: `w-${index + 1}`,
       count: 20,
@@ -158,9 +137,9 @@ describe('DrizzleWorkspaceStore en concurrence (workers, une connexion chacun)',
       { kind: 'read', expected: 101, pageSize: 7 },
       { kind: 'read', expected: 101, pageSize: 3 },
     ])
-    expect(errorsOf(results)).toEqual([])
+    expect(failuresOf(results)).toEqual([])
     const all = Array.from({ length: 101 }, (_, i) => i + 1)
-    for (const result of results) {
+    for (const result of succeeded(results)) {
       if (result.kind === 'read') expect(result.seqs).toEqual(all)
     }
   }, 120_000)

@@ -15,14 +15,8 @@ import type {
   WorkspaceMember,
 } from '@context-hub/domain/workspaces/types.ts'
 
+import type { SessionKey } from '../sessionKey.ts'
 import type { UserId } from '../viewer.ts'
-
-/** Une session qui écrit : utilisateur authentifié + label (+ repo). */
-export interface SessionKey {
-  readonly userId: UserId
-  readonly sessionLabel: string
-  readonly repo: string | null
-}
 
 /** Auteur d'une entrée à écrire (le nom de l'utilisateur est joint à la lecture). */
 export type NewEntryAuthor = SessionKey | { readonly system: SystemSource }

@@ -8,6 +8,7 @@ import { toContextId, type ContextId } from '@context-hub/domain/context/types.t
 
 import { AuthService } from './application/auth/AuthService.ts'
 import { ContextService } from './application/contexts/ContextService.ts'
+import type { MaintenanceTask } from './application/maintenance.ts'
 import { ContextCatalog } from './application/mcp/ContextCatalog.ts'
 import type { Clock } from './application/ports/Clock.ts'
 import type { Logger } from './application/ports/Logger.ts'
@@ -93,5 +94,8 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
     allowedHosts: options.allowedHosts,
     allowedOrigins: allowedOrigins(options.webOrigin),
   })
-  return { app, mcp, workspaces }
+  const maintenance: readonly MaintenanceTask[] = [
+    { name: 'workspaces', run: () => workspaces.closeIdleWorkspaces() },
+  ]
+  return { app, mcp, workspaces, maintenance }
 }

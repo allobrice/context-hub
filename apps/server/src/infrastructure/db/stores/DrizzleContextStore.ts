@@ -48,11 +48,11 @@ import {
   publishedMetadataColumns,
   publishedVisibleTo,
   reindex,
-  scopeOf,
   versionOf,
   visibleTo,
   writeTags,
 } from './contextRecords.ts'
+import { scopeOf } from './scopeRecords.ts'
 
 function orderOf(sort: LibrarySort): SQL[] {
   switch (sort) {

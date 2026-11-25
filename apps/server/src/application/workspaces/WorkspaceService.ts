@@ -6,6 +6,7 @@
  * - Toute écriture passe par le scan : secrets REMPLACÉS, injection suspecte signalée.
  * - Les invariants de concurrence (seq, claims) sont tenus par le store, dans une transaction.
  */
+import { containsSecret } from '@context-hub/domain/context/scan.ts'
 import { slugify } from '@context-hub/domain/context/slug.ts'
 import { resourceUri } from '@context-hub/domain/context/uri.ts'
 import {
@@ -16,18 +17,17 @@ import {
   WorkspaceNotFoundError,
   WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
-import { deriveWorkspaceStatus, isSessionActive } from '@context-hub/domain/workspaces/activity.ts'
+import { isSameSession, isSessionActive, UI_SESSION_LABEL } from '@context-hub/domain/sessions/session.ts'
+import { deriveWorkspaceStatus } from '@context-hub/domain/workspaces/activity.ts'
 import {
   claimCovers,
-  isSameSession,
   normalizeArea,
   normalizeRepoPath,
 } from '@context-hub/domain/workspaces/claims.ts'
 import { buildDelta, buildDigest, type Delta } from '@context-hub/domain/workspaces/digest.ts'
-import { containsSecret, redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
+import { redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
 import {
   CLAIM_TTL_DEFAULT_MINUTES,
-  UI_SESSION_LABEL,
   DELTA_BUDGET_TOKENS,
   DIGEST_BUDGET_TOKENS,
   ENTRY_MAX_LENGTH,
@@ -57,10 +57,10 @@ import type { WorkspaceEvents } from '../ports/WorkspaceEvents.ts'
 import type {
   NewEntry,
   ReleaseClaimResult,
-  SessionKey,
   WorkspaceRecord,
   WorkspaceStore,
 } from '../ports/WorkspaceStore.ts'
+import { sessionKey, type SessionInput, type SessionKey } from '../sessionKey.ts'
 import { toUserId, type Viewer } from '../viewer.ts'
 
 /** Un blocage par hook n'est journalisé qu'une fois par (claim, session) sur cette fenêtre. */
@@ -78,11 +78,6 @@ export interface CreateWorkspaceInput {
   readonly goal: string
   readonly repos: readonly string[]
   readonly linkedContextIds: readonly string[]
-}
-
-export interface SessionInput {
-  readonly session: string
-  readonly repo: string | null
 }
 
 export interface PostEntryInput extends SessionInput {
@@ -133,10 +128,6 @@ export interface WorkspaceServiceDependencies {
   readonly clock: Clock
   readonly newId: (prefix: 'ws' | 'claim') => string
   readonly events: WorkspaceEvents
-}
-
-function sessionKey(viewer: Viewer, input: SessionInput): SessionKey {
-  return { userId: viewer.userId, sessionLabel: input.session, repo: input.repo }
 }
 
 function systemEntry(source: SystemSource, body: string, files: readonly string[] = []): NewEntry {

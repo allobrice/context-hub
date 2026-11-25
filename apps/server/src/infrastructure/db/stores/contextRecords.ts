@@ -2,14 +2,9 @@
  * Lecture et écriture des agrégats « contexte » partagées par les stores : visibilité, hydratation
  * (tags, versions, brouillon, lectures MCP), tags d'un contexte et réindexation plein texte.
  */
-import { and, asc, count, desc, eq, gte, inArray, isNotNull, sql, type SQL } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, type SQL } from 'drizzle-orm'
 
-import type {
-  Context,
-  ContextVersion,
-  Scope,
-  ScopeKind,
-} from '@context-hub/domain/context/types.ts'
+import type { Context, ContextVersion } from '@context-hub/domain/context/types.ts'
 import { toContextId } from '@context-hub/domain/context/types.ts'
 import { titleSortKey } from '@context-hub/domain/library/criteria.ts'
 
@@ -27,6 +22,7 @@ import {
   users,
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
+import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
 
 export type ContextRow = typeof contexts.$inferSelect
 type VersionRow = typeof contextVersions.$inferSelect
@@ -36,29 +32,7 @@ const MCP_READS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 
 /** Portées : `personal` réservée à son propriétaire ; `team` et `project` visibles de tous. */
 export function visibleTo(viewer: Viewer): SQL {
-  return sql`(${contexts.scopeKind} <> 'personal' or ${contexts.scopeValue} = ${viewer.userId})`
-}
-
-export function scopeOf(kind: ScopeKind, value: string): Scope {
-  switch (kind) {
-    case 'personal':
-      return { kind, owner: value }
-    case 'project':
-      return { kind, repo: value }
-    case 'team':
-      return { kind, team: value }
-  }
-}
-
-export function scopeColumns(scope: Scope): { scopeKind: ScopeKind; scopeValue: string } {
-  switch (scope.kind) {
-    case 'personal':
-      return { scopeKind: scope.kind, scopeValue: scope.owner }
-    case 'project':
-      return { scopeKind: scope.kind, scopeValue: scope.repo }
-    case 'team':
-      return { scopeKind: scope.kind, scopeValue: scope.team }
-  }
+  return visibleIn({ kind: contexts.scopeKind, value: contexts.scopeValue }, viewer)
 }
 
 function groupBy<T, K>(items: readonly T[], keyOf: (item: T) => K): Map<K, T[]> {
@@ -287,7 +261,7 @@ export function rewritePublishedTags(
 
 /** Portées appliquées aux métadonnées publiées : ce que voient les sessions MCP. */
 export function publishedVisibleTo(viewer: Viewer): SQL {
-  return sql`(${contexts.publishedScopeKind} <> 'personal' or ${contexts.publishedScopeValue} = ${viewer.userId})`
+  return visibleIn({ kind: contexts.publishedScopeKind, value: contexts.publishedScopeValue }, viewer)
 }
 
 function contentOf(db: SyncDb, contextId: string, number: number | null): string | null {

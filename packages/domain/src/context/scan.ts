@@ -76,6 +76,16 @@ export function hasSecret(findings: readonly ScanFinding[]): boolean {
   return findings.some((finding) => finding.kind === 'secret')
 }
 
+/** Un texte libre (titre, objectif, résumé…) contient-il un secret ? Il est alors refusé, pas masqué. */
+export function containsSecret(text: string): boolean {
+  return hasSecret(scanContent(text))
+}
+
+/** Un texte contient-il une instruction suspecte (injection, exfiltration) ? */
+export function hasSuspiciousInstruction(text: string): boolean {
+  return scanContent(text).some((finding) => finding.kind === 'suspicious-instruction')
+}
+
 const MASK_CHAR = '•'
 const MASK_VISIBLE_START = 4
 const MASK_VISIBLE_END = 3

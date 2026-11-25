@@ -5,6 +5,8 @@
  * caractère est LITTÉRAL : `[id]`, `{a,b}` ou `!` ne sont ni des classes, ni des alternatives, ni des
  * négations (routes Nuxt `pages/[id].vue`). La règle de chevauchement reste ainsi démontrable.
  */
+import { isLeaseExpired } from '../sessions/lease.ts'
+
 import type { Claim } from './types.ts'
 
 export const AREA_MAX_LENGTH = 300
@@ -105,13 +107,5 @@ export function claimsOverlap(a: ClaimZone, b: ClaimZone): boolean {
 
 /** Un claim expiré n'est plus opposable. */
 export function isClaimExpired(claim: Pick<Claim, 'expiresAt'>, now: Date): boolean {
-  return Date.parse(claim.expiresAt) <= now.getTime()
-}
-
-/** Même session : même utilisateur et même label (deux sessions d'un même repo restent distinctes). */
-export function isSameSession(
-  a: { readonly userId: string; readonly sessionLabel: string },
-  b: { readonly userId: string; readonly sessionLabel: string },
-): boolean {
-  return a.userId === b.userId && a.sessionLabel === b.sessionLabel
+  return isLeaseExpired(claim, now)
 }
