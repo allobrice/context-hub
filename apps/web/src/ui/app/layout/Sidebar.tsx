@@ -59,6 +59,15 @@ export function Sidebar() {
           <span className={styles.label}>Workspaces</span>
           {overview && <span className={styles.count}>{overview.openWorkspaceCount}</span>}
         </NavLink>
+        <NavLink to="/missions" className={linkClassName}>
+          <Icon name="mission" />
+          <span className={styles.label}>Missions</span>
+          {overview && (
+            <span className={styles.count} title="Missions à traiter">
+              {overview.missionTodoCount}
+            </span>
+          )}
+        </NavLink>
         <NavLink to="/taxonomy" className={linkClassName}>
           <Icon name="tag" />
           <span className={styles.label}>Tags &amp; collections</span>

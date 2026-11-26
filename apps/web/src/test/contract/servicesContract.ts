@@ -8,6 +8,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import type { ContextDraftInput } from '@context-hub/domain/context/editing.ts'
 import { NUXT4_CONTEXT_ID } from '@context-hub/domain/fixtures/contexts.ts'
+import { AUDIT_BATCH_ID, LCP_PROMPT } from '@context-hub/domain/fixtures/missions.ts'
+import {
+  MissionConflictError,
+  MissionNotFoundError,
+  MissionRuleError,
+  MissionTransitionError,
+} from '@context-hub/domain/missions/errors.ts'
 import {
   ContextNotFoundError,
   DraftRejectedError,
@@ -224,6 +231,7 @@ export function describeServicesContract(
           scopeCounts: { personal: 5, project: 12, team: 25 },
           mcpServer: { status: 'online' },
           openWorkspaceCount: 3,
+          missionTodoCount: 4,
         })
         expect(overview.tagNames).toHaveLength(34)
       })
@@ -335,6 +343,131 @@ export function describeServicesContract(
         await expect(
           services.workspaces.postEntry('contrat-adapters', { kind: 'note', body: 'x' }),
         ).rejects.toBeInstanceOf(WorkspaceClosedError)
+      })
+    })
+
+    describe('missions', () => {
+      const TODO_QUERY = { filter: 'todo', tags: [], repo: null, batchId: null } as const
+
+      it('list : « À traiter » par défaut, tri priorité puis ancienneté, compteurs (maquette 31)', async () => {
+        const list = await services.missions.list(TODO_QUERY)
+        expect(list.counts).toEqual({ todo: 4, to_validate: 1, ready: 2, archived: 2, all: 6 })
+        expect(list.items.map((item) => [item.priority, item.slug, item.status])).toEqual([
+          ['P1', 'perf-lcp-carrousel', 'ready'],
+          ['P1', 'perf-precharger-polices', 'in_progress'],
+          ['P2', 'perf-decouper-chunk-vendor', 'ready'],
+          ['P2', 'perf-hydratation-footer', 'draft'],
+        ])
+        expect(list.items.every((item) => !('prompt' in item))).toBe(true)
+      })
+
+      it('list : filtres tags (tous requis), archivées, lot', async () => {
+        const fonts = await services.missions.list({ ...TODO_QUERY, tags: ['perf', 'fonts'] })
+        expect(fonts.items.map((item) => item.slug)).toEqual(['perf-precharger-polices'])
+        const archived = await services.missions.list({ ...TODO_QUERY, filter: 'archived' })
+        expect(archived.items.map((item) => item.status).sort()).toEqual(['done', 'dropped'])
+        const batch = await services.missions.list({ ...TODO_QUERY, batchId: AUDIT_BATCH_ID })
+        expect(batch.counts.all).toBe(6)
+      })
+
+      it('batch : bloc « Origine » du lot', async () => {
+        const batch = await services.missions.batch(AUDIT_BATCH_ID)
+        expect(batch).toMatchObject({
+          label: 'Audit perf · page d’accueil Nuxt',
+          repo: 'allovoisins/front',
+          commit: 'a41c9e2',
+          total: 6,
+          counts: { draft: 1, ready: 2, in_progress: 1, done: 1, dropped: 1, expired: 0 },
+        })
+        expect(batch.session?.sessionLabel).toBe('perf-1')
+      })
+
+      it('get : prompt, contexte lié publié, historique (maquette 35)', async () => {
+        const detail = await services.missions.get('perf-lcp-carrousel')
+        expect(detail.mission.prompt).toContain('## Critères d’acceptation')
+        expect(detail.linkedContexts.map((context) => context.slug)).toEqual([NUXT4_SLUG])
+        expect(detail.events.map((event) => event.type)).toEqual(['created', 'validated'])
+        await expect(services.missions.get('inconnue')).rejects.toBeInstanceOf(MissionNotFoundError)
+      })
+
+      it('validate puis drop (raison obligatoire) puis reopen', async () => {
+        const validated = await services.missions.validate('perf-hydratation-footer')
+        expect(validated.mission).toMatchObject({ status: 'ready', validation: { by: 'brice' } })
+        await expect(
+          services.missions.drop('perf-hydratation-footer', '  '),
+        ).rejects.toBeInstanceOf(MissionTransitionError)
+        const dropped = await services.missions.drop('perf-hydratation-footer', 'Doublon')
+        expect(dropped.mission).toMatchObject({ status: 'dropped', dropReason: 'Doublon' })
+        const reopened = await services.missions.reopen('perf-hydratation-footer')
+        expect(reopened.mission).toMatchObject({ status: 'ready', dropReason: null })
+      })
+
+      it('reject : la mission à valider disparaît ; une action sur un mauvais statut est refusée', async () => {
+        await services.missions.reject('perf-hydratation-footer', 'Hors sujet')
+        await expect(services.missions.get('perf-hydratation-footer')).rejects.toBeInstanceOf(
+          MissionNotFoundError,
+        )
+        await expect(services.missions.validate('perf-lcp-carrousel')).rejects.toBeInstanceOf(
+          MissionTransitionError,
+        )
+      })
+
+      it('release : la mission en cours redevient prête', async () => {
+        const released = await services.missions.release('perf-precharger-polices')
+        expect(released.mission).toMatchObject({ status: 'ready', claim: null })
+        expect(released.events.at(-1)).toMatchObject({ type: 'released', detail: 'forcée' })
+      })
+
+      it('update : garde de version (MissionConflictError) et relecture (MissionRuleError)', async () => {
+        const { mission } = await services.missions.get('perf-lcp-carrousel')
+        const command = {
+          title: mission.title,
+          summary: mission.summary,
+          prompt: mission.prompt,
+          priority: 'P2',
+          tags: mission.tags,
+          expectedUpdatedAt: mission.updatedAt,
+        } as const
+        const updated = await services.missions.update('perf-lcp-carrousel', command)
+        expect(updated.mission.priority).toBe('P2')
+        await expect(
+          services.missions.update('perf-lcp-carrousel', command),
+        ).rejects.toBeInstanceOf(MissionConflictError)
+        await expect(
+          services.missions.update('perf-lcp-carrousel', {
+            ...command,
+            prompt: '## Objectif\nRien.',
+            expectedUpdatedAt: updated.mission.updatedAt,
+          }),
+        ).rejects.toBeInstanceOf(MissionRuleError)
+      })
+
+      it('create : prête directement (humain), refusée sans gabarit complet', async () => {
+        const created = await services.missions.create({
+          title: 'Mission du contrat',
+          summary: 'Créée par la suite de contrat',
+          prompt: LCP_PROMPT,
+          priority: 'P3',
+          tags: ['testing'],
+          scope: { kind: 'team', team: 'allovoisins' },
+          origin: { label: 'Contrat des adapters', batchId: null },
+          codeRef: { repo: 'allovoisins/front', commit: 'a41c9e2', files: [] },
+          linkedContextIds: [],
+        })
+        expect(created.mission).toMatchObject({ slug: 'mission-du-contrat', status: 'ready' })
+        await expect(
+          services.missions.create({
+            title: 'Incomplète',
+            summary: 'Sans gabarit',
+            prompt: '## Objectif\nRien.',
+            priority: 'P3',
+            tags: [],
+            scope: { kind: 'personal' },
+            origin: { label: 'Contrat', batchId: null },
+            codeRef: { repo: 'allovoisins/front', commit: 'a41c9e2', files: [] },
+            linkedContextIds: [],
+          }),
+        ).rejects.toBeInstanceOf(MissionRuleError)
       })
     })
   })

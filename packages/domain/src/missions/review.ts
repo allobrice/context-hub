@@ -138,7 +138,10 @@ export function reviewMission(content: MissionContent, author: ActorKind): Missi
   if (!COMMIT_PATTERN.test(content.codeRef.commit)) violations.add('commit-invalid')
   if (content.codeRef.files.length > MISSION_MAX_FILES) violations.add('too-many-files')
   const files = content.codeRef.files.map(normalizeRepoPath)
-  if (files.includes(null) || content.codeRef.files.some((file) => SHELL_METACHARACTERS.test(file))) {
+  if (
+    files.includes(null) ||
+    content.codeRef.files.some((file) => SHELL_METACHARACTERS.test(file))
+  ) {
     violations.add('path-invalid')
   }
 

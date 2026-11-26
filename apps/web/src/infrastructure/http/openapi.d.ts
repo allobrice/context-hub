@@ -3881,6 +3881,7 @@ export interface components {
                 transport: string;
             };
             openWorkspaceCount: number;
+            missionTodoCount: number;
         };
         Collection: {
             id: string;
@@ -4407,14 +4408,14 @@ export interface components {
             status: components["schemas"]["MissionStatus"];
             origin: components["schemas"]["MissionOrigin"];
             codeRef: components["schemas"]["CodeRef"];
-            freshness: components["schemas"]["Freshness"];
+            freshness: components["schemas"]["Freshness"] | null;
             linkedContextIds: string[];
             workspaceId: string | null;
             /** @description Instruction suspecte conservée (création humaine). */
             suspicious: boolean;
-            validation: components["schemas"]["MissionValidation"];
-            claim: components["schemas"]["MissionClaim"];
-            result: components["schemas"]["MissionResult"];
+            validation: components["schemas"]["MissionValidation"] | null;
+            claim: components["schemas"]["MissionClaim"] | null;
+            result: components["schemas"]["MissionResult"] | null;
             dropReason: string | null;
             createdAt: string;
             expiresAt: string;
@@ -4428,7 +4429,7 @@ export interface components {
         MissionOrigin: {
             label: string;
             batchId: string | null;
-            session: components["schemas"]["SessionRef"] & (Record<string, never> | null);
+            session: components["schemas"]["SessionRef"] | null;
             createdBy: string;
         };
         CodeRef: {
@@ -4440,22 +4441,22 @@ export interface components {
             checkedAt: string;
             changedFiles: string[];
             checkedBy: components["schemas"]["SessionRef"];
-        } | null;
+        };
         MissionValidation: {
             by: string;
             at: string;
-        } | null;
+        };
         MissionClaim: {
             session: components["schemas"]["SessionRef"];
             acquiredAt: string;
             expiresAt: string;
-        } | null;
+        };
         MissionResult: {
             summary: string;
             deliverables: components["schemas"]["Deliverable"][];
             metrics: components["schemas"]["Metric"][];
             acceptanceMet: boolean;
-        } | null;
+        };
         Deliverable: {
             /** @enum {string} */
             kind: "pr" | "commit" | "url";
@@ -4490,14 +4491,14 @@ export interface components {
             status: components["schemas"]["MissionStatus"];
             origin: components["schemas"]["MissionOrigin"];
             codeRef: components["schemas"]["CodeRef"];
-            freshness: components["schemas"]["Freshness"];
+            freshness: components["schemas"]["Freshness"] | null;
             linkedContextIds: string[];
             workspaceId: string | null;
             /** @description Instruction suspecte conservée (création humaine). */
             suspicious: boolean;
-            validation: components["schemas"]["MissionValidation"];
-            claim: components["schemas"]["MissionClaim"];
-            result: components["schemas"]["MissionResult"];
+            validation: components["schemas"]["MissionValidation"] | null;
+            claim: components["schemas"]["MissionClaim"] | null;
+            result: components["schemas"]["MissionResult"] | null;
             dropReason: string | null;
             createdAt: string;
             expiresAt: string;
@@ -4589,7 +4590,7 @@ export interface components {
         MissionBatch: {
             batchId: string;
             label: string;
-            session: components["schemas"]["SessionRef"] & (Record<string, never> | null);
+            session: components["schemas"]["SessionRef"] | null;
             repo: string;
             commit: string;
             createdAt: string;
@@ -4643,12 +4644,13 @@ export interface components {
         };
         TakeMissionResult: {
             /** @description null : aucune mission prête (`next`). */
-            taken: {
-                mission: components["schemas"]["Mission"];
-                token: string;
-                promptTokens: number;
-                linkedContexts: components["schemas"]["MissionLinkedContext"][];
-            } | null;
+            taken: components["schemas"]["TakenMission"] | null;
+        };
+        TakenMission: {
+            mission: components["schemas"]["Mission"];
+            token: string;
+            promptTokens: number;
+            linkedContexts: components["schemas"]["MissionLinkedContext"][];
         };
         TakeMissionInput: {
             /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */

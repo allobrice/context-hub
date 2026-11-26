@@ -120,6 +120,7 @@ export function apiFailure(result, specific = {}) {
   }
   const known = result.code === null ? undefined : specific[result.code]
   if (known !== undefined) return known
-  if (result.code === 'UNAUTHORIZED') return 'Jeton Context Hub refusé : vérifier CONTEXT_HUB_TOKEN.'
+  if (result.code === 'UNAUTHORIZED')
+    return 'Jeton Context Hub refusé : vérifier CONTEXT_HUB_TOKEN.'
   return `Erreur Context Hub (${result.status} ${result.code ?? ''}) : ${result.message}`
 }

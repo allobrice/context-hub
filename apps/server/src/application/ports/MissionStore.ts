@@ -8,7 +8,11 @@
  * expirées libérées (événement `released`), missions non prises expirées (événement `expired`). Une
  * mission ne reste jamais bloquée en attendant le job.
  */
-import type { MissionCommand, Transition, TransitionError } from '@context-hub/domain/missions/lifecycle.ts'
+import type {
+  MissionCommand,
+  Transition,
+  TransitionError,
+} from '@context-hub/domain/missions/lifecycle.ts'
 import type {
   DraftMission,
   InProgressMission,

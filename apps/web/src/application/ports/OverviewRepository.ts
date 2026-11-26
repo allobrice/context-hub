@@ -15,6 +15,8 @@ export interface WorkspaceOverview {
   readonly mcpServer: { readonly status: McpServerStatus; readonly transport: string }
   /** Workspaces ouverts (Inactifs compris) dont l'utilisateur est membre. */
   readonly openWorkspaceCount: number
+  /** Missions à traiter (à valider, prêtes, en cours) visibles de l'utilisateur. */
+  readonly missionTodoCount: number
 }
 
 export interface OverviewRepository {

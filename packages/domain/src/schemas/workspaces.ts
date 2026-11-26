@@ -26,12 +26,7 @@ import {
 } from '../workspaces/types.ts'
 import { AREA_MAX_LENGTH } from '../workspaces/claims.ts'
 import { orNull } from './context.ts'
-import {
-  RepoSchema,
-  SessionInputSchema,
-  SessionLabelSchema,
-  SessionRefSchema,
-} from './sessions.ts'
+import { RepoSchema, SessionInputSchema, SessionLabelSchema, SessionRefSchema } from './sessions.ts'
 
 const Timestamp = z.string().meta({ format: 'date-time' })
 

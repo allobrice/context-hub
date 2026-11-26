@@ -66,6 +66,8 @@ function sequentialId(): ContextId {
 export interface TestAppOptions {
   /** Horloge injectée (ex. `ManualClock`) ; défaut : figée sur `DEMO_NOW`. */
   readonly clock?: Clock
+  /** Missions de démo (défaut : oui) ; `false` pour partir d'une file vide. */
+  readonly demoMissions?: boolean
 }
 
 let workspaceSequence = 0
@@ -96,8 +98,11 @@ function reservationTokens(): () => string {
   }
 }
 
-export async function createTestApp({ clock }: TestAppOptions = {}): Promise<TestApp> {
-  const database = createTestDatabase(clock ? { clock } : {})
+export async function createTestApp({
+  clock,
+  demoMissions = true,
+}: TestAppOptions = {}): Promise<TestApp> {
+  const database = createTestDatabase({ demoMissions, ...(clock ? { clock } : {}) })
   await database.users.createToken({
     userId: toUserId('camille'),
     tokenHash: hashApiToken(CAMILLE_TOKEN),

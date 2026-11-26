@@ -78,7 +78,11 @@ export interface CreateMissionInput {
   readonly tags: readonly string[]
   readonly scope: MissionScopeInput
   readonly origin: { readonly label: string; readonly batchId: string | null }
-  readonly codeRef: { readonly repo: string; readonly commit: string; readonly files: readonly string[] }
+  readonly codeRef: {
+    readonly repo: string
+    readonly commit: string
+    readonly files: readonly string[]
+  }
   readonly linkedContextIds: readonly string[]
 }
 
@@ -132,7 +136,9 @@ type HumanOrSession = Exclude<MissionActor, { readonly kind: 'job' }>
 function slugCandidate(base: string, attempt: number): string {
   if (attempt === 1) return base
   if (attempt <= READABLE_SLUG_ATTEMPTS) return `${base}-${String(attempt)}`
-  return `${base}-${randomInt(36 ** 4).toString(36).padStart(4, '0')}`
+  return `${base}-${randomInt(36 ** 4)
+    .toString(36)
+    .padStart(4, '0')}`
 }
 
 export class MissionService {
@@ -160,6 +166,17 @@ export class MissionService {
       batchId: query.batchId,
     })
     return { items: missions.map(toMissionSummary), counts: filterCounts(statusCounts) }
+  }
+
+  /** Compteur « À traiter » de la sidebar, sans charger les missions. */
+  async todoCount(viewer: Viewer): Promise<number> {
+    const { statusCounts } = await this.store.list(viewer, {
+      statuses: [],
+      tags: [],
+      repo: null,
+      batchId: null,
+    })
+    return filterCounts(statusCounts).todo
   }
 
   /** Bloc « Origine » d'un lot. @throws MissionNotFoundError */
@@ -342,7 +359,12 @@ export class MissionService {
     })
   }
 
-  dropBySession(viewer: Viewer, slug: string, holder: HolderInput, reason: string): Promise<Mission> {
+  dropBySession(
+    viewer: Viewer,
+    slug: string,
+    holder: HolderInput,
+    reason: string,
+  ): Promise<Mission> {
     return this.bySession(viewer, slug, holder, { type: 'drop', reason: redactReason(reason) })
   }
 
@@ -351,7 +373,11 @@ export class MissionService {
   }
 
   /** Heartbeat (hook du plugin) : prolonge la réservation. Renvoie la nouvelle échéance. */
-  async heartbeat(viewer: Viewer, slug: string, holder: HolderInput): Promise<{ expiresAt: string }> {
+  async heartbeat(
+    viewer: Viewer,
+    slug: string,
+    holder: HolderInput,
+  ): Promise<{ expiresAt: string }> {
     const result: RenewResult = await this.store.renew({
       viewer,
       slug,
@@ -573,4 +599,3 @@ function updatedOrThrow(slug: string, result: UpdateResult): Mission {
       })
   }
 }
-

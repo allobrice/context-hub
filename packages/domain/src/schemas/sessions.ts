@@ -18,13 +18,11 @@ export const SessionLabelSchema = z
   .regex(SESSION_LABEL_PATTERN)
   .meta({ description: 'Label de la session Claude Code, ex. « web-1 » (unique par utilisateur).' })
 
-
 export const RepoSchema = z
   .string()
   .max(200)
   .regex(REPO_PATTERN)
   .meta({ description: '`owner/name`, ex. « allovoisins/front ».' })
-
 
 export const SessionInputSchema = z
   .object({
@@ -32,4 +30,3 @@ export const SessionInputSchema = z
     repo: RepoSchema.nullable().default(null),
   })
   .meta({ id: 'SessionInput' })
-

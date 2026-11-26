@@ -12,14 +12,7 @@ import type { ContextMetadata } from '../../../application/ports/ContextStore.ts
 import type { Viewer } from '../../../application/viewer.ts'
 import type { SyncDb } from '../connection.ts'
 import { isoDate } from '../dates.ts'
-import {
-  contextDrafts,
-  contexts,
-  contextTags,
-  contextVersions,
-  mcpReads,
-  tags,
-} from '../schema.ts'
+import { contextDrafts, contexts, contextTags, contextVersions, mcpReads, tags } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
 import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
 import { userNamesIn } from './userRecords.ts'
@@ -253,7 +246,10 @@ export function rewritePublishedTags(
 
 /** Portées appliquées aux métadonnées publiées : ce que voient les sessions MCP. */
 export function publishedVisibleTo(viewer: Viewer): SQL {
-  return visibleIn({ kind: contexts.publishedScopeKind, value: contexts.publishedScopeValue }, viewer)
+  return visibleIn(
+    { kind: contexts.publishedScopeKind, value: contexts.publishedScopeValue },
+    viewer,
+  )
 }
 
 function contentOf(db: SyncDb, contextId: string, number: number | null): string | null {

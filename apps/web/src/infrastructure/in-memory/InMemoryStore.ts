@@ -3,7 +3,9 @@ import {
   type CollectionRecord,
 } from '@context-hub/domain/fixtures/collections.ts'
 import { CONTEXT_FIXTURES, type ContextRecord } from '@context-hub/domain/fixtures/contexts.ts'
+import { MISSION_FIXTURES } from '@context-hub/domain/fixtures/missions.ts'
 import { TAG_FIXTURES, type TagRecord } from '@context-hub/domain/fixtures/tags.ts'
+import type { Mission, MissionEvent } from '@context-hub/domain/missions/types.ts'
 import {
   WORKSPACE_FIXTURES,
   type WorkspaceMemberFixture,
@@ -22,6 +24,13 @@ export interface InMemoryState {
   collections: CollectionRecord[]
   tags: TagRecord[]
   workspaces: WorkspaceRecord[]
+  missions: MissionRecord[]
+}
+
+/** Une mission et son journal, remplacés à chaque transition par le repository in-memory. */
+export interface MissionRecord {
+  mission: Mission
+  events: MissionEvent[]
 }
 
 /** Un workspace et tout ce qui en dépend, mutable par le repository in-memory. */
@@ -47,10 +56,16 @@ export function createDemoState(): InMemoryState {
       claims: [...fixture.claims],
       entries: [...fixture.entries],
     })),
+    missions: MISSION_FIXTURES.map((fixture) => ({
+      mission: fixture.mission,
+      events: [...fixture.events],
+    })),
   }
 }
 
 /** Vue de l'état selon le mode : `empty` présente un espace sans aucune donnée (maquettes 04 et 20). */
 export function visibleState(state: InMemoryState, mode: MockMode): InMemoryState {
-  return mode === 'empty' ? { contexts: [], collections: [], tags: [], workspaces: [] } : state
+  return mode === 'empty'
+    ? { contexts: [], collections: [], tags: [], workspaces: [], missions: [] }
+    : state
 }

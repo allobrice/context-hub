@@ -1,3 +1,4 @@
+import { MISSION_FILTER_STATUSES } from '@context-hub/domain/missions/types.ts'
 import type {
   WorkspaceOverview,
   OverviewRepository,
@@ -54,6 +55,12 @@ export class InMemoryOverviewRepository implements OverviewRepository {
             ? 0
             : visibleState(this.state, this.simulation.mode()).workspaces.filter(
                 (record) => record.workspace.status === 'open',
+              ).length,
+        missionTodoCount:
+          this.simulation.mode() === 'missions-empty'
+            ? 0
+            : visibleState(this.state, this.simulation.mode()).missions.filter(({ mission }) =>
+                MISSION_FILTER_STATUSES.todo.includes(mission.status),
               ).length,
       }
     })

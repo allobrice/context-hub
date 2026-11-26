@@ -17,7 +17,7 @@ import {
   PRIORITIES,
 } from '../missions/types.ts'
 import { REPO_PATH_MAX_LENGTH } from '../shared/repo.ts'
-import { ScopeSchema } from './context.ts'
+import { orNull, ScopeSchema } from './context.ts'
 import { RepoSchema, SessionLabelSchema, SessionRefSchema } from './sessions.ts'
 
 export const MissionStatusSchema = z.enum(MISSION_STATUSES).meta({ id: 'MissionStatus' })
@@ -27,7 +27,7 @@ export const MissionOriginSchema = z
   .object({
     label: z.string(),
     batchId: z.string().nullable(),
-    session: SessionRefSchema.nullable(),
+    session: orNull(SessionRefSchema),
     createdBy: z.string(),
   })
   .meta({ id: 'MissionOrigin' })
@@ -83,13 +83,15 @@ export const MissionSchema = z
     status: MissionStatusSchema,
     origin: MissionOriginSchema,
     codeRef: CodeRefSchema,
-    freshness: FreshnessSchema.nullable(),
+    freshness: orNull(FreshnessSchema),
     linkedContextIds: z.array(z.string()).readonly(),
     workspaceId: z.string().nullable(),
-    suspicious: z.boolean().meta({ description: 'Instruction suspecte conservée (création humaine).' }),
-    validation: ValidationSchema.nullable(),
-    claim: MissionClaimSchema.nullable(),
-    result: MissionResultSchema.nullable(),
+    suspicious: z
+      .boolean()
+      .meta({ description: 'Instruction suspecte conservée (création humaine).' }),
+    validation: orNull(ValidationSchema),
+    claim: orNull(MissionClaimSchema),
+    result: orNull(MissionResultSchema),
     dropReason: z.string().nullable(),
     createdAt: z.string(),
     expiresAt: z.string(),
@@ -160,7 +162,7 @@ export const MissionBatchSchema = z
   .object({
     batchId: z.string(),
     label: z.string(),
-    session: SessionRefSchema.nullable(),
+    session: orNull(SessionRefSchema),
     repo: z.string(),
     commit: z.string(),
     createdAt: z.string(),
@@ -187,7 +189,9 @@ export const BatchIdSchema = z
   .min(1)
   .max(80)
   .regex(/^[\w.-]+$/)
-  .meta({ description: 'Lot : les missions d’une même analyse, ex. « audit-perf-home-2026-11-25 ».' })
+  .meta({
+    description: 'Lot : les missions d’une même analyse, ex. « audit-perf-home-2026-11-25 ».',
+  })
 
 /** Portée d'une nouvelle mission : `personal` est toujours attribuée à son auteur. */
 export const MissionScopeInputSchema = z
@@ -202,7 +206,10 @@ export const CodeRefInputSchema = z
   .object({
     repo: RepoSchema,
     commit: z.string().min(1).max(40),
-    files: z.array(text(REPO_PATH_MAX_LENGTH)).max(MISSION_MAX_FILES * 2).default([]),
+    files: z
+      .array(text(REPO_PATH_MAX_LENGTH))
+      .max(MISSION_MAX_FILES * 2)
+      .default([]),
   })
   .meta({ id: 'CodeRefInput' })
 
@@ -211,10 +218,14 @@ export const CreateMissionInputSchema = z
     title: text(500),
     summary: text(1_000),
     prompt: text(PROMPT_TRANSPORT_MAX).meta({
-      description: 'Markdown autonome : Objectif, Constat, Fichiers, À faire, Critères d’acceptation.',
+      description:
+        'Markdown autonome : Objectif, Constat, Fichiers, À faire, Critères d’acceptation.',
     }),
     priority: PrioritySchema.default('P2'),
-    tags: z.array(text(60)).max(MISSION_MAX_TAGS * 2).default([]),
+    tags: z
+      .array(text(60))
+      .max(MISSION_MAX_TAGS * 2)
+      .default([]),
     scope: MissionScopeInputSchema,
     origin: z.object({ label: text(200), batchId: BatchIdSchema.nullable().default(null) }),
     codeRef: CodeRefInputSchema,
@@ -228,7 +239,10 @@ export const UpdateMissionInputSchema = z
     summary: text(1_000).optional(),
     prompt: text(PROMPT_TRANSPORT_MAX).optional(),
     priority: PrioritySchema.optional(),
-    tags: z.array(text(60)).max(MISSION_MAX_TAGS * 2).optional(),
+    tags: z
+      .array(text(60))
+      .max(MISSION_MAX_TAGS * 2)
+      .optional(),
     expectedUpdatedAt: z.string().meta({
       description: '`updatedAt` lu : 409 MISSION_CONFLICT si la mission a changé depuis.',
     }),
@@ -297,6 +311,8 @@ export const TakenMissionSchema = z
 
 export const TakeMissionResultSchema = z
   .object({
-    taken: TakenMissionSchema.nullable().meta({ description: 'null : aucune mission prête (`next`).' }),
+    taken: orNull(TakenMissionSchema).meta({
+      description: 'null : aucune mission prête (`next`).',
+    }),
   })
   .meta({ id: 'TakeMissionResult' })

@@ -184,7 +184,9 @@ export async function onSessionStart(input, deps) {
   const mission = missionReminder(input, deps)
   const texts = [workspace?.text, mission ?? undefined].filter((text) => text !== undefined)
   if (texts.length === 0) {
-    return workspace?.systemMessage === undefined ? null : { systemMessage: workspace.systemMessage }
+    return workspace?.systemMessage === undefined
+      ? null
+      : { systemMessage: workspace.systemMessage }
   }
   return context('SessionStart', texts.join('\n\n'), workspace?.systemMessage)
 }
@@ -229,11 +231,13 @@ async function workspaceResume(input, deps) {
 export async function onUserPromptSubmit(input, deps) {
   const command = parseCommand(input.prompt ?? '')
   if (command !== null) return runCommand(command, input, deps)
-  const parts = (await Promise.all([missionHeartbeat(input, deps), workspaceSync(input, deps)])).filter(
-    (part) => part !== null,
-  )
+  const parts = (
+    await Promise.all([missionHeartbeat(input, deps), workspaceSync(input, deps)])
+  ).filter((part) => part !== null)
   if (parts.length === 0) return null
-  const warnings = parts.flatMap((part) => (part.systemMessage === undefined ? [] : [part.systemMessage]))
+  const warnings = parts.flatMap((part) =>
+    part.systemMessage === undefined ? [] : [part.systemMessage],
+  )
   return context(
     'UserPromptSubmit',
     parts.map((part) => part.text).join('\n\n'),
@@ -329,9 +333,13 @@ async function runCommand(command, input, deps) {
     case 'leave':
       return report(await leave(input, deps))
     case 'take':
-      return report(await takeMission(input, deps, { slug: command.slug }, locateRepo(input.cwd, deps)))
+      return report(
+        await takeMission(input, deps, { slug: command.slug }, locateRepo(input.cwd, deps)),
+      )
     case 'next':
-      return report(await takeMission(input, deps, { tags: command.tags }, locateRepo(input.cwd, deps)))
+      return report(
+        await takeMission(input, deps, { tags: command.tags }, locateRepo(input.cwd, deps)),
+      )
     case 'missions':
       return report(await listMissions(deps, locateRepo(input.cwd, deps).repo))
     case 'mission-create':

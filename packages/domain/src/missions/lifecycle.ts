@@ -162,7 +162,11 @@ export function transition(
 
   const at = now.toISOString()
   const updated = (next: Mission, type: MissionEventType, detail: string | null = null) =>
-    ok<Transition>({ kind: 'updated', mission: next, event: eventOf(next, actor, now, type, detail) })
+    ok<Transition>({
+      kind: 'updated',
+      mission: next,
+      event: eventOf(next, actor, now, type, detail),
+    })
 
   // La table a déjà vérifié le statut et l'acteur : les gardes `status` / `actor.kind` ci-dessous ne
   // servent qu'à rétrécir les types pour TypeScript (elles ne refusent jamais rien de plus).
@@ -203,7 +207,11 @@ export function transition(
       }
       const holding = checkHolder(mission, actor, now)
       if (holding !== null) return refuse(holding)
-      const freshness = { checkedAt: at, changedFiles: command.changedFiles, checkedBy: actor.session }
+      const freshness = {
+        checkedAt: at,
+        changedFiles: command.changedFiles,
+        checkedBy: actor.session,
+      }
       return updated(
         { ...renewed(mission, now), freshness, updatedAt: at },
         'freshness',
@@ -216,7 +224,14 @@ export function transition(
       if (holding !== null) return refuse(holding)
       if (command.result.summary.trim() === '') return refuse('summary-required')
       return updated(
-        { ...mission, status: 'done', claim: null, result: command.result, closedAt: at, updatedAt: at },
+        {
+          ...mission,
+          status: 'done',
+          claim: null,
+          result: command.result,
+          closedAt: at,
+          updatedAt: at,
+        },
         'completed',
       )
     }
@@ -231,7 +246,14 @@ export function transition(
       const reason = command.reason.trim()
       if (reason === '') return refuse('reason-required')
       return updated(
-        { ...mission, status: 'dropped', claim: null, dropReason: reason, closedAt: at, updatedAt: at },
+        {
+          ...mission,
+          status: 'dropped',
+          claim: null,
+          dropReason: reason,
+          closedAt: at,
+          updatedAt: at,
+        },
         'dropped',
         reason,
       )

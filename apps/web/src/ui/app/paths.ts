@@ -13,6 +13,9 @@ export const paths = {
   workspaces: (status: 'open' | 'closed' | 'all' = 'open') =>
     status === 'open' ? '/workspaces' : `/workspaces?status=${status}`,
   workspace: (slug: string) => `/workspaces/${encodeURIComponent(slug)}`,
+  /** File des missions ; filtres dans l'URL (`?filter=&tags=&repo=&batch=`). */
+  missions: (search = '') => (search === '' ? '/missions' : `/missions?${search}`),
+  mission: (slug: string) => `/missions/${encodeURIComponent(slug)}`,
   context: (id: ContextId) => `/contexts/${encodeURIComponent(id)}`,
   editContext: (id: ContextId) => `/contexts/${encodeURIComponent(id)}/edit`,
 } as const

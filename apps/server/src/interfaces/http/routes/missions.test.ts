@@ -40,7 +40,7 @@ let clock: ManualClock
 
 beforeEach(async () => {
   clock = new ManualClock(MISSION_NOW)
-  api = await createTestApp({ clock })
+  api = await createTestApp({ clock, demoMissions: false })
 })
 
 afterEach(() => api.close())

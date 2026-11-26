@@ -57,9 +57,9 @@ const THIRD_PARTY_WARNING =
   'le résultat du contrôle à l’utilisateur ; 3) ATTENDRE son accord explicite. Sans accord : ' +
   '`mission_release`.'
 
-const REQUIRED_SECTIONS = REQUIRED_PROMPT_SECTIONS.map((section) => PROMPT_SECTION_TITLES[section]).join(
-  ', ',
-)
+const REQUIRED_SECTIONS = REQUIRED_PROMPT_SECTIONS.map(
+  (section) => PROMPT_SECTION_TITLES[section],
+).join(', ')
 
 const SessionParam = SessionLabelSchema.describe(
   'Label de CETTE session (ex. « web-1 »), distinct pour chaque session Claude Code.',
@@ -448,7 +448,12 @@ export function registerMissionSurface(
     },
     async (input) =>
       run('mission_drop', input.slug, async () => {
-        const mission = await missions.dropBySession(viewer, input.slug, holder(input), input.reason)
+        const mission = await missions.dropBySession(
+          viewer,
+          input.slug,
+          holder(input),
+          input.reason,
+        )
         return json({ slug: mission.slug, status: mission.status })
       }),
   )

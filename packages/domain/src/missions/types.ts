@@ -59,7 +59,11 @@ export interface MissionClaim extends Lease {
 }
 
 export type DeliverableKind = 'pr' | 'commit' | 'url'
-export const DELIVERABLE_KINDS = ['pr', 'commit', 'url'] as const satisfies readonly DeliverableKind[]
+export const DELIVERABLE_KINDS = [
+  'pr',
+  'commit',
+  'url',
+] as const satisfies readonly DeliverableKind[]
 
 export interface Deliverable {
   readonly kind: DeliverableKind
@@ -115,7 +119,8 @@ interface Open {
   readonly closedAt: null
 }
 
-export type DraftMission = MissionCore & Open & { readonly status: 'draft'; readonly validation: null }
+export type DraftMission = MissionCore &
+  Open & { readonly status: 'draft'; readonly validation: null }
 
 export type ReadyMission = MissionCore &
   Open & { readonly status: 'ready'; readonly validation: Validation | null }
@@ -157,12 +162,7 @@ export type ExpiredMission = MissionCore & {
 }
 
 export type Mission =
-  | DraftMission
-  | ReadyMission
-  | InProgressMission
-  | DoneMission
-  | DroppedMission
-  | ExpiredMission
+  DraftMission | ReadyMission | InProgressMission | DoneMission | DroppedMission | ExpiredMission
 
 /** Qui agit : une session (MCP), un humain (UI) ou le job de maintenance. */
 export type MissionActor =
@@ -197,7 +197,8 @@ export const MISSION_EVENT_TYPES = [
 ] as const satisfies readonly MissionEventType[]
 
 /** Auteur d'un événement : SPEC §8.1, plus le job de maintenance (expirations). */
-export type MissionEventActor = SessionRef | { readonly userId: string } | { readonly system: 'job' }
+export type MissionEventActor =
+  SessionRef | { readonly userId: string } | { readonly system: 'job' }
 
 /**
  * Événement du cycle de vie (journal append-only). Le slug et le titre sont copiés : un événement
@@ -238,14 +239,15 @@ export const MISSION_QUEUE_FILTERS = [
   'all',
 ] as const satisfies readonly MissionQueueFilter[]
 
-export const MISSION_FILTER_STATUSES: Readonly<Record<MissionQueueFilter, readonly MissionStatus[]>> =
-  {
-    todo: ['draft', 'ready', 'in_progress'],
-    to_validate: ['draft'],
-    ready: ['ready'],
-    archived: ['done', 'dropped', 'expired'],
-    all: MISSION_STATUSES,
-  }
+export const MISSION_FILTER_STATUSES: Readonly<
+  Record<MissionQueueFilter, readonly MissionStatus[]>
+> = {
+  todo: ['draft', 'ready', 'in_progress'],
+  to_validate: ['draft'],
+  ready: ['ready'],
+  archived: ['done', 'dropped', 'expired'],
+  all: MISSION_STATUSES,
+}
 
 export type MissionStatusCounts = Readonly<Record<MissionStatus, number>>
 export type MissionFilterCounts = Readonly<Record<MissionQueueFilter, number>>

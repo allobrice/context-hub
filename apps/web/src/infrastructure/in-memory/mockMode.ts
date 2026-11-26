@@ -9,6 +9,8 @@ export const MOCK_MODES = [
   'ws-empty',
   'ws-closed',
   'ws-forbidden',
+  // Missions (maquette 32) : file vide.
+  'missions-empty',
 ] as const
 export type MockMode = (typeof MOCK_MODES)[number] | 'normal'
 

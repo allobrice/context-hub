@@ -1,6 +1,10 @@
 /** Support de test des Missions : données d'une nouvelle mission, sessions et horloge. */
 import { createMission, type NewMission } from '@context-hub/domain/missions/lifecycle.ts'
-import type { DraftMission, MissionEvent, ReadyMission } from '@context-hub/domain/missions/types.ts'
+import type {
+  DraftMission,
+  MissionEvent,
+  ReadyMission,
+} from '@context-hub/domain/missions/types.ts'
 import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
 
 export const MISSION_NOW = new Date('2026-11-25T10:00:00.000Z')

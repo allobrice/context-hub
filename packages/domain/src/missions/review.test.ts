@@ -112,7 +112,9 @@ describe('redactMissionResult / redactReason', () => {
   it('masque les secrets d’un résultat sans rien garder de la valeur', () => {
     const result = redactMissionResult({
       summary: 'Fait. Clé de test : sk_live_51HxAbCdEfGh123',
-      deliverables: [{ kind: 'url', ref: 'https://x.test/?token=ghp_abcdefghijklmnopqrstuvwxyz123456' }],
+      deliverables: [
+        { kind: 'url', ref: 'https://x.test/?token=ghp_abcdefghijklmnopqrstuvwxyz123456' },
+      ],
       metrics: [{ name: 'LCP', before: '3,8 s', after: '2,2 s' }],
       acceptanceMet: true,
     })

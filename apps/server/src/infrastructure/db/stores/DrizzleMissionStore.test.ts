@@ -5,13 +5,13 @@ import { createMission } from '@context-hub/domain/missions/lifecycle.ts'
 import type { MissionResult } from '@context-hub/domain/missions/types.ts'
 
 import type { ApplyResult, TakeResult } from '../../../application/ports/MissionStore.ts'
+import { MISSION_NOW, newMission, readyMission, sessionRef } from '../../../test/missionFixtures.ts'
 import {
-  MISSION_NOW,
-  newMission,
-  readyMission,
-  sessionRef,
-} from '../../../test/missionFixtures.ts'
-import { BRICE, CAMILLE, createTestDatabase, type TestDatabase } from '../../../test/testDatabase.ts'
+  BRICE,
+  CAMILLE,
+  createTestDatabase,
+  type TestDatabase,
+} from '../../../test/testDatabase.ts'
 import { missionTags } from '../schema.ts'
 import { DrizzleMissionStore } from './DrizzleMissionStore.ts'
 
@@ -31,7 +31,7 @@ let database: TestDatabase
 let store: DrizzleMissionStore
 
 beforeEach(() => {
-  database = createTestDatabase()
+  database = createTestDatabase({ demoMissions: false })
   store = new DrizzleMissionStore(database.db)
 })
 
@@ -39,13 +39,22 @@ afterEach(() => {
   database.close()
 })
 
-async function seed(slug: string, overrides: Parameters<typeof newMission>[1] = {}, now = MISSION_NOW) {
+async function seed(
+  slug: string,
+  overrides: Parameters<typeof newMission>[1] = {},
+  now = MISSION_NOW,
+) {
   const { mission, event } = readyMission(slug, overrides, now)
   expect(await store.create(mission, event)).toBe(true)
   return mission
 }
 
-function takeSlug(slug: string, session = WEB_1, at = MISSION_NOW, tokenHash = `hash-${session.sessionLabel}`) {
+function takeSlug(
+  slug: string,
+  session = WEB_1,
+  at = MISSION_NOW,
+  tokenHash = `hash-${session.sessionLabel}`,
+) {
   return store.take({ viewer: BRICE, target: { slug }, session, tokenHash, at })
 }
 

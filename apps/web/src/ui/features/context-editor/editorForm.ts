@@ -40,6 +40,7 @@ export type EditorAction =
   | { readonly type: 'repo'; readonly repo: string }
   | { readonly type: 'add-tag'; readonly tag: string }
   | { readonly type: 'remove-tag'; readonly tag: string }
+  | { readonly type: 'expose-as-prompt'; readonly value: boolean }
   | { readonly type: 'false-positive'; readonly falsePositive: FalsePositive }
   | { readonly type: 'restore-local'; readonly local: LocalDraft }
   | {
@@ -99,6 +100,8 @@ export function editorReducer(context: EditorContext) {
           ...withValues(state, { scope: { kind: 'project', repo: action.repo } }),
           lastRepo: action.repo,
         }
+      case 'expose-as-prompt':
+        return withValues(state, { exposeAsPrompt: action.value })
       case 'add-tag': {
         const tag = normalizeTagName(action.tag)
         return state.values.tags.includes(tag)
@@ -154,6 +157,7 @@ export function stateFromDetail({ context }: ContextDetail): EditorState {
     scope: context.scope,
     content: version?.content ?? '',
     versionNote: context.draft?.note ?? '',
+    exposeAsPrompt: context.exposeAsPrompt,
   }
   return {
     values,
@@ -185,6 +189,7 @@ export function newEditorState(
     scope: { kind: 'personal', owner: currentUser.toLowerCase() },
     content: prefill.content ?? '',
     versionNote: '',
+    exposeAsPrompt: false,
   }
   const empty: ContextDraftInput = { ...values, title: '', slug: '' }
   return {

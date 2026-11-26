@@ -147,7 +147,8 @@ export const MissionRuleErrorSchema = z
   })
   .meta({
     id: 'MissionRuleError',
-    description: 'Mission refusée : gabarit incomplet, secret, instruction suspecte, champ invalide.',
+    description:
+      'Mission refusée : gabarit incomplet, secret, instruction suspecte, champ invalide.',
   })
 
 export const MissionTransitionErrorSchema = z

@@ -85,7 +85,10 @@ const listRoute = createRoute({
   tags: [TAG],
   summary: 'File des missions : filtre segmenté, tags, repo, lot ; tri priorité puis ancienneté',
   request: { query: ListQuery },
-  responses: { ...readResponses, 200: json(MissionListSchema, 'Missions (sans prompt) et compteurs') },
+  responses: {
+    ...readResponses,
+    200: json(MissionListSchema, 'Missions (sans prompt) et compteurs'),
+  },
 })
 
 const createMissionRoute = createRoute({
@@ -223,11 +226,7 @@ export function registerMissionRoutes(app: OpenAPIHono<AppEnv>, missions: Missio
 
   app.openapi(rejectRoute, async (c) =>
     c.json(
-      await missions.reject(
-        c.var.viewer,
-        c.req.valid('param').slug,
-        c.req.valid('json').reason,
-      ),
+      await missions.reject(c.var.viewer, c.req.valid('param').slug, c.req.valid('json').reason),
       200,
     ),
   )
@@ -250,9 +249,7 @@ export function registerMissionRoutes(app: OpenAPIHono<AppEnv>, missions: Missio
   app.openapi(takeRoute, async (c) => {
     const { session, repo, slug, next } = c.req.valid('json')
     const target =
-      slug === undefined
-        ? { next: { tags: next?.tags ?? [], repo: next?.repo ?? null } }
-        : { slug }
+      slug === undefined ? { next: { tags: next?.tags ?? [], repo: next?.repo ?? null } } : { slug }
     return c.json({ taken: await missions.take(c.var.viewer, target, { session, repo }) }, 200)
   })
 

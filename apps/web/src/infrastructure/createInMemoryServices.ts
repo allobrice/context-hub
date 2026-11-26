@@ -4,6 +4,7 @@ import { InMemoryContextRepository } from './in-memory/InMemoryContextRepository
 import { createDemoState } from './in-memory/InMemoryStore.ts'
 import { InMemoryTaxonomyRepository } from './in-memory/InMemoryTaxonomyRepository.ts'
 import { InMemoryOverviewRepository } from './in-memory/InMemoryOverviewRepository.ts'
+import { InMemoryMissionRepository } from './in-memory/InMemoryMissionRepository.ts'
 import { InMemoryWorkspaceRepository } from './in-memory/InMemoryWorkspaceRepository.ts'
 import { DEFAULT_SIMULATION, type SimulationOptions } from './in-memory/simulation.ts'
 import { LocalDraftStorage } from './storage/LocalDraftStorage.ts'
@@ -19,6 +20,7 @@ export function createInMemoryServices(
     contexts: new InMemoryContextRepository(state, options, demoClock),
     overview: new InMemoryOverviewRepository(state, options),
     workspaces: new InMemoryWorkspaceRepository(state, options, demoClock),
+    missions: new InMemoryMissionRepository(state, options, demoClock),
     taxonomy: new InMemoryTaxonomyRepository(state, options, demoClock),
     drafts: new LocalDraftStorage(),
     clock: demoClock,

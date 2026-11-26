@@ -3,6 +3,7 @@ import type { AppConfig, AppServices } from '../application/services.ts'
 import { createApiClient, type ApiClientOptions } from './http/apiClient.ts'
 import { HttpContextRepository } from './http/HttpContextRepository.ts'
 import { HttpTaxonomyRepository } from './http/HttpTaxonomyRepository.ts'
+import { HttpMissionRepository } from './http/HttpMissionRepository.ts'
 import { HttpWorkspaceRepository } from './http/HttpWorkspaceRepository.ts'
 import { HttpOverviewRepository } from './http/HttpOverviewRepository.ts'
 import { LocalDraftStorage } from './storage/LocalDraftStorage.ts'
@@ -17,6 +18,7 @@ export function createHttpServices(api: ApiClientOptions, config: AppConfig): Ap
     contexts: new HttpContextRepository(client),
     overview: new HttpOverviewRepository(client),
     workspaces: new HttpWorkspaceRepository(client),
+    missions: new HttpMissionRepository(client),
     taxonomy: new HttpTaxonomyRepository(client),
     drafts: new LocalDraftStorage(),
     clock: systemClock,

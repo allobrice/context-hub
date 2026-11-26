@@ -1,0 +1,445 @@
+@use 'abstracts' as *;
+
+// Détail d'une mission (maquettes 34–39). Thème sombre (39) : tokens uniquement.
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.warn {
+  color: var(--warn);
+}
+
+.small {
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.statePage {
+  padding: var(--space-6);
+}
+
+// ── En-tête ─────────────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 14px var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+
+  a {
+    color: var(--accent-text);
+  }
+}
+
+.crumbSlug {
+  @include mono(var(--text-xs));
+}
+
+.headerMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin-right: auto;
+}
+
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.inlineError {
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+// ── Bandeaux ────────────────────────────────────────────────────────────────
+.banners {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) var(--space-6) 0;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+
+  svg {
+    flex: none;
+  }
+}
+
+// Fraîcheur (maquette 36) : bordure warn.
+.bannerStrong {
+  border: 1px solid var(--warn);
+}
+
+.bannerNote {
+  white-space: nowrap;
+}
+
+// ── Corps : colonne principale + colonne de droite ──────────────────────────
+.body {
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) 28px;
+}
+
+.main {
+  display: flex;
+  flex: 999 1 520px;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.aside {
+  display: flex;
+  flex: 1 1 340px;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: 440px;
+
+  @include stack-below {
+    max-width: none;
+  }
+}
+
+.panel {
+  @include panel;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.padded {
+  gap: 10px;
+  padding: 14px;
+}
+
+.sectionTitle {
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.panelTitleLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 14px;
+  border-bottom: 1px solid var(--border);
+
+  .sectionTitle {
+    margin-right: auto;
+  }
+}
+
+.panelHeading {
+  padding: var(--space-3) 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panelMeta {
+  @include mono(var(--text-xs));
+
+  color: var(--fg-3);
+}
+
+.panelFoot {
+  padding: 10px 14px;
+  color: var(--fg-3);
+  font-size: var(--text-xs);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+// ── Prompt (gabarit §8.3) ───────────────────────────────────────────────────
+.promptPanel {
+  padding: 18px 22px;
+}
+
+.promptHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+
+  .sectionTitle {
+    margin-right: auto;
+  }
+}
+
+// Sections du prompt (« ## Objectif » rendu en h3) : petites capitales, comme la maquette 35.
+// Préfixé par le panneau pour l'emporter sur les styles de MarkdownView.
+.promptPanel .prompt {
+  font-size: 13.5px;
+  line-height: 1.6;
+
+  h3 {
+    margin: var(--space-4) 0 6px;
+    color: var(--fg-2);
+    font-size: var(--text-base);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  code {
+    font-size: var(--text-sm);
+  }
+}
+
+.linked {
+  margin-top: var(--space-3);
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+
+  a {
+    color: var(--accent-text);
+  }
+}
+
+// ── Résultat ────────────────────────────────────────────────────────────────
+.resultPanel {
+  gap: 10px;
+  padding: var(--space-4) var(--space-5);
+}
+
+.resultEmpty {
+  color: var(--fg-3);
+  font-size: var(--text-base);
+}
+
+.resultText {
+  color: var(--fg-2);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.resultPanel .resultSummary {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.reasonText {
+  color: var(--fg);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.metricChanged {
+  background: var(--ok-soft);
+
+  .metricValue {
+    color: var(--ok);
+  }
+}
+
+.metricName {
+  color: var(--fg-2);
+  font-size: var(--text-xs);
+}
+
+.metricValue {
+  @include mono(15px);
+}
+
+.metricLink {
+  @include mono(var(--text-base));
+
+  color: var(--accent-text);
+  overflow-wrap: anywhere;
+}
+
+// ── Colonne de droite ───────────────────────────────────────────────────────
+.steps {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.holdPanel {
+  gap: var(--space-2);
+  border-color: var(--accent);
+}
+
+.holder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.holderSession {
+  @include mono(var(--text-sm));
+}
+
+.holdText {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.alignStart {
+  align-self: flex-start;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filePath {
+  @include mono(var(--text-sm));
+  @include truncate;
+
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.fileState {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 7px 10px;
+  margin: 0;
+  font-size: var(--text-sm);
+
+  dt {
+    color: var(--fg-3);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.historyRow {
+  display: flex;
+  gap: 10px;
+  padding: var(--space-2) 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.historyDate {
+  color: var(--fg-3);
+  white-space: nowrap;
+}
+
+// ── Dialogs ─────────────────────────────────────────────────────────────────
+.reason {
+  @include control;
+
+  height: auto;
+  min-height: 80px;
+  padding: var(--space-2) 10px;
+  resize: vertical;
+}

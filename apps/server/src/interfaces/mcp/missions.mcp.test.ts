@@ -29,7 +29,7 @@ let api: TestApp
 const clients: Client[] = []
 
 beforeEach(async () => {
-  api = await createTestApp()
+  api = await createTestApp({ demoMissions: false })
 })
 
 afterEach(async () => {

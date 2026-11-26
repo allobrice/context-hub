@@ -17,13 +17,14 @@ import {
   WorkspaceNotFoundError,
   WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
-import { isSameSession, isSessionActive, UI_SESSION_LABEL } from '@context-hub/domain/sessions/session.ts'
+import {
+  isSameSession,
+  isSessionActive,
+  UI_SESSION_LABEL,
+} from '@context-hub/domain/sessions/session.ts'
 import { normalizeRepoPath } from '@context-hub/domain/shared/repo.ts'
 import { deriveWorkspaceStatus } from '@context-hub/domain/workspaces/activity.ts'
-import {
-  claimCovers,
-  normalizeArea,
-} from '@context-hub/domain/workspaces/claims.ts'
+import { claimCovers, normalizeArea } from '@context-hub/domain/workspaces/claims.ts'
 import { buildDelta, buildDigest, type Delta } from '@context-hub/domain/workspaces/digest.ts'
 import { redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
 import {

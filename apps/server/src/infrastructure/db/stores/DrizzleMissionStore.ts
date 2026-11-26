@@ -51,7 +51,8 @@ import { isoDate } from '../dates.ts'
 import { deferred } from '../deferred.ts'
 import { missionEvents, missions, missionTags } from '../schema.ts'
 import { IMMEDIATE } from '../transactions.ts'
-import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
+import { appendEvent, insertTags, lifecycleColumns, missionRow } from './missionRecords.ts'
+import { scopeOf, visibleIn } from './scopeRecords.ts'
 import { userNameIn, userNamesIn } from './userRecords.ts'
 
 type MissionRow = typeof missions.$inferSelect
@@ -252,88 +253,6 @@ function load(db: SyncDb, row: MissionRow): Mission {
 
 // ── Écriture : domaine → ligne ───────────────────────────────────────────────
 
-/** Colonnes qui changent au fil du cycle de vie (tout sauf l'identité et le jeton). */
-function lifecycleColumns(mission: Mission) {
-  const { claim, freshness, validation } = mission
-  return {
-    status: mission.status,
-    expiresAt: mission.expiresAt,
-    updatedAt: mission.updatedAt,
-    closedAt: mission.closedAt,
-    validationBy: validation?.by ?? null,
-    validationAt: validation?.at ?? null,
-    claimUserId: claim?.session.userId ?? null,
-    claimSessionLabel: claim?.session.sessionLabel ?? null,
-    claimRepo: claim?.session.repo ?? null,
-    claimAcquiredAt: claim?.acquiredAt ?? null,
-    claimExpiresAt: claim?.expiresAt ?? null,
-    freshnessCheckedAt: freshness?.checkedAt ?? null,
-    freshnessChangedFiles: freshness === null ? null : JSON.stringify(freshness.changedFiles),
-    freshnessUserId: freshness?.checkedBy.userId ?? null,
-    freshnessSessionLabel: freshness?.checkedBy.sessionLabel ?? null,
-    freshnessRepo: freshness?.checkedBy.repo ?? null,
-    result: mission.result === null ? null : JSON.stringify(mission.result),
-    dropReason: mission.dropReason,
-  }
-}
-
-function insertRow(mission: DraftMission | ReadyMission): typeof missions.$inferInsert {
-  const { scopeKind, scopeValue } = scopeColumns(mission.scope)
-  return {
-    ...lifecycleColumns(mission),
-    id: mission.id,
-    slug: mission.slug,
-    title: mission.title,
-    summary: mission.summary,
-    prompt: mission.prompt,
-    priority: mission.priority,
-    scopeKind,
-    scopeValue,
-    originLabel: mission.origin.label,
-    originBatchId: mission.origin.batchId,
-    originUserId: mission.origin.session?.userId ?? null,
-    originSessionLabel: mission.origin.session?.sessionLabel ?? null,
-    originRepo: mission.origin.session?.repo ?? null,
-    createdBy: mission.origin.createdBy,
-    codeRefRepo: mission.codeRef.repo,
-    codeRefCommit: mission.codeRef.commit,
-    codeRefFiles: JSON.stringify(mission.codeRef.files),
-    linkedContextIds: JSON.stringify(mission.linkedContextIds),
-    workspaceId: mission.workspaceId,
-    suspicious: mission.suspicious,
-    createdAt: mission.createdAt,
-    claimTokenHash: null,
-  }
-}
-
-function insertTags(db: SyncDb, missionId: string, tags: readonly string[]): void {
-  if (tags.length === 0) return
-  db.insert(missionTags)
-    .values(tags.map((tag, position) => ({ missionId, tag, position })))
-    .run()
-}
-
-function appendEvent(db: SyncDb, event: MissionEvent): void {
-  const { actor } = event
-  // `MissionEventActor` n'a pas de discriminant : session = a un label, humain = `userId` seul,
-  // job = `system`. À revoir si une variante gagne l'un de ces champs.
-  const session = 'sessionLabel' in actor ? actor : null
-  db.insert(missionEvents)
-    .values({
-      missionId: event.missionId,
-      missionSlug: event.missionSlug,
-      missionTitle: event.missionTitle,
-      at: event.at,
-      type: event.type,
-      actorUserId: 'userId' in actor ? actor.userId : null,
-      actorSessionLabel: session?.sessionLabel ?? null,
-      actorRepo: session?.repo ?? null,
-      actorSystem: 'system' in actor ? actor.system : null,
-      detail: event.detail,
-    })
-    .run()
-}
-
 /**
  * Écrit le résultat d'une transition : mission mise à jour (ou supprimée, pour un rejet) et son
  * événement. Jeton de réservation : `tokenHash` le remplace (prise) ; sans réservation il est effacé ;
@@ -494,7 +413,7 @@ export class DrizzleMissionStore implements MissionStore {
           .where(eq(missions.slug, mission.slug))
           .get()
         if (taken !== undefined) return false
-        tx.insert(missions).values(insertRow(mission)).run()
+        tx.insert(missions).values(missionRow(mission)).run()
         insertTags(tx, mission.id, mission.tags)
         appendEvent(tx, event)
         return true
@@ -524,7 +443,8 @@ export class DrizzleMissionStore implements MissionStore {
       this.db.transaction((tx): UpdateResult => {
         const row = findVisibleIn(tx, viewer, slug)
         if (row === undefined) return { kind: 'not-found' }
-        if (row.updatedAt !== expectedUpdatedAt) return { kind: 'conflict', updatedAt: row.updatedAt }
+        if (row.updatedAt !== expectedUpdatedAt)
+          return { kind: 'conflict', updatedAt: row.updatedAt }
         const mission = load(tx, row)
         if (mission.status !== 'draft' && mission.status !== 'ready') {
           return { kind: 'not-editable', status: mission.status }
@@ -581,7 +501,9 @@ export class DrizzleMissionStore implements MissionStore {
       this.db.transaction((tx): TakeResult => {
         sweepIn(tx, at)
         const row =
-          'slug' in target ? findVisibleIn(tx, viewer, target.slug) : nextReadyIn(tx, viewer, target.next)
+          'slug' in target
+            ? findVisibleIn(tx, viewer, target.slug)
+            : nextReadyIn(tx, viewer, target.next)
         if (row === undefined) return { kind: 'slug' in target ? 'not-found' : 'empty' }
         const result = transition(load(tx, row), { type: 'take' }, { kind: 'session', session }, at)
         if (!result.ok) return { kind: 'refused', error: result.error }

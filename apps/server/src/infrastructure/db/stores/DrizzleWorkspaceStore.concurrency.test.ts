@@ -106,7 +106,9 @@ describe('DrizzleWorkspaceStore en concurrence (workers, une connexion chacun)',
       areas.map((area, index) => ({ kind: 'claim', session: `web-${index + 1}`, area })),
     )
     expect(failuresOf(results)).toEqual([])
-    const outcomes = succeeded(results).map((result) => (result.kind === 'claim' ? result.outcome : 'other'))
+    const outcomes = succeeded(results).map((result) =>
+      result.kind === 'claim' ? result.outcome : 'other',
+    )
     expect(outcomes.filter((outcome) => outcome === 'acquired')).toHaveLength(1)
     expect(outcomes.filter((outcome) => outcome === 'conflict')).toHaveLength(9)
   }, 120_000)

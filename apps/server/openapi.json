@@ -106,6 +106,10 @@
           "openWorkspaceCount": {
             "type": "integer",
             "minimum": 0
+          },
+          "missionTodoCount": {
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -116,7 +120,8 @@
           "scopeCounts",
           "tagNames",
           "mcpServer",
-          "openWorkspaceCount"
+          "openWorkspaceCount",
+          "missionTodoCount"
         ]
       },
       "Collection": {
@@ -2171,7 +2176,14 @@
             "$ref": "#/components/schemas/CodeRef"
           },
           "freshness": {
-            "$ref": "#/components/schemas/Freshness"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Freshness"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "linkedContextIds": {
             "type": "array",
@@ -2190,13 +2202,34 @@
             "description": "Instruction suspecte conservée (création humaine)."
           },
           "validation": {
-            "$ref": "#/components/schemas/MissionValidation"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionValidation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "claim": {
-            "$ref": "#/components/schemas/MissionClaim"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionClaim"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "result": {
-            "$ref": "#/components/schemas/MissionResult"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "dropReason": {
             "type": [
@@ -2277,15 +2310,12 @@
             ]
           },
           "session": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/SessionRef"
               },
               {
-                "type": [
-                  "object",
-                  "null"
-                ]
+                "type": "null"
               }
             ]
           },
@@ -2323,10 +2353,7 @@
         ]
       },
       "Freshness": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "checkedAt": {
             "type": "string"
@@ -2348,10 +2375,7 @@
         ]
       },
       "MissionValidation": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "by": {
             "type": "string"
@@ -2366,10 +2390,7 @@
         ]
       },
       "MissionClaim": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "session": {
             "$ref": "#/components/schemas/SessionRef"
@@ -2388,10 +2409,7 @@
         ]
       },
       "MissionResult": {
-        "type": [
-          "object",
-          "null"
-        ],
+        "type": "object",
         "properties": {
           "summary": {
             "type": "string"
@@ -2540,7 +2558,14 @@
             "$ref": "#/components/schemas/CodeRef"
           },
           "freshness": {
-            "$ref": "#/components/schemas/Freshness"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Freshness"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "linkedContextIds": {
             "type": "array",
@@ -2559,13 +2584,34 @@
             "description": "Instruction suspecte conservée (création humaine)."
           },
           "validation": {
-            "$ref": "#/components/schemas/MissionValidation"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionValidation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "claim": {
-            "$ref": "#/components/schemas/MissionClaim"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionClaim"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "result": {
-            "$ref": "#/components/schemas/MissionResult"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "dropReason": {
             "type": [
@@ -2993,15 +3039,12 @@
             "type": "string"
           },
           "session": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/SessionRef"
               },
               {
-                "type": [
-                  "object",
-                  "null"
-                ]
+                "type": "null"
               }
             ]
           },
@@ -3218,38 +3261,45 @@
         "type": "object",
         "properties": {
           "taken": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "properties": {
-              "mission": {
-                "$ref": "#/components/schemas/Mission"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TakenMission"
               },
-              "token": {
-                "type": "string"
-              },
-              "promptTokens": {
-                "type": "integer"
-              },
-              "linkedContexts": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/MissionLinkedContext"
-                }
+              {
+                "type": "null"
               }
-            },
-            "required": [
-              "mission",
-              "token",
-              "promptTokens",
-              "linkedContexts"
             ],
             "description": "null : aucune mission prête (`next`)."
           }
         },
         "required": [
           "taken"
+        ]
+      },
+      "TakenMission": {
+        "type": "object",
+        "properties": {
+          "mission": {
+            "$ref": "#/components/schemas/Mission"
+          },
+          "token": {
+            "type": "string"
+          },
+          "promptTokens": {
+            "type": "integer"
+          },
+          "linkedContexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionLinkedContext"
+            }
+          }
+        },
+        "required": [
+          "mission",
+          "token",
+          "promptTokens",
+          "linkedContexts"
         ]
       },
       "TakeMissionInput": {

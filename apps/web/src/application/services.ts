@@ -1,6 +1,7 @@
 import type { Clock } from './ports/Clock.ts'
 import type { ContextRepository } from './ports/ContextRepository.ts'
 import type { DraftStorage } from './ports/DraftStorage.ts'
+import type { MissionRepository } from './ports/MissionRepository.ts'
 import type { TaxonomyRepository } from './ports/TaxonomyRepository.ts'
 import type { OverviewRepository } from './ports/OverviewRepository.ts'
 import type { WorkspaceRepository } from './ports/WorkspaceRepository.ts'
@@ -17,6 +18,7 @@ export interface AppServices {
   readonly contexts: ContextRepository
   readonly overview: OverviewRepository
   readonly workspaces: WorkspaceRepository
+  readonly missions: MissionRepository
   readonly taxonomy: TaxonomyRepository
   readonly drafts: DraftStorage
   readonly clock: Clock
