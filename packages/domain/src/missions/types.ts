@@ -306,6 +306,8 @@ export const MISSION_SUMMARY_MAX_LENGTH = 200
 export const MISSION_REASON_MAX_LENGTH = 1_000
 export const MISSION_MAX_TAGS = 10
 export const MISSION_MAX_FILES = 50
+/** Filtres « Archivées » et « Toutes » : seules les N missions closes le plus récemment sont listées. */
+export const MISSION_ARCHIVE_LIMIT = 100
 
 // ── File et vues de l'API ────────────────────────────────────────────────────
 

@@ -21,6 +21,7 @@ import type {
   MissionEvent,
   MissionStatus,
   MissionStatusCounts,
+  MissionSummary,
   Priority,
   ReadyMission,
 } from '@context-hub/domain/missions/types.ts'
@@ -106,11 +107,13 @@ export interface MissionQuery {
   readonly tags: readonly string[]
   readonly repo: string | null
   readonly batchId: string | null
+  /** Missions archivées (closes) : seulement les N closes le plus récemment ; null = toutes. */
+  readonly archiveLimit: number | null
 }
 
 export interface MissionRows {
-  /** Missions des statuts voulus, par priorité puis ancienneté. */
-  readonly missions: readonly Mission[]
+  /** Résumés (sans le prompt) des statuts voulus, par priorité puis ancienneté. */
+  readonly missions: readonly MissionSummary[]
   /** Compteurs par statut, avec les seuls filtres tags / repo / lot. */
   readonly statusCounts: MissionStatusCounts
 }

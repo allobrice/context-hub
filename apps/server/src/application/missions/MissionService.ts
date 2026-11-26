@@ -32,6 +32,7 @@ import {
 } from '@context-hub/domain/missions/review.ts'
 import { toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import {
+  MISSION_ARCHIVE_LIMIT,
   MISSION_FILTER_STATUSES,
   type InProgressMission,
   type Mission,
@@ -44,8 +45,8 @@ import {
   type MissionQueueFilter,
   type MissionResult,
   type Priority,
+  type MissionSummary,
   promptTokens,
-  toMissionSummary,
 } from '@context-hub/domain/missions/types.ts'
 import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
 import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
@@ -164,8 +165,9 @@ export class MissionService {
       tags: query.tags,
       repo: query.repo,
       batchId: query.batchId,
+      archiveLimit: MISSION_ARCHIVE_LIMIT,
     })
-    return { items: missions.map(toMissionSummary), counts: toFilterCounts(statusCounts) }
+    return { items: missions, counts: toFilterCounts(statusCounts) }
   }
 
   /** Compteur « À traiter » de la sidebar, sans charger les missions. */
@@ -175,6 +177,7 @@ export class MissionService {
       tags: [],
       repo: null,
       batchId: null,
+      archiveLimit: null,
     })
     return toFilterCounts(statusCounts).todo
   }
@@ -186,8 +189,9 @@ export class MissionService {
       tags: [],
       repo: null,
       batchId,
+      archiveLimit: null,
     })
-    const first = missions.reduce<Mission | undefined>(
+    const first = missions.reduce<MissionSummary | undefined>(
       (oldest, mission) =>
         oldest === undefined || mission.createdAt < oldest.createdAt ? mission : oldest,
       undefined,
