@@ -164,6 +164,86 @@ export type ExpiredMission = MissionCore & {
 export type Mission =
   DraftMission | ReadyMission | InProgressMission | DoneMission | DroppedMission | ExpiredMission
 
+/**
+ * Champs propres à un statut sous forme plate (colonnes SQL, DTO du contrat) : `null` = absent.
+ * `missionFromFields` en déduit l'union discriminée.
+ */
+export interface MissionStatusFields {
+  readonly status: MissionStatus
+  readonly validation: Validation | null
+  readonly claim: MissionClaim | null
+  readonly result: MissionResult | null
+  readonly dropReason: string | null
+  readonly closedAt: string | null
+}
+
+/** Mission relue incohérente : un champ requis par son statut manque (donnée corrompue). */
+export class InconsistentMissionError extends Error {
+  constructor(
+    readonly slug: string,
+    readonly status: MissionStatus,
+    readonly field: 'claim' | 'result' | 'dropReason' | 'closedAt',
+  ) {
+    super(`Mission ${slug} incohérente : ${field} manquant pour le statut ${status}`)
+    this.name = 'InconsistentMissionError'
+  }
+}
+
+/**
+ * Forme plate → union discriminée, seule implémentation (store du serveur, mapper HTTP du front).
+ * Les champs propres à un statut sont exigés (réservation en cours ; résultat, raison et date de
+ * clôture une fois archivée) ; ceux des autres statuts sont ignorés. Une mission à valider n'a pas
+ * de validation. @throws InconsistentMissionError
+ */
+export function missionFromFields(core: MissionCore, fields: MissionStatusFields): Mission {
+  const need = <T>(value: T | null, field: InconsistentMissionError['field']): T => {
+    if (value === null) throw new InconsistentMissionError(core.slug, fields.status, field)
+    return value
+  }
+  const { validation } = fields
+  const open = { claim: null, result: null, dropReason: null, closedAt: null } as const
+  switch (fields.status) {
+    case 'draft':
+      return { ...core, ...open, status: 'draft', validation: null }
+    case 'ready':
+      return { ...core, ...open, status: 'ready', validation }
+    case 'in_progress':
+      return {
+        ...core,
+        ...open,
+        status: 'in_progress',
+        validation,
+        claim: need(fields.claim, 'claim'),
+      }
+    case 'done':
+      return {
+        ...core,
+        ...open,
+        status: 'done',
+        validation,
+        result: need(fields.result, 'result'),
+        closedAt: need(fields.closedAt, 'closedAt'),
+      }
+    case 'dropped':
+      return {
+        ...core,
+        ...open,
+        status: 'dropped',
+        validation,
+        dropReason: need(fields.dropReason, 'dropReason'),
+        closedAt: need(fields.closedAt, 'closedAt'),
+      }
+    case 'expired':
+      return {
+        ...core,
+        ...open,
+        status: 'expired',
+        validation,
+        closedAt: need(fields.closedAt, 'closedAt'),
+      }
+  }
+}
+
 /** Qui agit : une session (MCP), un humain (UI) ou le job de maintenance. */
 export type MissionActor =
   | { readonly kind: 'session'; readonly session: SessionRef }

@@ -14,19 +14,20 @@ import {
   type MissionCommand,
   type Transition,
 } from '@context-hub/domain/missions/lifecycle.ts'
-import type {
-  DraftMission,
-  Mission,
-  MissionActor,
-  Freshness,
-  MissionClaim,
-  MissionCore,
-  MissionEvent,
-  MissionEventActor,
-  MissionStatus,
-  MissionStatusCounts,
-  ReadyMission,
-  Validation,
+import {
+  missionFromFields,
+  type DraftMission,
+  type Mission,
+  type MissionActor,
+  type Freshness,
+  type MissionClaim,
+  type MissionCore,
+  type MissionEvent,
+  type MissionEventActor,
+  type MissionStatus,
+  type MissionStatusCounts,
+  type ReadyMission,
+  type Validation,
 } from '@context-hub/domain/missions/types.ts'
 import { MissionResultSchema } from '@context-hub/domain/schemas/missions.ts'
 import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/session.ts'
@@ -156,43 +157,14 @@ function coreOf(row: MissionRow, tags: readonly string[], names: Names): Mission
 }
 
 function toMission(row: MissionRow, tags: readonly string[], names: Names): Mission {
-  const core = coreOf(row, tags, names)
-  const validation = validationOf(row)
-  const open = { claim: null, result: null, dropReason: null, closedAt: null } as const
-  switch (row.status) {
-    case 'draft':
-      return { ...core, ...open, status: 'draft', validation: null }
-    case 'ready':
-      return { ...core, ...open, status: 'ready', validation }
-    case 'in_progress':
-      return { ...core, ...open, status: 'in_progress', validation, claim: claimOf(row, names) }
-    case 'done':
-      return {
-        ...core,
-        ...open,
-        status: 'done',
-        validation,
-        result: parseJson(required(row.result, 'result', row), MissionResultSchema),
-        closedAt: required(row.closedAt, 'closed_at', row),
-      }
-    case 'dropped':
-      return {
-        ...core,
-        ...open,
-        status: 'dropped',
-        validation,
-        dropReason: required(row.dropReason, 'drop_reason', row),
-        closedAt: required(row.closedAt, 'closed_at', row),
-      }
-    case 'expired':
-      return {
-        ...core,
-        ...open,
-        status: 'expired',
-        validation,
-        closedAt: required(row.closedAt, 'closed_at', row),
-      }
-  }
+  return missionFromFields(coreOf(row, tags, names), {
+    status: row.status,
+    validation: validationOf(row),
+    claim: row.claimUserId === null ? null : claimOf(row, names),
+    result: row.result === null ? null : parseJson(row.result, MissionResultSchema),
+    dropReason: row.dropReason,
+    closedAt: row.closedAt,
+  })
 }
 
 function toEvent(row: EventRow, names: Names): MissionEvent {
