@@ -207,15 +207,15 @@ export function transition(
       }
       const holding = checkHolder(mission, actor, now)
       if (holding !== null) return refuse(holding)
-      const freshness = {
-        checkedAt: at,
-        changedFiles: command.changedFiles,
-        checkedBy: actor.session,
-      }
+      // Seuls les fichiers cités par la mission comptent : un chemin hors mission est ignoré
+      // (sinon la file et le détail divergent, et une session pourrait afficher n'importe quoi).
+      const cited = new Set(mission.codeRef.files)
+      const changedFiles = [...new Set(command.changedFiles)].filter((file) => cited.has(file))
+      const freshness = { checkedAt: at, changedFiles, checkedBy: actor.session }
       return updated(
         { ...renewed(mission, now), freshness, updatedAt: at },
         'freshness',
-        `${String(command.changedFiles.length)} fichier(s) modifié(s)`,
+        `${String(changedFiles.length)} fichier(s) modifié(s)`,
       )
     }
     case 'complete': {

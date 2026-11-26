@@ -189,7 +189,8 @@ export function redactMissionResult(result: MissionResult): MissionResult {
 
 /**
  * Fichiers rapportés par `mission_freshness` (sortie d'une session, affichée dans l'UI) : chemins
- * relatifs normalisés, invalides écartés, secrets masqués, sans doublon.
+ * relatifs normalisés, invalides écartés, secrets masqués, sans doublon. La transition `freshness`
+ * ne garde ensuite que ceux cités par la mission (`codeRef.files`, normalisés à la création).
  */
 export function cleanChangedFiles(files: readonly string[]): string[] {
   const paths = files.map(normalizeRepoPath).filter((path): path is string => path !== null)
