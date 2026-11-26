@@ -73,12 +73,22 @@ export function elapsedLabel(iso: string, now: Date): string {
   return `${String(Math.floor(elapsed / DAY))} j`
 }
 
+/**
+ * Fichiers cités par la mission et modifiés au dernier contrôle connu. Seule source du compte, pour
+ * la file comme pour le détail : un chemin hors mission (rapporté avant le filtrage du serveur)
+ * n'est ni compté ni affiché.
+ */
+export function changedCodeFiles(mission: Pick<Mission, 'codeRef' | 'freshness'>): string[] {
+  const changed = new Set(mission.freshness?.changedFiles ?? [])
+  return mission.codeRef.files.filter((path) => changed.has(path))
+}
+
 /** Code d'origine : à jour, ou N fichiers modifiés depuis la création (dernier contrôle connu). */
 export function codeRefState(mission: Pick<Mission, 'codeRef' | 'freshness'>): {
   readonly tone: 'ok' | 'warn'
   readonly label: string
 } {
-  const changed = mission.freshness?.changedFiles.length ?? 0
+  const changed = changedCodeFiles(mission).length
   return changed === 0
     ? { tone: 'ok', label: `À jour (${mission.codeRef.commit})` }
     : { tone: 'warn', label: plural(changed, 'fichier modifié', 'fichiers modifiés') }
@@ -97,7 +107,7 @@ export function statusSubline(mission: MissionSummary, now: Date): string {
         ? 'validation requise'
         : `${scopeLabel(mission.scope).toLowerCase()} : validation requise`
     case 'ready':
-      return (mission.freshness?.changedFiles.length ?? 0) > 0
+      return changedCodeFiles(mission).length > 0
         ? 'à revérifier avant de prendre'
         : 'en attente d’une session'
     case 'in_progress':

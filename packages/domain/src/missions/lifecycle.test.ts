@@ -519,18 +519,28 @@ describe('expireClaim', () => {
 describe('freshness', () => {
   it('enregistre le contrôle et prolonge la réservation', () => {
     const mission = inProgress()
-    const command: MissionCommand = { type: 'freshness', changedFiles: ['a.ts', 'b.ts'] }
+    const command: MissionCommand = { type: 'freshness', changedFiles: ['pages/index.vue'] }
     const next = expectUpdated(transition(mission, command, sessionActor(HOLDER), NOW))
     expect(next.mission).toEqual({
       ...mission,
-      freshness: { checkedAt: NOW_ISO, changedFiles: ['a.ts', 'b.ts'], checkedBy: HOLDER },
+      freshness: { checkedAt: NOW_ISO, changedFiles: ['pages/index.vue'], checkedBy: HOLDER },
       claim: {
         ...mission.claim,
         expiresAt: minutesAfter(NOW, MISSION_RESERVATION_MINUTES).toISOString(),
       },
       updatedAt: NOW_ISO,
     })
-    expect(next.event).toEqual(eventOf('freshness', HOLDER, '2 fichier(s) modifié(s)'))
+    expect(next.event).toEqual(eventOf('freshness', HOLDER, '1 fichier(s) modifié(s)'))
+  })
+
+  it('ignore les fichiers absents de la mission (et les doublons)', () => {
+    const command: MissionCommand = {
+      type: 'freshness',
+      changedFiles: ['pages/index.vue', 'hors/mission.ts', 'pages/index.vue', 'README.md'],
+    }
+    const next = expectUpdated(transition(inProgress(), command, sessionActor(HOLDER), NOW))
+    expect(next.mission.freshness?.changedFiles).toEqual(['pages/index.vue'])
+    expect(next.event.detail).toBe('1 fichier(s) modifié(s)')
   })
 
   it('accepte une liste vide', () => {

@@ -12,6 +12,7 @@ import {
   originPhrase,
   userNameOf,
 } from './missionDetailPresentation.ts'
+import { codeRefState } from '../shared/missionPresentation.ts'
 
 function fixture(slug: string): MissionFixture {
   const found = MISSION_FIXTURES.find(({ mission }) => mission.slug === slug)
@@ -113,6 +114,28 @@ describe('code d’origine', () => {
       { path: 'app/utils/collections.ts', changed: true },
     ])
     expect(freshnessWarning(mission)).toMatchObject({ changed: 2, total: 3 })
+  })
+
+  it('file et détail comptent les mêmes fichiers : un chemin hors mission est ignoré', () => {
+    const { mission } = fixture('perf-decouper-chunk-vendor')
+    if (mission.freshness === null) throw new Error('contrôle de fraîcheur attendu')
+    const injected = {
+      ...mission,
+      freshness: {
+        ...mission.freshness,
+        changedFiles: [...mission.freshness.changedFiles, 'hors/mission.ts', '../../etc/passwd'],
+      },
+    }
+    expect(codeRefState(injected).label).toBe('2 fichiers modifiés')
+    expect(freshnessWarning(injected)).toMatchObject({ changed: 2, total: 3 })
+    expect(codeFileStates(injected).map((file) => file.path)).toEqual(mission.codeRef.files)
+
+    const outsideOnly = {
+      ...mission,
+      freshness: { ...mission.freshness, changedFiles: ['hors/mission.ts'] },
+    }
+    expect(codeRefState(outsideOnly).tone).toBe('ok')
+    expect(freshnessWarning(outsideOnly)).toBeNull()
   })
 
   it('sans contrôle ou sans changement : pas de bandeau', () => {

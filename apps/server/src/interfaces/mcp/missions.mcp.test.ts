@@ -148,7 +148,8 @@ describe.each(['legacy', 'modern'] as const)('surface MCP des missions (%s)', (e
       session: 'web-1',
       repo: FRONT,
       token,
-      changedFiles: ['app/pages/index.vue'],
+      // Un chemin absent de la mission n'est pas enregistré (audit phase 10 A-P2-7).
+      changedFiles: ['app/pages/index.vue', 'hors/mission.ts'],
     })
     expect(jsonBlock(freshness)).toMatchObject({ changedFiles: 1 })
     expect(stringField(freshness, 'advice')).toContain('revérifier le constat')

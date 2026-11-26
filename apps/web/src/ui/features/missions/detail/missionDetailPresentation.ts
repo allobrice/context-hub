@@ -11,6 +11,7 @@ import type {
 import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/session.ts'
 
 import { plural } from '../../../lib/format.ts'
+import { changedCodeFiles } from '../shared/missionPresentation.ts'
 
 const dayMonth = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' })
 const time = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' })
@@ -174,7 +175,7 @@ export interface CodeFileState {
 
 /** Fichiers cités, « modifié » ou « inchangé » selon le dernier contrôle connu. */
 export function codeFileStates(mission: Pick<Mission, 'codeRef' | 'freshness'>): CodeFileState[] {
-  const changed = new Set(mission.freshness?.changedFiles ?? [])
+  const changed = new Set(changedCodeFiles(mission))
   return mission.codeRef.files.map((path) => ({ path, changed: changed.has(path) }))
 }
 
@@ -183,7 +184,7 @@ export function freshnessWarning(
   mission: Pick<Mission, 'codeRef' | 'freshness'>,
 ): { readonly changed: number; readonly total: number; readonly checkedAt: string } | null {
   if (mission.freshness === null) return null
-  const changed = codeFileStates(mission).filter((file) => file.changed).length
+  const changed = changedCodeFiles(mission).length
   return changed === 0
     ? null
     : { changed, total: mission.codeRef.files.length, checkedAt: mission.freshness.checkedAt }
