@@ -208,6 +208,7 @@ describe('Mission : en cours (maquette 37)', () => {
     expect(hold).toHaveTextContent('web-2Camille · allovoisins/front')
     expect(hold).toHaveTextContent('Réservée depuis 18 min, dernière activité il y a 1 min.')
     expect(hold).toHaveTextContent('La réservation expire dans 29 min sans activité')
+    expect(region('Résultat')).not.toHaveClass('resultDone')
     expect(region('Résultat')).toHaveTextContent(
       'En cours de traitement par web-2. La session enregistrera ici son résumé, ses livrables et ses mesures avec mission_complete, ou une raison d’abandon avec mission_drop.',
     )
@@ -269,6 +270,7 @@ describe('Mission : terminée (maquette 38)', () => {
     expect(currentStep()).toHaveTextContent('Terminée (étape actuelle)résultat enregistré')
 
     const result = region('Résultat')
+    expect(result).toHaveClass('resultDone')
     expect(result).toHaveTextContent('Visuels servis en AVIF par @nuxt/image')
     const metrics = within(result)
       .getAllByRole('listitem')

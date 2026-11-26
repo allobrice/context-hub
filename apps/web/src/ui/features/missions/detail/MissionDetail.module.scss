@@ -280,6 +280,11 @@
   padding: var(--space-4) var(--space-5);
 }
 
+// Mission terminée : bordure verte (maquette 38).
+.resultDone {
+  border-color: var(--ok);
+}
+
 .resultEmpty {
   color: var(--fg-3);
   font-size: var(--text-base);
