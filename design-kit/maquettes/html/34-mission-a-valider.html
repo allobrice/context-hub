@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Mission — à valider</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.b-acc{background:var(--accent-soft);color:var(--accent-text)}
+.prio{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:4px;font:600 11px 'JetBrains Mono',monospace;border:1px solid var(--danger);color:var(--danger)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.snip{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px}
+.snip code{flex-grow:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px 'JetBrains Mono',monospace;color:var(--fg)}
+.md h3{font-size:13px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.03em;color:var(--fg2)}
+.md p,.md li{font-size:13.5px;line-height:1.6}
+.md ul{margin:0;padding-left:18px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:0 4px}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Mission.dc.html, props {"statut": "a-valider"} -->
+
+
+<DIV class="ch " style="min-height: 1100px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav" href="Workspaces.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 13h3M8 16h6"></path></svg><SPAN style="flex-grow: 1">Workspaces</SPAN><SPAN class="mono" style="font-size: 11px">3</SPAN></A>
+<A class="nav on" href="Missions.dc.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg><SPAN style="flex-grow: 1">Missions</SPAN><SPAN class="mono" style="font-size: 11px">4</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<HEADER style="display: flex; flex-direction: column; gap: 12px; padding: 14px 24px 16px; border-bottom: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><A href="Missions.dc.html">Missions</A><SPAN aria-hidden="true">/</SPAN><SPAN class="mono" style="font-size: 11px">perf-lcp-carrousel</SPAN></DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px">
+<DIV style="display: flex; flex-direction: column; gap: 8px; margin-right: auto; min-width: 0">
+<DIV style="display: flex; align-items: center; gap: 10px"><SPAN class="prio">P1</SPAN><H1 style="margin: 0; font-size: 20px; font-weight: 700">Lazy-load du carrousel de la home</H1></DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)">
+<SPAN class="badge b-draft"><SPAN class="dot"></SPAN>À valider</SPAN>
+<SPAN class="tag">perf</SPAN><SPAN class="tag">lcp</SPAN><SPAN class="tag">nuxt</SPAN>
+<SPAN>allovoisins/front</SPAN><SPAN aria-hidden="true">·</SPAN><SPAN>Portée équipe</SPAN><SPAN aria-hidden="true">·</SPAN><SPAN>expire dans 13 j</SPAN>
+</DIV>
+</DIV>
+<DIV style="display: flex; gap: 8px">
+<BUTTON class="btn " type="button">Rejeter</BUTTON><BUTTON class="btn " type="button">Modifier</BUTTON><BUTTON class="btn btn-primary" type="button">Valider la mission</BUTTON>
+</DIV>
+</DIV>
+
+<OL aria-label="Cycle de vie de la mission" style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 0">
+
+<LI style="display: flex; align-items: center; flex: 1 1 0; min-width: 0">
+<DIV style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<SPAN style="flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 600 11px 'JetBrains Mono', monospace; background: var(--accent); color: var(--accent-fg); border: 1px solid var(--accent)">1</SPAN>
+<SPAN style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><SPAN style="font-size: 12px; font-weight: 700; color: var(--fg)">À valider</SPAN><SPAN style="font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">écrite par perf-1</SPAN></SPAN>
+</DIV>
+<SPAN aria-hidden="true" style="flex-grow: 1; height: 1px; margin: 0 12px; background: var(--border-strong)"></SPAN>
+</LI>
+
+<LI style="display: flex; align-items: center; flex: 1 1 0; min-width: 0">
+<DIV style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<SPAN style="flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 600 11px 'JetBrains Mono', monospace; background: var(--bg); color: var(--fg3); border: 1px solid var(--border-strong)">2</SPAN>
+<SPAN style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><SPAN style="font-size: 12px; font-weight: 500; color: var(--fg3)">Prête</SPAN><SPAN style="font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">après validation</SPAN></SPAN>
+</DIV>
+<SPAN aria-hidden="true" style="flex-grow: 1; height: 1px; margin: 0 12px; background: var(--border-strong)"></SPAN>
+</LI>
+
+<LI style="display: flex; align-items: center; flex: 1 1 0; min-width: 0">
+<DIV style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<SPAN style="flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 600 11px 'JetBrains Mono', monospace; background: var(--bg); color: var(--fg3); border: 1px solid var(--border-strong)">3</SPAN>
+<SPAN style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><SPAN style="font-size: 12px; font-weight: 500; color: var(--fg3)">En cours</SPAN><SPAN style="font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">prise par 1 session</SPAN></SPAN>
+</DIV>
+<SPAN aria-hidden="true" style="flex-grow: 1; height: 1px; margin: 0 12px; background: var(--border-strong)"></SPAN>
+</LI>
+
+<LI style="display: flex; align-items: center; flex: 1 1 0; min-width: 0">
+<DIV style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<SPAN style="flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 600 11px 'JetBrains Mono', monospace; background: var(--bg); color: var(--fg3); border: 1px solid var(--border-strong)">4</SPAN>
+<SPAN style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><SPAN style="font-size: 12px; font-weight: 500; color: var(--fg3)">Terminée</SPAN><SPAN style="font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">puis archivée</SPAN></SPAN>
+</DIV>
+
+</LI>
+
+</OL>
+</HEADER>
+
+
+<DIV role="status" style="display: flex; align-items: center; gap: 10px; margin: 16px 24px 0; padding: 10px 12px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-size: 12px">
+<svg style="flex: none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path><path d="M12 9v4M12 16h.01"></path></svg>
+<SPAN style="flex-grow: 1"><STRONG>Validation requise.</STRONG> Cette mission a été écrite par une session et sera exécutée par d’autres, en portée équipe. Relisez le prompt : c’est une instruction qui sera suivie, pas une simple donnée.</SPAN>
+</DIV>
+
+
+
+<DIV style="flex-grow: 1; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; padding: 20px 24px 28px">
+<DIV style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<ARTICLE class="panel md" aria-labelledby="pr" style="padding: 18px 22px">
+<DIV style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px">
+<H2 id="pr" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Prompt de la mission</H2>
+<SPAN style="font-size: 11px; color: var(--fg3)">≈ 420 tokens · autonome</SPAN>
+</DIV>
+<H3>Objectif</H3>
+<P style="margin: 0">Faire passer le LCP mobile de la page d’accueil sous 2,5 s en retardant le chargement du carrousel des catégories.</P>
+<H3>Constat</H3>
+<P style="margin: 0 0 4px; font-size: 12px; color: var(--fg3)">Audit du 25 nov., commit <SPAN class="mono">a41c9e2</SPAN></P>
+<UL>
+<LI>LCP mobile (Lighthouse, Moto G Power, 4G lente) : <STRONG>3,8 s</STRONG>. L’élément LCP est la première image du carrousel.</LI>
+<LI><CODE>HomeCarousel.vue</CODE> est importé de façon synchrone et charge 8 images en eager.</LI>
+</UL>
+<H3>Fichiers</H3>
+<UL><LI><CODE>app/pages/index.vue</CODE></LI><LI><CODE>app/components/home/HomeCarousel.vue</CODE></LI><LI><CODE>nuxt.config.ts</CODE> (config <CODE>@nuxt/image</CODE>)</LI></UL>
+<H3>À faire</H3>
+<UL>
+<LI>Première image : <CODE>fetchpriority="high"</CODE>, préchargée ; les suivantes en <CODE>loading="lazy"</CODE>.</LI>
+<LI>Rendre le reste du carrousel en <CODE>LazyHomeCarousel</CODE> hors du viewport initial.</LI>
+</UL>
+<H3>Critères d’acceptation</H3>
+<UL><LI>LCP mobile ≤ 2,5 s sur 3 mesures. Pas de CLS ajouté (≤ 0,05).</LI><LI>Tests du composant verts. Aucun changement visuel au-dessus de la ligne de flottaison.</LI></UL>
+<P style="margin: 12px 0 0; font-size: 12px; color: var(--fg3)">Contexte lié : <A href="Detail.dc.html">Conventions Nuxt 4 — composables &amp; auto-imports</A> (v4)</P>
+</ARTICLE>
+
+<SECTION class="panel" aria-labelledby="res" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; border-color: var(--border)">
+<H2 id="res" style="margin: 0; font-size: 14px; font-weight: 700">Résultat</H2>
+
+
+
+<P style="margin: 0; font-size: 13px; color: var(--fg3)">Pas encore de résultat. La session qui traitera la mission le renseignera à la fin : résumé, livrables (PR, commits) et mesures avant / après.</P>
+
+</SECTION>
+</DIV>
+
+<ASIDE style="flex: 1 1 340px; max-width: 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+
+
+
+<SECTION class="panel" aria-labelledby="fresh" style="display: flex; flex-direction: column">
+<DIV style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border)"><H2 id="fresh" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Code d’origine</H2><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">a41c9e2</SPAN></DIV>
+<UL style="list-style: none; margin: 0; padding: 0">
+
+<LI style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border)"><CODE class="mono" style="flex-grow: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">app/pages/index.vue</CODE><SPAN style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>inchangé</SPAN></LI>
+
+<LI style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border)"><CODE class="mono" style="flex-grow: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">app/components/home/HomeCarousel.vue</CODE><SPAN style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>inchangé</SPAN></LI>
+
+<LI style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border)"><CODE class="mono" style="flex-grow: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">nuxt.config.ts</CODE><SPAN style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>inchangé</SPAN></LI>
+
+</UL>
+<SPAN style="padding: 10px 14px; font-size: 11px; color: var(--fg3)">Vérifié à chaque consultation et au moment de la prise.</SPAN>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="orig" style="display: flex; flex-direction: column; gap: 10px; padding: 14px">
+<H2 id="orig" style="margin: 0; font-size: 14px; font-weight: 700">Origine et sécurité</H2>
+<DL style="margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); row-gap: 7px; column-gap: 10px; font-size: 12px">
+<DT style="color: var(--fg3)">Créée par</DT><DD style="margin: 0">Session <SPAN class="mono">perf-1</SPAN> (Brice)</DD>
+<DT style="color: var(--fg3)">Depuis</DT><DD style="margin: 0">Audit perf · page d’accueil Nuxt</DD>
+<DT style="color: var(--fg3)">Scan</DT><DD style="margin: 0; color: var(--ok)">Aucun secret, aucune instruction suspecte</DD>
+<DT style="color: var(--fg3)">Validation</DT><DD style="margin: 0; color: var(--warn)">En attente (portée équipe)</DD>
+</DL>
+</SECTION>
+
+<SECTION class="panel" aria-labelledby="hist" style="display: flex; flex-direction: column">
+<H2 id="hist" style="margin: 0; padding: 12px 14px; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--border)">Historique</H2>
+<OL style="list-style: none; margin: 0; padding: 0">
+
+<LI style="display: flex; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px"><SPAN style="flex-grow: 1; color: var(--fg)">Créée par perf-1 depuis l’audit perf</SPAN><SPAN style="color: var(--fg3); white-space: nowrap">25 nov. 14:06</SPAN></LI>
+
+</OL>
+</SECTION>
+</ASIDE>
+</DIV>
+</MAIN>
+</DIV>
+
+</body>
+</html>

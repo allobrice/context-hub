@@ -14,8 +14,10 @@ En cas d'écart entre ce document et une maquette, **ce document fait foi** ; si
 | Tags & collections | `/taxonomy?tab=tags\|collections` | 16 tags + renommage inline · 17 fusion · 18 sombre · 19 chargement · 20 vide · 21 collections · 22 suppression de collection |
 | Workspaces (liste) | `/workspaces?status=open\|closed\|all` | 23 · 24 vide · 25 chargement |
 | Workspace (détail) | `/workspaces/:slug` | 26 journal + claims + participants · 27 sombre · 28 fermé · 29 chargement · 30 accès refusé (403) |
+| Missions (file) | `/missions?status=active\|draft\|ready\|archived\|all&tags=` | 31 · 32 vide · 33 sombre |
+| Mission (détail) | `/missions/:slug` | 34 à valider · 35 prête · 36 code modifié · 37 en cours · 38 terminée · 39 sombre |
 
-La sidebar de tous les écrans comporte une entrée « Workspaces » (compteur des workspaces ouverts), entre Bibliothèque et Tags & collections.
+La sidebar de tous les écrans comporte, dans l'ordre : Bibliothèque, Workspaces (compteur des ouverts), Missions (compteur des missions à traiter), Tags & collections, Connexion MCP.
 
 `maquettes/manifest.json` liste chaque maquette avec l'écran et l'état qu'elle représente.
 
@@ -218,3 +220,88 @@ interface Participant { workspaceId: string; session: SessionRef; joinedAt: stri
 - Fermé : bandeau lecture seule, pas de composer ni de bloc « Rejoindre », claims vides.
 - 403 : « Accès refusé à ce workspace », retour à la liste.
 - **Mise à jour en direct v1** : polling TanStack Query (`refetchInterval` 3 s si l'onglet est visible, arrêté sinon) via `GET /entries?since=<seq>`. Le SSE sera envisagé plus tard.
+
+## 8. Missions (travail transmis entre sessions)
+
+Une **mission** est du travail à faire, préparé par une session (ou un humain) pour une autre session, présente ou future. Exemple : un audit perf produit une mission par axe d'amélioration.
+
+| | Contexte | Entrée de workspace | **Mission** |
+|---|---|---|---|
+| Nature | Connaissance | État de travail en direct | **Instruction à exécuter** |
+| Consommation | Lu par N sessions | Lu par les sessions présentes | **Prise par une seule session, une seule fois** |
+| Fin de vie | Archivé à la main | Avec le workspace | Terminée (avec résultat), abandonnée (avec raison) ou expirée |
+
+Les **modèles de prompts réutilisables** ne sont pas des missions. Ils peuvent être exposés comme *prompts MCP* (slash commands natifs de Claude Code), voir §8.5.
+
+### 8.1 Modèle
+
+```ts
+type MissionStatus = 'draft' | 'ready' | 'in_progress' | 'done' | 'dropped' | 'expired'
+type Priority = 'P1' | 'P2' | 'P3'
+interface Mission {
+  id: string; slug: string; title: string; summary: string     // summary : une ligne affichée dans la file
+  prompt: string                                               // Markdown autonome, gabarit §8.3
+  priority: Priority; tags: string[]; scope: Scope; status: MissionStatus
+  origin: { label: string; batchId: string | null; session: SessionRef | null; createdBy: string }  // ex. « Audit perf · page d'accueil Nuxt »
+  codeRef: { repo: string; commit: string; files: string[] }
+  freshness: { checkedAt: string; changedFiles: string[]; checkedBy: SessionRef } | null  // rapporté par une session (le serveur n'a pas accès au repo)
+  linkedContextIds: ContextId[]; workspaceId: string | null
+  validation: { by: string; at: string } | null
+  claim: { session: SessionRef; acquiredAt: string; expiresAt: string } | null
+  result: {
+    summary: string
+    deliverables: { kind: 'pr' | 'commit' | 'url'; ref: string }[]
+    metrics: { name: string; before: string; after: string }[]
+    acceptanceMet: boolean
+  } | null
+  dropReason: string | null
+  createdAt: string; expiresAt: string; closedAt: string | null
+}
+interface MissionEvent { missionId: string; at: string; actor: SessionRef | { userId: string }; type: 'created' | 'validated' | 'rejected' | 'taken' | 'released' | 'freshness' | 'completed' | 'dropped' | 'expired' | 'reopened'; detail?: string }
+```
+
+### 8.2 Cycle de vie (fonctions pures testées)
+
+| Transition | Par | Conditions |
+|---|---|---|
+| création → `draft` | session | Portée `team` ou `project`, créée par une session : **validation humaine obligatoire** |
+| création → `ready` | session (portée `personal`) ou humain | Scan OK |
+| `draft` → `ready` / rejet | humain (UI) | Rejet : la mission est supprimée, avec un événement |
+| `ready` → `in_progress` | session (`take`) | **Atomique** : une seule session gagne. La réservation dure 30 min et se prolonge à chaque appel mission de la session |
+| `in_progress` → `ready` | session (`release`), humain, ou expiration de la réservation | Événement `released` |
+| `in_progress` → `done` | session | `result.summary` obligatoire |
+| `ready` / `in_progress` → `dropped` | session ou humain | `dropReason` obligatoire |
+| `draft` / `ready` → `expired` | job | `expiresAt` dépassé (14 jours par défaut) |
+| `done` / `dropped` → `ready` | humain (« Rouvrir ») | Nouveau cycle, historique conservé |
+
+- Fraîcheur : à la prise, la session calcule `git diff --name-only <commit>..HEAD -- <files>` et rapporte `changedFiles`. Si des fichiers ont changé, la session doit **revérifier le constat** avant d'agir (consigne du skill). L'UI affiche le dernier contrôle connu, avec sa date.
+- Scan à la création et à la modification (`scanContent`) : secret → refus (422) ; instruction suspecte → refus pour une mission créée par une session.
+- Taille max du prompt : 8 000 caractères.
+
+### 8.3 Gabarit du prompt (imposé par `mission_create`)
+Sections obligatoires : **Objectif**, **Constat** (chiffré, avec date et commit), **Fichiers**, **À faire**, **Critères d'acceptation**. Sections facultatives : contraintes, contextes liés. Un prompt sans section obligatoire est refusé (422, avec les sections manquantes).
+
+### 8.4 Écrans
+- **File** (31–33) :
+  - bloc « Origine » quand la file est filtrée sur un lot (`batchId`) : libellé, session, repo@commit, barre d'avancement par statut avec légende ;
+  - filtres segmentés À traiter / À valider / Prêtes / Archivées / Toutes (avec compteurs), tags, repo ; tri par priorité puis ancienneté ;
+  - colonnes : priorité (P1 en danger), titre + résumé, tags, code d'origine (À jour, ou « N fichiers modifiés » en warn), statut + sous-ligne (qui, depuis quand, ou ce qui est attendu), échéance ;
+  - rappel de la commande `/context-hub:next <tag>`, bouton « Nouvelle mission ».
+- **Détail** (34–39) :
+  - en-tête : priorité, titre, statut, tags, repo, portée, échéance ; actions selon le statut :
+    - à valider : Rejeter / Modifier / Valider ;
+    - prête : Abandonner / Modifier ;
+    - en cours : Libérer ;
+    - terminée : Rouvrir / Proposer comme contexte ;
+  - **frise du cycle de vie** en 4 étapes (À valider → Prête → En cours → Terminée), étapes passées cochées, étape courante en accent ;
+  - bandeau warn « Validation requise » (à valider) ; bandeau warn « Le code a changé depuis la création » (fraîcheur) ;
+  - colonne principale : le prompt rendu (≈ tokens), puis **Résultat** (vide, en cours, ou terminé : résumé + métriques avant → après + livrables) ;
+  - colonne latérale :
+    - « Prendre depuis Claude Code » (statut prête), avec `/context-hub:take <slug>` et les 4 étapes ;
+    - « Prise en charge » (statut en cours) ;
+    - « Code d'origine » (fichiers et état) ;
+    - « Origine et sécurité » ;
+    - « Historique ».
+
+### 8.5 Modèles réutilisables (prompts MCP)
+Un contexte de la bibliothèque marqué `exposeAsPrompt` est publié comme *prompt MCP*. Claude Code l'affiche comme slash command `/mcp__<serveur>__<nom>`. Limites connues : ce mécanisme est déclenché par l'humain, invisible des agents, et son support varie selon les clients. C'est donc un confort, pas un canal de mission.

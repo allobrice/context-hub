@@ -322,5 +322,100 @@
     "html": "maquettes/html/30-workspace-acces-refuse.html",
     "png": "maquettes/png/30-workspace-acces-refuse.png",
     "source": "sources/Workspace.dc.html"
+  },
+  {
+    "id": "31-missions",
+    "titre": "Missions — file",
+    "ecran": "Missions",
+    "props": {},
+    "html": "maquettes/html/31-missions.html",
+    "png": "maquettes/png/31-missions.png",
+    "source": "sources/Missions.dc.html"
+  },
+  {
+    "id": "32-missions-vide",
+    "titre": "Missions — état vide",
+    "ecran": "Missions",
+    "props": {
+      "etat": "vide"
+    },
+    "html": "maquettes/html/32-missions-vide.html",
+    "png": "maquettes/png/32-missions-vide.png",
+    "source": "sources/Missions.dc.html"
+  },
+  {
+    "id": "33-missions-sombre",
+    "titre": "Missions — thème sombre",
+    "ecran": "Missions",
+    "props": {
+      "theme": "dark"
+    },
+    "html": "maquettes/html/33-missions-sombre.html",
+    "png": "maquettes/png/33-missions-sombre.png",
+    "source": "sources/Missions.dc.html"
+  },
+  {
+    "id": "34-mission-a-valider",
+    "titre": "Mission — à valider",
+    "ecran": "Mission",
+    "props": {
+      "statut": "a-valider"
+    },
+    "html": "maquettes/html/34-mission-a-valider.html",
+    "png": "maquettes/png/34-mission-a-valider.png",
+    "source": "sources/Mission.dc.html"
+  },
+  {
+    "id": "35-mission-prete",
+    "titre": "Mission — prête",
+    "ecran": "Mission",
+    "props": {},
+    "html": "maquettes/html/35-mission-prete.html",
+    "png": "maquettes/png/35-mission-prete.png",
+    "source": "sources/Mission.dc.html"
+  },
+  {
+    "id": "36-mission-code-modifie",
+    "titre": "Mission — code modifié depuis la création",
+    "ecran": "Mission",
+    "props": {
+      "derive": true
+    },
+    "html": "maquettes/html/36-mission-code-modifie.html",
+    "png": "maquettes/png/36-mission-code-modifie.png",
+    "source": "sources/Mission.dc.html"
+  },
+  {
+    "id": "37-mission-en-cours",
+    "titre": "Mission — en cours",
+    "ecran": "Mission",
+    "props": {
+      "statut": "en-cours"
+    },
+    "html": "maquettes/html/37-mission-en-cours.html",
+    "png": "maquettes/png/37-mission-en-cours.png",
+    "source": "sources/Mission.dc.html"
+  },
+  {
+    "id": "38-mission-terminee",
+    "titre": "Mission — terminée avec résultat",
+    "ecran": "Mission",
+    "props": {
+      "statut": "terminee"
+    },
+    "html": "maquettes/html/38-mission-terminee.html",
+    "png": "maquettes/png/38-mission-terminee.png",
+    "source": "sources/Mission.dc.html"
+  },
+  {
+    "id": "39-mission-sombre",
+    "titre": "Mission — thème sombre",
+    "ecran": "Mission",
+    "props": {
+      "theme": "dark"
+    },
+    "html": "maquettes/html/39-mission-sombre.html",
+    "png": "maquettes/png/39-mission-sombre.png",
+    "source": "sources/Mission.dc.html"
   }
 ]

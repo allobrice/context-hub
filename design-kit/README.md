@@ -8,9 +8,10 @@ Kit de référence pour implémenter l'UI de gestion de Context Hub en React. À
 |---|---|
 | `PROMPT.md` | Prompt d'implémentation de l'UI v1 (bibliothèque) |
 | `PROMPT-WORKSPACES.md` | Prompt des phases 7–9 : Workspaces côté serveur, plugin Claude Code, écrans Workspaces |
+| `PROMPT-MISSIONS.md` | Prompt de la phase 10 : Missions (serveur, MCP, plugin, UI) |
 | `SPEC.md` | Spécification fonctionnelle et visuelle, **source de vérité** |
 | `index.html` | Galerie de toutes les maquettes (ouvrir dans un navigateur) |
-| `maquettes/png/` | 30 captures à 1440 px de large, pleine page : le rendu attendu |
+| `maquettes/png/` | 39 captures à 1440 px de large, pleine page : le rendu attendu |
 | `maquettes/html/` | Les mêmes maquettes en HTML statique (markup, styles inline, SVG), sans JS |
 | `maquettes/manifest.json` | Pour chaque maquette : id, titre, écran, état (props), chemins |
 | `maquettes/fonts/` | Inter et JetBrains Mono (woff2, latin), utilisées par les maquettes |
@@ -28,6 +29,8 @@ Kit de référence pour implémenter l'UI de gestion de Context Hub en React. À
 | 16–22 | Tags & collections | tags + renommage inline, fusion, sombre, chargement, vide, collections, suppression de collection |
 | 23–25 | Workspaces (liste) | normal, vide, chargement |
 | 26–30 | Workspace (détail) | journal + claims + participants, sombre, fermé, chargement, accès refusé |
+| 31–33 | Missions (file) | normal, vide, sombre |
+| 34–39 | Mission (détail) | à valider, prête, code modifié, en cours, terminée, sombre |
 
 ## Limites
 - Les maquettes HTML sont des rendus figés : les interactions (bascules, copie, onglets, thème) sont décrites dans `SPEC.md` §1 et visibles dans `sources/`.
