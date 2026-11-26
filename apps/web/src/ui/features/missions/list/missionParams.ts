@@ -24,8 +24,25 @@ const KEYS = {
   batchId: 'batch',
 } as const satisfies Record<keyof MissionListQuery, string>
 
-function parseFilter(value: string | null): MissionQueueFilter {
-  return MISSION_QUEUE_FILTERS.find((filter) => filter === value) ?? DEFAULT_MISSION_QUERY.filter
+/**
+ * Alias `?status=` décrit par SPEC §1 (`active|draft|ready|archived|all`) : le code, l'API et le
+ * plugin utilisent `?filter=`. Lu seulement, jamais écrit ; `filter` reste prioritaire.
+ */
+const STATUS_PARAM = 'status'
+const STATUS_ALIASES: ReadonlyMap<string, MissionQueueFilter> = new Map([
+  ['active', 'todo'],
+  ['draft', 'to_validate'],
+  ['ready', 'ready'],
+  ['archived', 'archived'],
+  ['all', 'all'],
+])
+
+function parseFilter(filter: string | null, status: string | null): MissionQueueFilter {
+  return (
+    MISSION_QUEUE_FILTERS.find((candidate) => candidate === filter) ??
+    (status === null ? undefined : STATUS_ALIASES.get(status)) ??
+    DEFAULT_MISSION_QUERY.filter
+  )
 }
 
 function nonEmpty(value: string | null): string | null {
@@ -40,7 +57,7 @@ function parseTags(value: string | null): string[] {
 
 export function parseMissionParams(params: URLSearchParams): MissionListQuery {
   return {
-    filter: parseFilter(params.get(KEYS.filter)),
+    filter: parseFilter(params.get(KEYS.filter), params.get(STATUS_PARAM)),
     tags: parseTags(params.get(KEYS.tags)),
     repo: nonEmpty(params.get(KEYS.repo)),
     batchId: nonEmpty(params.get(KEYS.batchId)),
@@ -53,6 +70,8 @@ export function writeMissionParams(
   base: URLSearchParams = new URLSearchParams(),
 ): URLSearchParams {
   const params = new URLSearchParams(base)
+  // L'alias de la SPEC ne survit pas à une modification : `filter` seul décrit le filtre choisi.
+  params.delete(STATUS_PARAM)
   const entries: readonly (readonly [string, string | null])[] = [
     [KEYS.filter, query.filter === DEFAULT_MISSION_QUERY.filter ? null : query.filter],
     [KEYS.tags, query.tags.length > 0 ? query.tags.join(',') : null],
@@ -80,8 +99,8 @@ export function nextCommand(tags: readonly string[]): string {
 }
 
 /**
- * Valeurs proposées par un menu de filtre (tags, repo) : celles des missions affichées, plus celles
- * déjà sélectionnées pour pouvoir les retirer. Triées, sans doublon.
+ * Valeurs proposées par un menu de filtre (tags, repo) : les facettes de la file (toutes les missions
+ * visibles du lot), plus celles déjà sélectionnées pour pouvoir les retirer. Triées, sans doublon.
  */
 export function facetValues(shown: Iterable<string>, selected: Iterable<string>): string[] {
   return [...new Set([...shown, ...selected])].sort((a, b) => a.localeCompare(b, 'fr'))

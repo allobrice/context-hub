@@ -59,7 +59,10 @@ export function QueueFilter({ value, counts, onChange }: QueueFilterProps) {
             }}
           >
             {MISSION_FILTER_LABELS[filter]}
-            {counts && <span className={styles.segmentCount}>{counts[filter]}</span>}
+            {/* Emplacement toujours rendu : l'arrivée des compteurs n'élargit pas les segments. */}
+            <span className={styles.segmentCount} aria-hidden={counts === undefined}>
+              {counts?.[filter]}
+            </span>
           </button>
         )
       })}

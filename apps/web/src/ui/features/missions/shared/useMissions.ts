@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { MissionDetail } from '@context-hub/domain/missions/types.ts'
 
@@ -10,16 +10,30 @@ import type {
 import { useServices } from '../../../app/providers/servicesContext.ts'
 import { queryKeys } from '../../../app/queries.ts'
 
+/**
+ * Requête de file normalisée : tags triés (le serveur exige TOUS les tags, l'ordre ne change pas le
+ * résultat). Une même combinaison partage ainsi la même entrée de cache ; l'URL garde l'ordre saisi.
+ */
+export function normalizeListQuery(query: MissionListQuery): MissionListQuery {
+  return { ...query, tags: [...query.tags].sort((a, b) => a.localeCompare(b)) }
+}
+
 export const missionKeys = {
   all: ['missions'] as const,
-  list: (query: MissionListQuery) => ['missions', 'list', query] as const,
+  list: (query: MissionListQuery) => ['missions', 'list', normalizeListQuery(query)] as const,
   batch: (batchId: string) => ['missions', 'batch', batchId] as const,
   detail: (slug: string) => ['missions', 'detail', slug] as const,
 }
 
+/** Changer de filtre garde la file affichée (atténuée) jusqu'à la réponse : ni squelette ni décalage. */
 export function useMissionList(query: MissionListQuery) {
   const { missions } = useServices()
-  return useQuery({ queryKey: missionKeys.list(query), queryFn: () => missions.list(query) })
+  const normalized = normalizeListQuery(query)
+  return useQuery({
+    queryKey: missionKeys.list(normalized),
+    queryFn: () => missions.list(normalized),
+    placeholderData: keepPreviousData,
+  })
 }
 
 /** Bloc « Origine » : seulement quand la file est filtrée sur un lot. */

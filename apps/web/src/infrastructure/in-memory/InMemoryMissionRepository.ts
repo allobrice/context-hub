@@ -24,6 +24,7 @@ import {
   type MissionLinkedContext,
   type MissionList,
   promptTokens,
+  toMissionFacets,
 } from '@context-hub/domain/missions/types.ts'
 
 import type { Clock } from '../../application/ports/Clock.ts'
@@ -78,11 +79,13 @@ export class InMemoryMissionRepository implements MissionRepository {
 
   list(query: MissionListQuery): Promise<MissionList> {
     return simulatePrimary(this.simulation, () => {
-      const matching = this.visible().filter(
+      const inBatch = this.visible().filter(
+        ({ mission }) => query.batchId === null || mission.origin.batchId === query.batchId,
+      )
+      const matching = inBatch.filter(
         ({ mission }) =>
           query.tags.every((tag) => mission.tags.includes(tag)) &&
-          (query.repo === null || mission.codeRef.repo === query.repo) &&
-          (query.batchId === null || mission.origin.batchId === query.batchId),
+          (query.repo === null || mission.codeRef.repo === query.repo),
       )
       return {
         items: matching
@@ -90,6 +93,10 @@ export class InMemoryMissionRepository implements MissionRepository {
           .sort(byQueueOrder)
           .map(({ mission }) => toMissionSummary(mission)),
         counts: toFilterCounts(countStatuses(matching.map(({ mission }) => mission))),
+        facets: toMissionFacets(
+          inBatch.flatMap(({ mission }) => mission.tags),
+          inBatch.map(({ mission }) => mission.codeRef.repo),
+        ),
       }
     })
   }

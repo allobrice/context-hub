@@ -4396,6 +4396,7 @@ export interface components {
                 archived: number;
                 all: number;
             };
+            facets: components["schemas"]["MissionFacets"];
         };
         MissionSummary: {
             id: string;
@@ -4466,6 +4467,11 @@ export interface components {
             name: string;
             before: string;
             after: string;
+        };
+        /** @description Valeurs des menus Tags et Repo : toutes les missions visibles (du lot). */
+        MissionFacets: {
+            tags: string[];
+            repos: string[];
         };
         /**
          * @description todo : à valider, prêtes et en cours ; archived : terminées, abandonnées et expirées.

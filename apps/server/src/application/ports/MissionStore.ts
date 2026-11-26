@@ -20,6 +20,7 @@ import type {
   MissionActor,
   MissionBatch,
   MissionEvent,
+  MissionFacets,
   MissionStatus,
   MissionStatusCounts,
   MissionSummary,
@@ -155,6 +156,8 @@ export interface MissionStore {
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null>
   /** File filtrée, avec les compteurs par statut. */
   list(viewer: Viewer, query: MissionQuery): Promise<MissionRows>
+  /** Tags et repos de toutes les missions visibles (du lot si donné), quel que soit le statut. */
+  facets(viewer: Viewer, batchId: string | null): Promise<MissionFacets>
   /** Origine d'un lot sans en charger les missions ; null si aucune n'est visible. */
   batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null>
   /** Modifie une mission à valider ou prête, si personne ne l'a modifiée depuis. */

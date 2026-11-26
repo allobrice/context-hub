@@ -340,10 +340,27 @@ export type MissionFilterCounts = Readonly<Record<MissionQueueFilter, number>>
 /** Une ligne de la file : tout sauf le prompt (MCP `mission_list` comme l'UI). */
 export type MissionSummary = Omit<Mission, 'prompt'>
 
+/**
+ * Valeurs proposées par les menus Tags et Repo de la file : celles de toutes les missions visibles
+ * (du lot s'il est filtré), quels que soient le statut et les tags / repo déjà choisis.
+ */
+export interface MissionFacets {
+  readonly tags: readonly string[]
+  readonly repos: readonly string[]
+}
+
+/** Facettes triées (ordre français), sans doublon. */
+export function toMissionFacets(tags: Iterable<string>, repos: Iterable<string>): MissionFacets {
+  const sorted = (values: Iterable<string>) =>
+    [...new Set(values)].sort((a, b) => a.localeCompare(b, 'fr'))
+  return { tags: sorted(tags), repos: sorted(repos) }
+}
+
 export interface MissionList {
   readonly items: readonly MissionSummary[]
   /** Compteurs des filtres segmentés, avec les filtres tags / repo / lot appliqués. */
   readonly counts: MissionFilterCounts
+  readonly facets: MissionFacets
 }
 
 /** Contexte lié, publié et visible de l'utilisateur. */

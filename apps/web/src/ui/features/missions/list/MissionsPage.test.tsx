@@ -1,8 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../../../../test/renderApp.tsx'
+import { createTestServices, renderApp } from '../../../../test/renderApp.tsx'
 
 async function rows() {
   const table = await screen.findByRole('table', { name: 'Missions' })
@@ -56,6 +56,43 @@ describe('Missions : file (maquette 31)', () => {
     expect(radio(/^À traiter/)).toHaveAttribute('aria-checked', 'true')
   })
 
+  it('changement de filtre : file précédente gardée (atténuée, aria-busy) jusqu’à la réponse', async () => {
+    const services = createTestServices()
+    const list = services.missions.list.bind(services.missions)
+    const answer = vi.spyOn(services.missions, 'list')
+    renderApp('/missions', { services })
+    expect(await rows()).toHaveLength(4)
+
+    let release: () => void = () => undefined
+    answer.mockImplementationOnce(async (query) => {
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return list(query)
+    })
+    await userEvent.click(radio(/^Archivées/))
+
+    const table = screen.getByRole('table', { name: 'Missions' })
+    const body = within(table).getAllByRole('rowgroup').at(-1)
+    expect(body).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByLabelText('Chargement des missions')).not.toBeInTheDocument()
+    expect(await rows()).toHaveLength(4)
+    expect(within(radio(/^Archivées/)).getByText('2')).toBeInTheDocument()
+    expect(within(radio(/^À traiter/)).getByText('4')).toBeInTheDocument()
+
+    release()
+    await waitFor(async () => {
+      expect(await rows()).toHaveLength(2)
+    })
+    expect(within(table).getAllByRole('rowgroup').at(-1)).toHaveAttribute('aria-busy', 'false')
+  })
+
+  it('lien selon SPEC §1 : ?status=draft ouvre le filtre « À valider »', async () => {
+    renderApp('/missions?status=draft')
+    expect(await rows()).toHaveLength(1)
+    expect(radio(/^À valider/)).toHaveAttribute('aria-checked', 'true')
+  })
+
   it('change de filtre dans l’URL en conservant les paramètres inconnus', async () => {
     const { location } = renderApp('/missions?mock=demo')
     await rows()
@@ -90,6 +127,14 @@ describe('Missions : file (maquette 31)', () => {
     await waitFor(async () => {
       expect(await rows()).toHaveLength(4)
     })
+  })
+
+  it('menus Tags et Repo : toutes les valeurs de la file, quel que soit le statut filtré', async () => {
+    renderApp('/missions?filter=ready')
+    expect(await rows()).toHaveLength(2)
+    await userEvent.click(screen.getByRole('button', { name: 'Tags' }))
+    // `fonts` n'est porté que par une mission en cours, absente du filtre « Prêtes ».
+    expect(screen.getByRole('menuitemcheckbox', { name: 'fonts' })).toBeInTheDocument()
   })
 
   it('filtre par repo', async () => {
@@ -162,6 +207,16 @@ describe('Missions : états (maquettes 32, chargement, erreur)', () => {
       'aria-busy',
       'true',
     )
+  })
+
+  it('chargement : emplacement des compteurs déjà rendu, vide et masqué (pas de décalage)', async () => {
+    renderApp('/missions', { mode: 'loading' })
+    await screen.findByLabelText('Chargement des missions')
+    for (const option of screen.getAllByRole('radio')) {
+      const slot = option.querySelector('[aria-hidden="true"]')
+      expect(slot).not.toBeNull()
+      expect(slot).toBeEmptyDOMElement()
+    }
   })
 
   it('erreur : message et Réessayer', async () => {

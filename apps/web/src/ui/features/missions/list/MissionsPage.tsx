@@ -50,7 +50,10 @@ export function MissionsPage() {
   const list = useMissionList(query)
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
-  const isEmpty = list.data !== undefined && isQueueEmpty(query, list.data)
+  // Pendant un changement de filtre, `data` est encore celle de la requête précédente : ni l'état
+  // vide ni « aucun résultat » ne sont décidés sur elle.
+  const isStale = list.isPlaceholderData
+  const isEmpty = list.data !== undefined && !isStale && isQueueEmpty(query, list.data)
 
   const update = (patch: Partial<MissionListQuery>) => {
     setParams((current) => writeMissionParams({ ...query, ...patch }, current), { replace: true })
@@ -93,10 +96,7 @@ export function MissionsPage() {
             name="Tags"
             selection="multiple"
             activeValue={query.tags.length > 0 ? query.tags.join(', ') : null}
-            values={facetValues(
-              list.data?.items.flatMap((mission) => mission.tags) ?? [],
-              query.tags,
-            )}
+            values={facetValues(list.data?.facets.tags ?? [], query.tags)}
             isChecked={(tag) => query.tags.includes(tag)}
             onSelect={(tag) => {
               update({ tags: toggleTag(query.tags, tag) })
@@ -110,7 +110,7 @@ export function MissionsPage() {
             selection="single"
             activeValue={query.repo}
             values={facetValues(
-              list.data?.items.map((mission) => mission.codeRef.repo) ?? [],
+              list.data?.facets.repos ?? [],
               query.repo === null ? [] : [query.repo],
             )}
             isChecked={(repo) => repo === query.repo}
@@ -153,9 +153,9 @@ export function MissionsPage() {
               }
             />
           ) : list.data.items.length === 0 ? (
-            <p className={styles.noResult}>{NO_RESULT_MESSAGES[query.filter]}</p>
+            !isStale && <p className={styles.noResult}>{NO_RESULT_MESSAGES[query.filter]}</p>
           ) : (
-            <MissionTable items={list.data.items} />
+            <MissionTable items={list.data.items} stale={isStale} />
           ))}
       </div>
 
