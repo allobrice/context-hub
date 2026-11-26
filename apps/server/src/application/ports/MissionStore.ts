@@ -18,9 +18,11 @@ import type {
   InProgressMission,
   Mission,
   MissionActor,
+  MissionBatch,
   MissionEvent,
   MissionStatus,
   MissionStatusCounts,
+  MissionSummary,
   Priority,
   ReadyMission,
 } from '@context-hub/domain/missions/types.ts'
@@ -106,11 +108,16 @@ export interface MissionQuery {
   readonly tags: readonly string[]
   readonly repo: string | null
   readonly batchId: string | null
+  /** Missions archivées (closes) : seulement les N closes le plus récemment ; null = toutes. */
+  readonly archiveLimit: number | null
 }
 
+/** Bloc « Origine » d'un lot : sa plus ancienne mission visible et les compteurs du lot. */
+export type MissionBatchOrigin = Omit<MissionBatch, 'batchId' | 'total'>
+
 export interface MissionRows {
-  /** Missions des statuts voulus, par priorité puis ancienneté. */
-  readonly missions: readonly Mission[]
+  /** Résumés (sans le prompt) des statuts voulus, par priorité puis ancienneté. */
+  readonly missions: readonly MissionSummary[]
   /** Compteurs par statut, avec les seuls filtres tags / repo / lot. */
   readonly statusCounts: MissionStatusCounts
 }
@@ -148,6 +155,8 @@ export interface MissionStore {
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null>
   /** File filtrée, avec les compteurs par statut. */
   list(viewer: Viewer, query: MissionQuery): Promise<MissionRows>
+  /** Origine d'un lot sans en charger les missions ; null si aucune n'est visible. */
+  batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null>
   /** Modifie une mission à valider ou prête, si personne ne l'a modifiée depuis. */
   update(write: UpdateWrite): Promise<UpdateResult>
   /** Nom de l'utilisateur, ou null s'il n'existe pas. */

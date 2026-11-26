@@ -137,6 +137,8 @@ function eventLabel(
       return 'Expirée sans avoir été prise'
     case 'reopened':
       return `Rouverte par ${who}`
+    case 'edited':
+      return event.detail === null ? `Modifiée par ${who}` : `Modifiée par ${who} · ${event.detail}`
   }
 }
 

@@ -1,8 +1,9 @@
+import Database from 'better-sqlite3'
 import { eq } from 'drizzle-orm'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createMission } from '@context-hub/domain/missions/lifecycle.ts'
-import type { MissionResult } from '@context-hub/domain/missions/types.ts'
+import { MISSION_FILTER_STATUSES, type MissionResult } from '@context-hub/domain/missions/types.ts'
 
 import type { ApplyResult, TakeResult } from '../../../application/ports/MissionStore.ts'
 import { MISSION_NOW, newMission, readyMission, sessionRef } from '../../../test/missionFixtures.ts'
@@ -389,5 +390,181 @@ describe('DrizzleMissionStore : rejet, réouverture, échéances', () => {
     expect((await store.findBySlug(BRICE, 'prise'))?.status).toBe('ready')
     expect((await store.findBySlug(BRICE, 'oubliee'))?.status).toBe('expired')
     expect(await store.expireDue(later(32))).toEqual({ expired: 0, released: 0 })
+  })
+})
+
+describe('DrizzleMissionStore : list', () => {
+  const QUERY = { tags: [], repo: null, batchId: null } as const
+
+  async function dropAt(slug: string, minutes: number) {
+    const result = await store.apply({
+      viewer: BRICE,
+      slug,
+      command: { type: 'drop', reason: 'Obsolète' },
+      actor: { kind: 'human', userId: 'brice' },
+      tokenHash: null,
+      at: later(minutes),
+    })
+    expect(appliedStatus(result)).toBe('dropped')
+  }
+
+  it('ne lit pas le prompt : la requête de liste ne sélectionne pas la colonne', async () => {
+    await seed('lcp-home')
+    const prepare = vi.spyOn(Database.prototype, 'prepare')
+    const { missions } = await store.list(BRICE, {
+      ...QUERY,
+      statuses: MISSION_FILTER_STATUSES.all,
+      archiveLimit: null,
+    })
+    const listSql = prepare.mock.calls
+      .map(([source]) => source)
+      .filter((source) => source.includes('from "missions"') && !source.includes('count('))
+    prepare.mockRestore()
+    expect(listSql).not.toHaveLength(0)
+    for (const source of listSql) {
+      expect(source).not.toMatch(/"prompt"/)
+      expect(source).not.toMatch(/"claim_token_hash"/)
+    }
+    expect(missions.map((mission) => mission.slug)).toEqual(['lcp-home'])
+    expect(missions[0]).not.toHaveProperty('prompt')
+    expect(missions[0]).toMatchObject({
+      tags: ['perf'],
+      origin: { session: { userName: 'Brice' } },
+    })
+  })
+
+  it('borne les archivées aux N closes le plus récemment ; compteurs et missions ouvertes entiers', async () => {
+    for (const index of [1, 2, 3, 4]) await seed(`archivee-${String(index)}`)
+    await seed('ouverte')
+    // Closes dans l'ordre 3, 1, 4, 2 : les deux plus récentes sont 4 puis 2.
+    for (const [slug, minutes] of [
+      ['archivee-3', 1],
+      ['archivee-1', 2],
+      ['archivee-4', 3],
+      ['archivee-2', 4],
+    ] as const) {
+      await dropAt(slug, minutes)
+    }
+
+    const archived = await store.list(BRICE, {
+      ...QUERY,
+      statuses: MISSION_FILTER_STATUSES.archived,
+      archiveLimit: 2,
+    })
+    expect(archived.missions.map((mission) => mission.slug).sort()).toEqual([
+      'archivee-2',
+      'archivee-4',
+    ])
+    expect(archived.statusCounts.dropped).toBe(4)
+
+    const all = await store.list(BRICE, {
+      ...QUERY,
+      statuses: MISSION_FILTER_STATUSES.all,
+      archiveLimit: 2,
+    })
+    expect(all.missions.map((mission) => mission.slug).sort()).toEqual([
+      'archivee-2',
+      'archivee-4',
+      'ouverte',
+    ])
+
+    const unbounded = await store.list(BRICE, {
+      ...QUERY,
+      statuses: MISSION_FILTER_STATUSES.all,
+      archiveLimit: null,
+    })
+    expect(unbounded.missions).toHaveLength(5)
+  })
+})
+
+describe('DrizzleMissionStore : batchOrigin', () => {
+  it('origine de la plus ancienne mission visible, compteurs du lot, en deux requêtes', async () => {
+    await seed('recente')
+    await seed(
+      'ancienne',
+      { origin: { ...newMission('x').origin, label: 'Audit perf · premier passage' } },
+      later(-10),
+    )
+    await seed(
+      'autre-lot',
+      { origin: { ...newMission('x').origin, batchId: 'batch-autre' } },
+      later(-20),
+    )
+    await seed('privee-camille', { scope: { kind: 'personal', owner: 'camille' } }, later(-30))
+    await store.apply({
+      viewer: BRICE,
+      slug: 'recente',
+      command: { type: 'drop', reason: 'Doublon' },
+      actor: { kind: 'human', userId: 'brice' },
+      tokenHash: null,
+      at: later(1),
+    })
+
+    const prepare = vi.spyOn(Database.prototype, 'prepare')
+    const origin = await store.batchOrigin(BRICE, 'batch-perf')
+    const queries = prepare.mock.calls.length
+    prepare.mockRestore()
+
+    expect(origin).toEqual({
+      label: 'Audit perf · premier passage',
+      session: sessionRef('audit-1'),
+      repo: 'allovoisins/front',
+      commit: 'abc1234',
+      createdAt: later(-10).toISOString(),
+      counts: { draft: 0, ready: 1, in_progress: 0, done: 0, dropped: 1, expired: 0 },
+    })
+    expect(queries).toBe(2)
+  })
+
+  it('lot inconnu, ou sans mission visible : null', async () => {
+    await seed('privee-camille', {
+      scope: { kind: 'personal', owner: 'camille' },
+      origin: { ...newMission('x').origin, batchId: 'batch-camille' },
+    })
+    expect(await store.batchOrigin(BRICE, 'batch-camille')).toBeNull()
+    expect(await store.batchOrigin(CAMILLE, 'batch-camille')).not.toBeNull()
+    expect(await store.batchOrigin(BRICE, 'inconnu')).toBeNull()
+  })
+})
+
+describe('DrizzleMissionStore : balayage et modification', () => {
+  it('balaye N missions échues en chargeant tags et noms une seule fois', async () => {
+    for (const index of [1, 2, 3, 4, 5]) {
+      await seed(`oubliee-${String(index)}`, {}, later(-14 * 24 * 60 - index))
+    }
+    const prepare = vi.spyOn(Database.prototype, 'prepare')
+    const swept = await store.expireDue(later(1))
+    const loads = prepare.mock.calls
+      .map(([source]) => source)
+      .filter((source) => source.startsWith('select') && /from "(mission_tags|users)"/.test(source))
+    prepare.mockRestore()
+    expect(swept).toEqual({ expired: 5, released: 0 })
+    expect(loads).toHaveLength(2)
+  })
+
+  it('« Modifier » écrit un événement edited avec les champs changés', async () => {
+    const mission = await seed('lcp-home')
+    const result = await store.update({
+      viewer: BRICE,
+      slug: 'lcp-home',
+      expectedUpdatedAt: mission.updatedAt,
+      changes: {
+        title: mission.title,
+        summary: mission.summary,
+        prompt: `${mission.prompt}\nPrécision.`,
+        priority: 'P3',
+        tags: mission.tags,
+        suspicious: false,
+      },
+      at: later(5),
+    })
+    expect(result.kind).toBe('updated')
+    const events = await store.events(mission.id)
+    expect(events.at(-1)).toMatchObject({
+      type: 'edited',
+      actor: { userId: 'brice' },
+      detail: 'prompt, priorité',
+      at: later(5).toISOString(),
+    })
   })
 })

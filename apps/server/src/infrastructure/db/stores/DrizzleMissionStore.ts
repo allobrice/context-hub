@@ -4,19 +4,35 @@
  * mission `ready` puis la prendre chacune : la seconde attend (`busy_timeout`), puis lit la mission
  * déjà `in_progress` et la `transition` du domaine la refuse.
  */
-import { and, asc, count, eq, exists, inArray, lte, sql, type SQL } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  exists,
+  inArray,
+  lte,
+  notInArray,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm'
 import { z } from 'zod'
 
 import { toContextId } from '@context-hub/domain/context/types.ts'
 import { emptyStatusCounts } from '@context-hub/domain/missions/counts.ts'
 import {
+  editEvent,
   renewClaim,
   transition,
   type MissionCommand,
   type Transition,
 } from '@context-hub/domain/missions/lifecycle.ts'
 import {
+  MISSION_FILTER_STATUSES,
   missionFromFields,
+  toMissionSummary,
   type DraftMission,
   type Mission,
   type MissionActor,
@@ -26,6 +42,8 @@ import {
   type MissionEvent,
   type MissionEventActor,
   type MissionStatusCounts,
+  type MissionStatusFields,
+  type MissionSummary,
   type ReadyMission,
   type Validation,
 } from '@context-hub/domain/missions/types.ts'
@@ -35,6 +53,7 @@ import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/ses
 import type {
   ApplyResult,
   ApplyWrite,
+  MissionBatchOrigin,
   MissionQuery,
   MissionRows,
   MissionStore,
@@ -50,7 +69,7 @@ import type { Viewer } from '../../../application/viewer.ts'
 import type { AppDatabase, SyncDb } from '../connection.ts'
 import { isoDate } from '../dates.ts'
 import { deferred } from '../deferred.ts'
-import { missionEvents, missions, missionTags } from '../schema.ts'
+import { missionEvents, missions, missionTags, users } from '../schema.ts'
 import { IMMEDIATE } from '../transactions.ts'
 import { appendEvent, insertTags, lifecycleColumns, missionRow } from './missionRecords.ts'
 import { scopeOf, visibleIn } from './scopeRecords.ts'
@@ -58,6 +77,52 @@ import { userNameIn, userNamesIn } from './userRecords.ts'
 
 type MissionRow = typeof missions.$inferSelect
 type EventRow = typeof missionEvents.$inferSelect
+
+/**
+ * Colonnes de la file : tout sauf le prompt (jusqu'à 8 000 caractères, jamais affiché dans la liste)
+ * et l'empreinte du jeton de réservation.
+ */
+const SUMMARY_COLUMNS = {
+  id: missions.id,
+  slug: missions.slug,
+  title: missions.title,
+  summary: missions.summary,
+  priority: missions.priority,
+  status: missions.status,
+  scopeKind: missions.scopeKind,
+  scopeValue: missions.scopeValue,
+  originLabel: missions.originLabel,
+  originBatchId: missions.originBatchId,
+  originUserId: missions.originUserId,
+  originSessionLabel: missions.originSessionLabel,
+  originRepo: missions.originRepo,
+  createdBy: missions.createdBy,
+  codeRefRepo: missions.codeRefRepo,
+  codeRefCommit: missions.codeRefCommit,
+  codeRefFiles: missions.codeRefFiles,
+  freshnessCheckedAt: missions.freshnessCheckedAt,
+  freshnessChangedFiles: missions.freshnessChangedFiles,
+  freshnessUserId: missions.freshnessUserId,
+  freshnessSessionLabel: missions.freshnessSessionLabel,
+  freshnessRepo: missions.freshnessRepo,
+  linkedContextIds: missions.linkedContextIds,
+  workspaceId: missions.workspaceId,
+  suspicious: missions.suspicious,
+  validationBy: missions.validationBy,
+  validationAt: missions.validationAt,
+  claimUserId: missions.claimUserId,
+  claimSessionLabel: missions.claimSessionLabel,
+  claimRepo: missions.claimRepo,
+  claimAcquiredAt: missions.claimAcquiredAt,
+  claimExpiresAt: missions.claimExpiresAt,
+  result: missions.result,
+  dropReason: missions.dropReason,
+  createdAt: missions.createdAt,
+  expiresAt: missions.expiresAt,
+  closedAt: missions.closedAt,
+  updatedAt: missions.updatedAt,
+}
+type SummaryRow = Omit<MissionRow, 'prompt' | 'claimTokenHash'>
 type Names = ReadonlyMap<string, string>
 
 const JOB: MissionActor = { kind: 'job' }
@@ -71,7 +136,7 @@ function parseJson<T>(text: string, schema: z.ZodType<T>): T {
 }
 
 /** Colonne obligatoire pour ce statut : son absence est une incohérence de la base. */
-function required<T>(value: T | null, column: string, row: MissionRow): T {
+function required<T>(value: T | null, column: string, row: SummaryRow): T {
   if (value === null) throw new Error(`Mission ${row.id} incohérente : ${column} manquant`)
   return value
 }
@@ -86,7 +151,7 @@ function sessionOf(
   return { userId, userName: names.get(userId) ?? userId, sessionLabel, repo }
 }
 
-function claimOf(row: MissionRow, names: Names): MissionClaim {
+function claimOf(row: SummaryRow, names: Names): MissionClaim {
   const userId = required(row.claimUserId, 'claim_user_id', row)
   return {
     session: {
@@ -101,7 +166,7 @@ function claimOf(row: MissionRow, names: Names): MissionClaim {
 }
 
 /** Fraîcheur : absente si jamais rapportée ; une ligne à moitié remplie est une incohérence. */
-function freshnessOf(row: MissionRow, names: Names): Freshness | null {
+function freshnessOf(row: SummaryRow, names: Names): Freshness | null {
   if (row.freshnessCheckedAt === null) return null
   const userId = required(row.freshnessUserId, 'freshness_user_id', row)
   return {
@@ -120,18 +185,21 @@ function freshnessOf(row: MissionRow, names: Names): Freshness | null {
 }
 
 /** Validation : absente tant qu'aucun humain n'a validé ; à moitié remplie, une incohérence. */
-function validationOf(row: MissionRow): Validation | null {
+function validationOf(row: SummaryRow): Validation | null {
   if (row.validationBy === null) return null
   return { by: row.validationBy, at: required(row.validationAt, 'validation_at', row) }
 }
 
-function coreOf(row: MissionRow, tags: readonly string[], names: Names): MissionCore {
+function summaryCoreOf(
+  row: SummaryRow,
+  tags: readonly string[],
+  names: Names,
+): Omit<MissionCore, 'prompt'> {
   return {
     id: row.id,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
-    prompt: row.prompt,
     priority: row.priority,
     tags,
     scope: scopeOf(row.scopeKind, row.scopeValue),
@@ -156,15 +224,35 @@ function coreOf(row: MissionRow, tags: readonly string[], names: Names): Mission
   }
 }
 
-function toMission(row: MissionRow, tags: readonly string[], names: Names): Mission {
-  return missionFromFields(coreOf(row, tags, names), {
+function statusFieldsOf(row: SummaryRow, names: Names): MissionStatusFields {
+  return {
     status: row.status,
     validation: validationOf(row),
     claim: row.claimUserId === null ? null : claimOf(row, names),
     result: row.result === null ? null : parseJson(row.result, MissionResultSchema),
     dropReason: row.dropReason,
     closedAt: row.closedAt,
-  })
+  }
+}
+
+function toMission(row: MissionRow, tags: readonly string[], names: Names): Mission {
+  return missionFromFields(
+    { ...summaryCoreOf(row, tags, names), prompt: row.prompt },
+    statusFieldsOf(row, names),
+  )
+}
+
+/**
+ * Résumé de la file : même reconstruction par statut (incohérence détectée de la même façon), sans le
+ * prompt, qui n'est pas lu ; la chaîne vide ne sort pas d'ici (`toMissionSummary` l'écarte).
+ */
+function toSummary(row: SummaryRow, tags: readonly string[], names: Names): MissionSummary {
+  return toMissionSummary(
+    missionFromFields(
+      { ...summaryCoreOf(row, tags, names), prompt: '' },
+      statusFieldsOf(row, names),
+    ),
+  )
 }
 
 function toEvent(row: EventRow, names: Names): MissionEvent {
@@ -204,17 +292,31 @@ function tagsIn(db: SyncDb, missionIds: readonly string[]): ReadonlyMap<string, 
   return byMission
 }
 
-/** Lignes → missions : tags et noms chargés en une requête chacun pour tout le lot. */
+/** Tags et noms d'un lot de lignes, chargés en une requête chacun. */
+function relationsIn(
+  db: SyncDb,
+  rows: readonly SummaryRow[],
+): { tags: ReadonlyMap<string, string[]>; names: Names } {
+  return {
+    tags: tagsIn(
+      db,
+      rows.map((row) => row.id),
+    ),
+    names: userNamesIn(
+      db,
+      rows.flatMap((row) => [row.originUserId, row.freshnessUserId, row.claimUserId]),
+    ),
+  }
+}
+
 function loadAll(db: SyncDb, rows: readonly MissionRow[]): Mission[] {
-  const tags = tagsIn(
-    db,
-    rows.map((row) => row.id),
-  )
-  const names = userNamesIn(
-    db,
-    rows.flatMap((row) => [row.originUserId, row.freshnessUserId, row.claimUserId]),
-  )
+  const { tags, names } = relationsIn(db, rows)
   return rows.map((row) => toMission(row, tags.get(row.id) ?? [], names))
+}
+
+function loadSummaries(db: SyncDb, rows: readonly SummaryRow[]): MissionSummary[] {
+  const { tags, names } = relationsIn(db, rows)
+  return rows.map((row) => toSummary(row, tags.get(row.id) ?? [], names))
 }
 
 function load(db: SyncDb, row: MissionRow): Mission {
@@ -272,7 +374,9 @@ const QUEUE_ORDER = [asc(missions.priority), asc(missions.createdAt), asc(missio
 function queueConditions(
   db: SyncDb,
   viewer: Viewer,
-  filters: Omit<MissionQuery, 'statuses' | 'batchId'> & { readonly batchId?: string | null },
+  filters: Omit<MissionQuery, 'statuses' | 'batchId' | 'archiveLimit'> & {
+    readonly batchId?: string | null
+  },
 ): SQL[] {
   const conditions = [visibleTo(viewer)]
   for (const tag of filters.tags) {
@@ -304,6 +408,25 @@ function nextReadyIn(
     .get()
 }
 
+/**
+ * Borne des missions archivées : seules les `archiveLimit` closes le plus récemment restent ; les
+ * missions ouvertes ne sont pas bornées (elles expirent à 14 jours). Tri d'affichage inchangé.
+ */
+function archiveBound(db: SyncDb, query: MissionQuery, conditions: readonly SQL[]): SQL[] {
+  const archived = query.statuses.filter((status) =>
+    MISSION_FILTER_STATUSES.archived.includes(status),
+  )
+  if (query.archiveLimit === null || archived.length === 0) return []
+  const recent = db
+    .select({ id: missions.id })
+    .from(missions)
+    .where(and(inArray(missions.status, archived), ...conditions))
+    .orderBy(desc(missions.closedAt), desc(missions.id))
+    .limit(query.archiveLimit)
+  const bound = or(notInArray(missions.status, archived), inArray(missions.id, recent))
+  return bound === undefined ? [] : [bound]
+}
+
 function statusCountsIn(db: SyncDb, conditions: readonly SQL[]): MissionStatusCounts {
   const rows = db
     .select({ status: missions.status, total: count() })
@@ -322,10 +445,11 @@ function statusCountsIn(db: SyncDb, conditions: readonly SQL[]): MissionStatusCo
  */
 function sweepIn(db: SyncDb, now: Date): SweepResult {
   const at = isoDate(now)
+  // Lignes chargées en lot (tags et noms : une requête chacun), le verrou d'écriture étant tenu.
   const apply = (rows: readonly MissionRow[], command: MissionCommand): number => {
     let applied = 0
-    for (const row of rows) {
-      const result = transition(load(db, row), command, JOB, now)
+    for (const mission of loadAll(db, rows)) {
+      const result = transition(mission, command, JOB, now)
       // La requête et `transition` comparent l'échéance de la même façon (`<=`) : un refus ici
       // signalerait une divergence entre les deux, sans raison de bloquer la prise en cours.
       if (!result.ok) continue
@@ -386,6 +510,41 @@ export class DrizzleMissionStore implements MissionStore {
     )
   }
 
+  batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null> {
+    return deferred(() => {
+      const conditions = queueConditions(this.db, viewer, { tags: [], repo: null, batchId })
+      const first = this.db
+        .select({
+          label: missions.originLabel,
+          userId: missions.originUserId,
+          userName: users.name,
+          sessionLabel: missions.originSessionLabel,
+          sessionRepo: missions.originRepo,
+          repo: missions.codeRefRepo,
+          commit: missions.codeRefCommit,
+          createdAt: missions.createdAt,
+        })
+        .from(missions)
+        .leftJoin(users, eq(users.id, missions.originUserId))
+        .where(and(...conditions))
+        .orderBy(asc(missions.createdAt), asc(missions.id))
+        .limit(1)
+        .get()
+      if (first === undefined) return null
+      const names: Names = new Map(
+        first.userId !== null && first.userName !== null ? [[first.userId, first.userName]] : [],
+      )
+      return {
+        label: first.label,
+        session: sessionOf(names, first.userId, first.sessionLabel, first.sessionRepo),
+        repo: first.repo,
+        commit: first.commit,
+        createdAt: first.createdAt,
+        counts: statusCountsIn(this.db, conditions),
+      }
+    })
+  }
+
   list(viewer: Viewer, query: MissionQuery): Promise<MissionRows> {
     return deferred(() => {
       const conditions = queueConditions(this.db, viewer, query)
@@ -393,12 +552,21 @@ export class DrizzleMissionStore implements MissionStore {
         query.statuses.length === 0
           ? []
           : this.db
-              .select()
+              .select(SUMMARY_COLUMNS)
               .from(missions)
-              .where(and(inArray(missions.status, [...query.statuses]), ...conditions))
+              .where(
+                and(
+                  inArray(missions.status, [...query.statuses]),
+                  ...conditions,
+                  ...archiveBound(this.db, query, conditions),
+                ),
+              )
               .orderBy(...QUEUE_ORDER)
               .all()
-      return { missions: loadAll(this.db, rows), statusCounts: statusCountsIn(this.db, conditions) }
+      return {
+        missions: loadSummaries(this.db, rows),
+        statusCounts: statusCountsIn(this.db, conditions),
+      }
     })
   }
 
@@ -428,6 +596,8 @@ export class DrizzleMissionStore implements MissionStore {
           .run()
         tx.delete(missionTags).where(eq(missionTags.missionId, row.id)).run()
         insertTags(tx, row.id, changes.tags)
+        const edited = editEvent(mission, changes, viewer.userId, at)
+        if (edited !== null) appendEvent(tx, edited)
         return { kind: 'updated', mission: { ...mission, ...changes, updatedAt } }
       }, IMMEDIATE),
     )

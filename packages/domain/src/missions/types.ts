@@ -263,6 +263,8 @@ export type MissionEventType =
   | 'dropped'
   | 'expired'
   | 'reopened'
+  /** « Modifier » par un humain (à valider ou prête) : détail = champs changés. */
+  | 'edited'
 export const MISSION_EVENT_TYPES = [
   'created',
   'validated',
@@ -274,6 +276,7 @@ export const MISSION_EVENT_TYPES = [
   'dropped',
   'expired',
   'reopened',
+  'edited',
 ] as const satisfies readonly MissionEventType[]
 
 /** Auteur d'un événement : SPEC §8.1, plus le job de maintenance (expirations). */
@@ -306,6 +309,8 @@ export const MISSION_SUMMARY_MAX_LENGTH = 200
 export const MISSION_REASON_MAX_LENGTH = 1_000
 export const MISSION_MAX_TAGS = 10
 export const MISSION_MAX_FILES = 50
+/** Filtres « Archivées » et « Toutes » : seules les N missions closes le plus récemment sont listées. */
+export const MISSION_ARCHIVE_LIMIT = 100
 
 // ── File et vues de l'API ────────────────────────────────────────────────────
 

@@ -26,6 +26,22 @@ function labels(slug: string): string[] {
 }
 
 describe('historyItems', () => {
+  it('« Modifier » : « Modifiée par Brice · champs changés »', () => {
+    const { mission, events } = fixture('perf-lcp-carrousel')
+    const edited: MissionEvent = {
+      missionId: mission.id,
+      missionSlug: mission.slug,
+      missionTitle: mission.title,
+      at: mission.updatedAt,
+      actor: { userId: 'brice' },
+      type: 'edited',
+      detail: 'prompt, priorité',
+    }
+    expect(historyItems(mission, [...events, edited])[0]?.label).toBe(
+      'Modifiée par Brice · prompt, priorité',
+    )
+  })
+
   it('du plus récent au plus ancien, avec l’origine en minuscules', () => {
     expect(labels('perf-lcp-carrousel')).toEqual([
       'Validée par Brice',

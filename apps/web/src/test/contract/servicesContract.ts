@@ -437,6 +437,7 @@ export function describeServicesContract(
         } as const
         const updated = await services.missions.update('perf-lcp-carrousel', command)
         expect(updated.mission.priority).toBe('P2')
+        expect(updated.events.at(-1)).toMatchObject({ type: 'edited', detail: 'priorité' })
         await expect(
           services.missions.update('perf-lcp-carrousel', command),
         ).rejects.toBeInstanceOf(MissionConflictError)
