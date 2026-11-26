@@ -207,7 +207,9 @@ describe('Mission : en cours (maquette 37)', () => {
     const hold = region('Prise en charge')
     expect(hold).toHaveTextContent('web-2Camille · allovoisins/front')
     expect(hold).toHaveTextContent('Réservée depuis 18 min, dernière activité il y a 1 min.')
-    expect(hold).toHaveTextContent('La réservation expire dans 29 min sans activité')
+    expect(hold).toHaveTextContent(
+      'La réservation est relâchée automatiquement après 30 min sans activité (dans 29 min) : la mission redevient alors prête.',
+    )
     expect(region('Résultat')).not.toHaveClass('resultDone')
     expect(region('Résultat')).toHaveTextContent(
       'En cours de traitement par web-2. La session enregistrera ici son résumé, ses livrables et ses mesures avec mission_complete, ou une raison d’abandon avec mission_drop.',
