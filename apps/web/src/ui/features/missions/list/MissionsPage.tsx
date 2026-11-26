@@ -50,7 +50,10 @@ export function MissionsPage() {
   const list = useMissionList(query)
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
-  const isEmpty = list.data !== undefined && isQueueEmpty(query, list.data)
+  // Pendant un changement de filtre, `data` est encore celle de la requête précédente : ni l'état
+  // vide ni « aucun résultat » ne sont décidés sur elle.
+  const isStale = list.isPlaceholderData
+  const isEmpty = list.data !== undefined && !isStale && isQueueEmpty(query, list.data)
 
   const update = (patch: Partial<MissionListQuery>) => {
     setParams((current) => writeMissionParams({ ...query, ...patch }, current), { replace: true })
@@ -153,9 +156,9 @@ export function MissionsPage() {
               }
             />
           ) : list.data.items.length === 0 ? (
-            <p className={styles.noResult}>{NO_RESULT_MESSAGES[query.filter]}</p>
+            !isStale && <p className={styles.noResult}>{NO_RESULT_MESSAGES[query.filter]}</p>
           ) : (
-            <MissionTable items={list.data.items} />
+            <MissionTable items={list.data.items} stale={isStale} />
           ))}
       </div>
 

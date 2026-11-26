@@ -1,8 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../../../../test/renderApp.tsx'
+import { createTestServices, renderApp } from '../../../../test/renderApp.tsx'
 
 async function rows() {
   const table = await screen.findByRole('table', { name: 'Missions' })
@@ -54,6 +54,37 @@ describe('Missions : file (maquette 31)', () => {
       expect(within(option).getByText(count)).toBeInTheDocument()
     }
     expect(radio(/^À traiter/)).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('changement de filtre : file précédente gardée (atténuée, aria-busy) jusqu’à la réponse', async () => {
+    const services = createTestServices()
+    const list = services.missions.list.bind(services.missions)
+    const answer = vi.spyOn(services.missions, 'list')
+    renderApp('/missions', { services })
+    expect(await rows()).toHaveLength(4)
+
+    let release: () => void = () => undefined
+    answer.mockImplementationOnce(async (query) => {
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return list(query)
+    })
+    await userEvent.click(radio(/^Archivées/))
+
+    const table = screen.getByRole('table', { name: 'Missions' })
+    const body = within(table).getAllByRole('rowgroup').at(-1)
+    expect(body).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByLabelText('Chargement des missions')).not.toBeInTheDocument()
+    expect(await rows()).toHaveLength(4)
+    expect(within(radio(/^Archivées/)).getByText('2')).toBeInTheDocument()
+    expect(within(radio(/^À traiter/)).getByText('4')).toBeInTheDocument()
+
+    release()
+    await waitFor(async () => {
+      expect(await rows()).toHaveLength(2)
+    })
+    expect(within(table).getAllByRole('rowgroup').at(-1)).toHaveAttribute('aria-busy', 'false')
   })
 
   it('change de filtre dans l’URL en conservant les paramètres inconnus', async () => {

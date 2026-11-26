@@ -27,14 +27,21 @@ function HeadRow() {
 }
 
 /** File des missions (maquette 31) : triée par le serveur, priorité puis ancienneté. */
-export function MissionTable({ items }: { items: readonly MissionSummary[] }) {
+/** `stale` : lignes de la requête précédente, affichées atténuées pendant le rechargement. */
+export function MissionTable({
+  items,
+  stale = false,
+}: {
+  items: readonly MissionSummary[]
+  stale?: boolean
+}) {
   const { clock } = useServices()
   const now = clock.now()
   return (
-    <div className={styles.tableWrap}>
+    <div className={cx(styles.tableWrap, stale && styles.stale)}>
       <div role="table" aria-label="Missions" className={styles.table}>
         <HeadRow />
-        <div role="rowgroup">
+        <div role="rowgroup" aria-busy={stale}>
           {items.map((mission) => {
             const code = codeRefState(mission)
             return (

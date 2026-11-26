@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { MissionDetail } from '@context-hub/domain/missions/types.ts'
 
@@ -17,9 +17,14 @@ export const missionKeys = {
   detail: (slug: string) => ['missions', 'detail', slug] as const,
 }
 
+/** Changer de filtre garde la file affichée (atténuée) jusqu'à la réponse : ni squelette ni décalage. */
 export function useMissionList(query: MissionListQuery) {
   const { missions } = useServices()
-  return useQuery({ queryKey: missionKeys.list(query), queryFn: () => missions.list(query) })
+  return useQuery({
+    queryKey: missionKeys.list(query),
+    queryFn: () => missions.list(query),
+    placeholderData: keepPreviousData,
+  })
 }
 
 /** Bloc « Origine » : seulement quand la file est filtrée sur un lot. */

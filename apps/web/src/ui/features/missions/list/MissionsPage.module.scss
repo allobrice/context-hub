@@ -389,6 +389,12 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
   font-size: var(--text-sm);
 }
 
+// Changement de filtre en cours : lignes précédentes encore affichées (comme la Bibliothèque).
+.stale {
+  opacity: 0.6;
+  transition: opacity 150ms;
+}
+
 .noResult {
   color: var(--fg-3);
   font-size: var(--text-sm);
