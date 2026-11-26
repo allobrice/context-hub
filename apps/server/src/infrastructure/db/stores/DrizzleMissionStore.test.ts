@@ -526,3 +526,45 @@ describe('DrizzleMissionStore : batchOrigin', () => {
     expect(await store.batchOrigin(BRICE, 'inconnu')).toBeNull()
   })
 })
+
+describe('DrizzleMissionStore : balayage et modification', () => {
+  it('balaye N missions échues en chargeant tags et noms une seule fois', async () => {
+    for (const index of [1, 2, 3, 4, 5]) {
+      await seed(`oubliee-${String(index)}`, {}, later(-14 * 24 * 60 - index))
+    }
+    const prepare = vi.spyOn(Database.prototype, 'prepare')
+    const swept = await store.expireDue(later(1))
+    const loads = prepare.mock.calls
+      .map(([source]) => source)
+      .filter((source) => source.startsWith('select') && /from "(mission_tags|users)"/.test(source))
+    prepare.mockRestore()
+    expect(swept).toEqual({ expired: 5, released: 0 })
+    expect(loads).toHaveLength(2)
+  })
+
+  it('« Modifier » écrit un événement edited avec les champs changés', async () => {
+    const mission = await seed('lcp-home')
+    const result = await store.update({
+      viewer: BRICE,
+      slug: 'lcp-home',
+      expectedUpdatedAt: mission.updatedAt,
+      changes: {
+        title: mission.title,
+        summary: mission.summary,
+        prompt: `${mission.prompt}\nPrécision.`,
+        priority: 'P3',
+        tags: mission.tags,
+        suspicious: false,
+      },
+      at: later(5),
+    })
+    expect(result.kind).toBe('updated')
+    const events = await store.events(mission.id)
+    expect(events.at(-1)).toMatchObject({
+      type: 'edited',
+      actor: { userId: 'brice' },
+      detail: 'prompt, priorité',
+      at: later(5).toISOString(),
+    })
+  })
+})

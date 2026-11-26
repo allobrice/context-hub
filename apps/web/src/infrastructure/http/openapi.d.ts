@@ -4518,7 +4518,7 @@ export interface components {
             at: string;
             actor: components["schemas"]["MissionEventActor"];
             /** @enum {string} */
-            type: "created" | "validated" | "rejected" | "taken" | "released" | "freshness" | "completed" | "dropped" | "expired" | "reopened";
+            type: "created" | "validated" | "rejected" | "taken" | "released" | "freshness" | "completed" | "dropped" | "expired" | "reopened" | "edited";
             detail: string | null;
         };
         MissionEventActor: components["schemas"]["SessionRef"] | {

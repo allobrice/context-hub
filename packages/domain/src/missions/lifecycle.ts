@@ -23,6 +23,7 @@ import {
   type MissionEventType,
   type MissionResult,
   type MissionStatus,
+  type Priority,
   type ReadyMission,
 } from './types.ts'
 
@@ -321,6 +322,48 @@ function renewed(mission: InProgressMission, now: Date): InProgressMission {
 
 function toReady(mission: InProgressMission, at: string): ReadyMission {
   return { ...mission, status: 'ready', claim: null, updatedAt: at }
+}
+
+/** Champs que « Modifier » peut changer (mission à valider ou prête). */
+export interface MissionEdit {
+  readonly title: string
+  readonly summary: string
+  readonly prompt: string
+  readonly priority: Priority
+  readonly tags: readonly string[]
+}
+
+const EDITED_FIELDS = [
+  ['title', 'titre'],
+  ['summary', 'résumé'],
+  ['prompt', 'prompt'],
+  ['priority', 'priorité'],
+  ['tags', 'tags'],
+] as const
+
+/**
+ * Événement « Modifiée par … » : trace de ce qu'un humain a changé avant de valider. Détail = champs
+ * réellement changés (« prompt, priorité ») ; null si rien ne change.
+ */
+export function editEvent(
+  before: Mission,
+  after: MissionEdit,
+  userId: string,
+  now: Date,
+): MissionEvent | null {
+  const changed = EDITED_FIELDS.filter(([field]) =>
+    field === 'tags'
+      ? before.tags.join('\n') !== after.tags.join('\n')
+      : before[field] !== after[field],
+  ).map(([, label]) => label)
+  if (changed.length === 0) return null
+  return eventOf(
+    { ...before, title: after.title },
+    { kind: 'human', userId },
+    now,
+    'edited',
+    changed.join(', '),
+  )
 }
 
 function eventActorOf(actor: MissionActor): MissionEventActor {

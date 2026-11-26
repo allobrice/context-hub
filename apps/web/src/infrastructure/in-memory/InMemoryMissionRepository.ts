@@ -10,6 +10,7 @@ import {
 import { countStatuses, toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import {
   createMission,
+  editEvent,
   transition,
   type MissionCommand,
 } from '@context-hub/domain/missions/lifecycle.ts'
@@ -194,16 +195,22 @@ export class InMemoryMissionRepository implements MissionRepository {
       if (review.violations.length > 0) {
         throw new MissionRuleError(review.violations, review.missingSections)
       }
-      record.mission = {
-        ...mission,
+      const changes = {
         title: command.title.trim(),
         summary: command.summary.trim(),
         prompt: command.prompt,
         priority: command.priority,
         tags: command.tags,
-        suspicious: review.suspicious,
-        updatedAt: this.clock.now().toISOString(),
       }
+      const now = this.clock.now()
+      const edited = editEvent(mission, changes, CURRENT_USER_ID, now)
+      record.mission = {
+        ...mission,
+        ...changes,
+        suspicious: review.suspicious,
+        updatedAt: now.toISOString(),
+      }
+      if (edited !== null) record.events = [...record.events, edited]
       return this.detail(record)
     })
   }

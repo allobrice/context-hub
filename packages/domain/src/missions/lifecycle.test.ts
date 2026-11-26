@@ -7,6 +7,7 @@ import {
   MISSION_COMMAND_TYPES,
   MISSION_TRANSITIONS,
   createMission,
+  editEvent,
   initialStatus,
   renewClaim,
   transition,
@@ -733,5 +734,47 @@ describe('renewClaim', () => {
 describe('listes dérivées de la table', () => {
   it('MISSION_COMMAND_TYPES couvre exactement les commandes de MISSION_TRANSITIONS', () => {
     expect([...MISSION_COMMAND_TYPES].sort()).toEqual(Object.keys(MISSION_TRANSITIONS).sort())
+  })
+})
+
+describe('editEvent', () => {
+  const edit = (mission: ReadyMission) => ({
+    title: mission.title,
+    summary: mission.summary,
+    prompt: mission.prompt,
+    priority: mission.priority,
+    tags: mission.tags,
+  })
+
+  it('liste les champs réellement changés, attribués à l’humain, avec le nouveau titre', () => {
+    const mission = readyMission()
+    const event = editEvent(
+      mission,
+      {
+        ...edit(mission),
+        title: 'Nouveau titre',
+        prompt: `${mission.prompt}\nPlus.`,
+        priority: 'P3',
+      },
+      'u-lead',
+      NOW,
+    )
+    expect(event).toEqual({
+      missionId: mission.id,
+      missionSlug: mission.slug,
+      missionTitle: 'Nouveau titre',
+      at: NOW_ISO,
+      actor: { userId: 'u-lead' },
+      type: 'edited',
+      detail: 'titre, prompt, priorité',
+    })
+  })
+
+  it('tags : l’ordre compte ; rien de changé : pas d’événement', () => {
+    const mission = readyMission({ tags: ['perf', 'web'] })
+    expect(editEvent(mission, { ...edit(mission), tags: ['web', 'perf'] }, 'u', NOW)?.detail).toBe(
+      'tags',
+    )
+    expect(editEvent(mission, edit(mission), 'u', NOW)).toBeNull()
   })
 })

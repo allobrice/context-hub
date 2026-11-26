@@ -23,6 +23,7 @@ import { z } from 'zod'
 import { toContextId } from '@context-hub/domain/context/types.ts'
 import { emptyStatusCounts } from '@context-hub/domain/missions/counts.ts'
 import {
+  editEvent,
   renewClaim,
   transition,
   type MissionCommand,
@@ -444,10 +445,11 @@ function statusCountsIn(db: SyncDb, conditions: readonly SQL[]): MissionStatusCo
  */
 function sweepIn(db: SyncDb, now: Date): SweepResult {
   const at = isoDate(now)
+  // Lignes chargées en lot (tags et noms : une requête chacun), le verrou d'écriture étant tenu.
   const apply = (rows: readonly MissionRow[], command: MissionCommand): number => {
     let applied = 0
-    for (const row of rows) {
-      const result = transition(load(db, row), command, JOB, now)
+    for (const mission of loadAll(db, rows)) {
+      const result = transition(mission, command, JOB, now)
       // La requête et `transition` comparent l'échéance de la même façon (`<=`) : un refus ici
       // signalerait une divergence entre les deux, sans raison de bloquer la prise en cours.
       if (!result.ok) continue
@@ -594,6 +596,8 @@ export class DrizzleMissionStore implements MissionStore {
           .run()
         tx.delete(missionTags).where(eq(missionTags.missionId, row.id)).run()
         insertTags(tx, row.id, changes.tags)
+        const edited = editEvent(mission, changes, viewer.userId, at)
+        if (edited !== null) appendEvent(tx, edited)
         return { kind: 'updated', mission: { ...mission, ...changes, updatedAt } }
       }, IMMEDIATE),
     )

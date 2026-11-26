@@ -263,6 +263,8 @@ export type MissionEventType =
   | 'dropped'
   | 'expired'
   | 'reopened'
+  /** « Modifier » par un humain (à valider ou prête) : détail = champs changés. */
+  | 'edited'
 export const MISSION_EVENT_TYPES = [
   'created',
   'validated',
@@ -274,6 +276,7 @@ export const MISSION_EVENT_TYPES = [
   'dropped',
   'expired',
   'reopened',
+  'edited',
 ] as const satisfies readonly MissionEventType[]
 
 /** Auteur d'un événement : SPEC §8.1, plus le job de maintenance (expirations). */
