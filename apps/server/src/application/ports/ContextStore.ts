@@ -145,6 +145,11 @@ export interface ContextStore {
   collectionExists(id: string): Promise<boolean>
   /** Contextes publiés visibles (jamais les brouillons ni les archivés), triés par slug. */
   listPublished(viewer: Viewer): Promise<readonly PublishedSummary[]>
+  /**
+   * Contextes publiés visibles parmi `ids` (portée PUBLIÉE ; inconnus, brouillons, archivés et hors
+   * portée absents), triés par slug. Coût proportionnel au nombre d'identifiants.
+   */
+  findPublishedByIds(viewer: Viewer, ids: readonly string[]): Promise<readonly PublishedSummary[]>
   /** Un contexte publié par slug, selon sa portée PUBLIÉE ; null s'il n'est pas servi. */
   findPublished(viewer: Viewer, slug: string): Promise<PublishedDetail | null>
   /** Recherche plein texte sur le contenu PUBLIÉ uniquement, par pertinence. */
