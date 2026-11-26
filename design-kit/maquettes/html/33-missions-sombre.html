@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Hub — Missions — thème sombre</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+
+
+
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.b-acc{background:var(--accent-soft);color:var(--accent-text)}
+.b-danger{background:var(--danger-soft);color:var(--danger)}
+.prio{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:4px;font:600 11px 'JetBrains Mono',monospace;border:1px solid var(--border-strong);color:var(--fg2)}
+.prio.p1{border-color:var(--danger);color:var(--danger)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.ch a.row{color:var(--fg);text-decoration:none}
+.row:hover{background:var(--surface)}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--bg);color:var(--fg2);font:500 12px Inter,sans-serif;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--surface2);color:var(--fg)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.snip{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;font:500 12px 'JetBrains Mono',monospace}
+</style>
+
+</head>
+<body>
+<!-- Maquette statique générée depuis sources/Missions.dc.html, props {"theme": "dark"} -->
+
+
+<DIV class="ch dark" style="min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<NAV aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<DIV style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px"><SPAN style="font-size: 14px; font-weight: 700">Context Hub</SPAN><SPAN style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</SPAN></DIV>
+</DIV>
+<DIV style="display: flex; flex-direction: column; gap: 2px">
+<A class="nav" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><SPAN style="flex-grow: 1">Bibliothèque</SPAN><SPAN class="mono" style="font-size: 11px">42</SPAN></A>
+<A class="nav" href="Workspaces.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 13h3M8 16h6"></path></svg><SPAN style="flex-grow: 1">Workspaces</SPAN><SPAN class="mono" style="font-size: 11px">3</SPAN></A>
+<A class="nav on" href="Missions.dc.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg><SPAN style="flex-grow: 1">Missions</SPAN><SPAN class="mono" style="font-size: 11px">4</SPAN></A>
+<A class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg><SPAN style="flex-grow: 1">Tags &amp; collections</SPAN></A>
+<A class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"></path></svg><SPAN style="flex-grow: 1">Connexion MCP</SPAN></A>
+</DIV>
+<DIV style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<DIV style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><SPAN class="dot" style="color: var(--ok)"></SPAN><SPAN style="flex-grow: 1">Serveur MCP en ligne</SPAN><SPAN class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</SPAN></DIV>
+<DIV style="display: flex; align-items: center; gap: 8px">
+<DIV style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</DIV>
+<SPAN style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</SPAN>
+<BUTTON class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg></BUTTON>
+</DIV>
+</DIV>
+</NAV>
+
+<MAIN style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<HEADER style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border)">
+<DIV style="display: flex; flex-direction: column; gap: 2px; margin-right: auto">
+<H1 style="margin: 0; font-size: 18px; font-weight: 700">Missions</H1>
+<SPAN style="font-size: 12px; color: var(--fg3)">Travail à faire, préparé par une session pour une autre. Une mission est prise par une seule session, traitée, puis archivée avec son résultat.</SPAN>
+</DIV>
+<SPAN class="snip" title="Commande Claude Code">/context-hub:next perf</SPAN>
+<BUTTON class="btn btn-primary" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nouvelle mission</BUTTON>
+</HEADER>
+
+
+<DIV style="padding: 16px 24px 0">
+<SECTION class="panel" aria-label="Origine des missions" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 14px">
+<DIV style="display: flex; flex-direction: column; gap: 3px; flex: 1 1 320px; min-width: 0">
+<SPAN style="font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--fg3)">Origine</SPAN>
+<SPAN style="font-size: 14px; font-weight: 600">Audit perf · page d’accueil Nuxt</SPAN>
+<SPAN style="font-size: 12px; color: var(--fg3)">Session <SPAN class="mono">perf-1</SPAN> (Brice) · allovoisins/front @ <SPAN class="mono">a41c9e2</SPAN> · 25 nov., 14:02</SPAN>
+</DIV>
+<DIV style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 6px">
+<DIV style="display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--surface2)" role="img" aria-label="6 missions : 1 terminée, 1 en cours, 2 prêtes, 1 à valider, 1 abandonnée">
+<SPAN style="width: 16.6%; background: var(--ok)"></SPAN><SPAN style="width: 16.6%; background: var(--accent)"></SPAN><SPAN style="width: 33.3%; background: var(--border-strong)"></SPAN><SPAN style="width: 16.6%; background: var(--warn)"></SPAN>
+</DIV>
+<DIV style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--fg2)">
+<SPAN style="display: inline-flex; align-items: center; gap: 5px"><SPAN class="dot" style="color: var(--ok)"></SPAN>1 terminée</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px"><SPAN class="dot" style="color: var(--accent)"></SPAN>1 en cours</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px"><SPAN class="dot" style="color: var(--border-strong)"></SPAN>2 prêtes</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px"><SPAN class="dot" style="color: var(--warn)"></SPAN>1 à valider</SPAN>
+<SPAN style="display: inline-flex; align-items: center; gap: 5px"><SPAN class="dot" style="color: var(--fg3)"></SPAN>1 abandonnée</SPAN>
+</DIV>
+</DIV>
+</SECTION>
+</DIV>
+<DIV style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 24px">
+<DIV class="seg" role="group" aria-label="Filtrer par statut">
+
+<BUTTON type="button" class="on" aria-pressed="true">À traiter <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">4</SPAN></BUTTON>
+
+<BUTTON type="button" class="" aria-pressed="false">À valider <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">1</SPAN></BUTTON>
+
+<BUTTON type="button" class="" aria-pressed="false">Prêtes <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">2</SPAN></BUTTON>
+
+<BUTTON type="button" class="" aria-pressed="false">Archivées <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">2</SPAN></BUTTON>
+
+<BUTTON type="button" class="" aria-pressed="false">Toutes <SPAN class="mono" style="font-size: 11px; color: var(--fg3)">6</SPAN></BUTTON>
+
+</DIV>
+<BUTTON class="btn btn-sm" type="button">Tags : perf ×</BUTTON>
+<BUTTON class="btn btn-sm" type="button">Repo</BUTTON>
+<SPAN style="margin-left: auto; font-size: 12px; color: var(--fg3)">Tri : priorité, puis ancienneté</SPAN>
+</DIV>
+<DIV style="padding: 0 24px 24px">
+<DIV style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px">
+<DIV role="table" aria-label="Missions" style="min-width: 1060px">
+<DIV role="row" style="display: grid; grid-template-columns: 44px minmax(0, 3fr) 150px 170px 190px 130px; gap: 12px; align-items: center; height: 34px; padding: 0 14px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--fg3)">
+<SPAN role="columnheader">Prio</SPAN><SPAN role="columnheader">Mission</SPAN><SPAN role="columnheader">Tags</SPAN><SPAN role="columnheader">Code d’origine</SPAN><SPAN role="columnheader">Statut</SPAN><SPAN role="columnheader">Échéance</SPAN>
+</DIV>
+
+<A class="row" role="row" href="Mission.dc.html" style="display: grid; grid-template-columns: 44px minmax(0, 3fr) 150px 170px 190px 130px; gap: 12px; align-items: center; min-height: 62px; padding: 8px 14px; border-bottom: 1px solid var(--border); opacity: 1">
+<SPAN role="cell"><SPAN class="prio p1">P1</SPAN></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<SPAN style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Lazy-load du carrousel de la home</SPAN>
+<SPAN style="font-size: 12px; color: var(--fg3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">LCP mobile 3,8 s : l’image du carrousel est l’élément LCP et bloque le rendu</SPAN>
+</SPAN>
+<SPAN role="cell" style="display: flex; gap: 4px; overflow: hidden"><SPAN class="tag">perf</SPAN><SPAN class="tag">lcp</SPAN></SPAN>
+<SPAN role="cell" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>À jour (a41c9e2)</SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px"><SPAN><SPAN class="badge b-arch"><SPAN class="dot"></SPAN>Prête</SPAN></SPAN><SPAN style="font-size: 11px; color: var(--fg3)">en attente d’une session</SPAN></SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">expire dans 13 j</SPAN>
+</A>
+
+<A class="row" role="row" href="Mission-progress.dc.html" style="display: grid; grid-template-columns: 44px minmax(0, 3fr) 150px 170px 190px 130px; gap: 12px; align-items: center; min-height: 62px; padding: 8px 14px; border-bottom: 1px solid var(--border); opacity: 1">
+<SPAN role="cell"><SPAN class="prio p1">P1</SPAN></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<SPAN style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Précharger TT Chocolates et passer en font-display: swap</SPAN>
+<SPAN style="font-size: 12px; color: var(--fg3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">FOIT de 600 ms sur la home, police chargée tardivement par le CSS</SPAN>
+</SPAN>
+<SPAN role="cell" style="display: flex; gap: 4px; overflow: hidden"><SPAN class="tag">perf</SPAN><SPAN class="tag">fonts</SPAN></SPAN>
+<SPAN role="cell" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>À jour</SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px"><SPAN><SPAN class="badge b-acc"><SPAN class="dot"></SPAN>En cours</SPAN></SPAN><SPAN style="font-size: 11px; color: var(--fg3)">web-2 · réservée 18 min</SPAN></SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">expire dans 13 j</SPAN>
+</A>
+
+<A class="row" role="row" href="Mission-drift.dc.html" style="display: grid; grid-template-columns: 44px minmax(0, 3fr) 150px 170px 190px 130px; gap: 12px; align-items: center; min-height: 62px; padding: 8px 14px; border-bottom: 1px solid var(--border); opacity: 1">
+<SPAN role="cell"><SPAN class="prio ">P2</SPAN></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<SPAN style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Découper le chunk vendor (lodash, dayjs)</SPAN>
+<SPAN style="font-size: 12px; color: var(--fg3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Chunk vendor de 412 ko gzip chargé sur toutes les pages</SPAN>
+</SPAN>
+<SPAN role="cell" style="display: flex; gap: 4px; overflow: hidden"><SPAN class="tag">perf</SPAN><SPAN class="tag">bundle</SPAN></SPAN>
+<SPAN role="cell" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--warn)"><SPAN class="dot" aria-hidden="true"></SPAN>2 fichiers modifiés</SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px"><SPAN><SPAN class="badge b-arch"><SPAN class="dot"></SPAN>Prête</SPAN></SPAN><SPAN style="font-size: 11px; color: var(--fg3)">à revérifier avant de prendre</SPAN></SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">expire dans 13 j</SPAN>
+</A>
+
+<A class="row" role="row" href="Mission-draft.dc.html" style="display: grid; grid-template-columns: 44px minmax(0, 3fr) 150px 170px 190px 130px; gap: 12px; align-items: center; min-height: 62px; padding: 8px 14px; border-bottom: 1px solid var(--border); opacity: 1">
+<SPAN role="cell"><SPAN class="prio ">P2</SPAN></SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<SPAN style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Hydratation différée du footer</SPAN>
+<SPAN style="font-size: 12px; color: var(--fg3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Le footer hydrate 38 composants inutiles au premier rendu</SPAN>
+</SPAN>
+<SPAN role="cell" style="display: flex; gap: 4px; overflow: hidden"><SPAN class="tag">perf</SPAN><SPAN class="tag">hydration</SPAN></SPAN>
+<SPAN role="cell" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok)"><SPAN class="dot" aria-hidden="true"></SPAN>À jour</SPAN>
+<SPAN role="cell" style="display: flex; flex-direction: column; gap: 3px"><SPAN><SPAN class="badge b-draft"><SPAN class="dot"></SPAN>À valider</SPAN></SPAN><SPAN style="font-size: 11px; color: var(--fg3)">portée équipe : validation requise</SPAN></SPAN>
+<SPAN role="cell" style="font-size: 12px; color: var(--fg2)">expire dans 13 j</SPAN>
+</A>
+
+</DIV>
+</DIV>
+</DIV>
+
+
+
+</MAIN>
+</DIV>
+
+</body>
+</html>

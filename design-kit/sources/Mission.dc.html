@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Context Hub — Mission</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ch{--bg:#FFFFFF;--surface:#F6F7F9;--surface2:#EDEFF3;--border:#E3E6EA;--border-strong:#CDD2D9;--fg:#15181D;--fg2:#4A5260;--fg3:#606875;--accent:#3557D4;--accent-fg:#FFFFFF;--accent-soft:#EAF0FF;--accent-text:#2B48B8;--ok:#13703A;--ok-soft:#E3F5EA;--warn:#8A4B00;--warn-soft:#FFF1DB;--danger:#B42318;--danger-soft:#FDECEA;--code-bg:#F3F4F6;font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+.ch.dark{--bg:#0E1014;--surface:#15181E;--surface2:#1D2129;--border:#272C35;--border-strong:#3A404C;--fg:#E7E9EE;--fg2:#AEB5C0;--fg3:#959CA8;--accent:#7393FF;--accent-fg:#0E1014;--accent-soft:#1B2440;--accent-text:#A9BCFF;--ok:#5FD08A;--ok-soft:#12291C;--warn:#F2B35B;--warn-soft:#2E2210;--danger:#FF8A80;--danger-soft:#33171A;--code-bg:#12151A}
+.ch *{box-sizing:border-box}
+.ch a{color:var(--accent-text)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;border:1px solid var(--border-strong);background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
+.ch a.btn{color:var(--fg)}
+.btn:hover{background:var(--surface2)}
+.ch .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-sm{height:26px;padding:0 8px;font-size:12px}
+.btn:focus-visible,.ch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font:600 11px/1 Inter,sans-serif;white-space:nowrap}
+.b-pub{background:var(--ok-soft);color:var(--ok)}
+.b-draft{background:var(--warn-soft);color:var(--warn)}
+.b-arch{background:var(--surface2);color:var(--fg2)}
+.b-acc{background:var(--accent-soft);color:var(--accent-text)}
+.prio{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:4px;font:600 11px 'JetBrains Mono',monospace;border:1px solid var(--danger);color:var(--danger)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--surface2);color:var(--fg2);font:500 11px/1 'JetBrains Mono',monospace;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:6px;text-decoration:none;font:500 13px Inter,sans-serif}
+.ch a.nav{color:var(--fg2)}
+.nav:hover{background:var(--surface2)}
+.ch a.nav.on{background:var(--accent-soft);color:var(--accent-text)}
+.panel{border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.snip{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px}
+.snip code{flex-grow:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px 'JetBrains Mono',monospace;color:var(--fg)}
+.md h3{font-size:13px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.03em;color:var(--fg2)}
+.md p,.md li{font-size:13.5px;line-height:1.6}
+.md ul{margin:0;padding-left:18px}
+.md code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:0 4px}
+</style>
+</helmet>
+<div class="ch {{themeClass}}" style="min-height: 1100px; display: flex; flex-wrap: wrap; align-items: stretch; font-family: Inter, system-ui, sans-serif; color: var(--fg); background: var(--bg)">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 232px; max-width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 16px 12px; background: var(--surface); border-right: 1px solid var(--border)">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+<div style="width: 28px; height: 28px; border-radius: 7px; background: var(--fg); color: var(--bg); display: flex; align-items: center; justify-content: center; font: 700 12px 'JetBrains Mono', monospace">ch</div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Context Hub</span><span style="font-size: 11px; color: var(--fg3)">Espace AlloVoisins</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<a class="nav" href="Main.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><span style="flex-grow: 1">Bibliothèque</span><span class="mono" style="font-size: 11px">42</span></a>
+<a class="nav" href="Workspaces.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h3M8 16h6"/></svg><span style="flex-grow: 1">Workspaces</span><span class="mono" style="font-size: 11px">3</span></a>
+<a class="nav on" href="Missions.dc.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span style="flex-grow: 1">Missions</span><span class="mono" style="font-size: 11px">4</span></a>
+<a class="nav" href="Taxonomy.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span style="flex-grow: 1">Tags &amp; collections</span></a>
+<a class="nav" href="Detail.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg><span style="flex-grow: 1">Connexion MCP</span></a>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 0; border-top: 1px solid var(--border)">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)"><span class="dot" style="color: var(--ok)"></span><span style="flex-grow: 1">Serveur MCP en ligne</span><span class="mono" style="font-size: 11px; color: var(--fg3)">HTTP</span></div>
+<div style="display: flex; align-items: center; gap: 8px">
+<div style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BR</div>
+<span style="flex-grow: 1; font-size: 13px; font-weight: 500">Brice</span>
+<button class="btn btn-ghost btn-sm" type="button" aria-label="Basculer le thème clair / sombre" onClick="{{toggleTheme}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></button>
+</div>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="display: flex; flex-direction: column; gap: 12px; padding: 14px 24px 16px; border-bottom: 1px solid var(--border)">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg3)"><a href="Missions.dc.html">Missions</a><span aria-hidden="true">/</span><span class="mono" style="font-size: 11px">{{m.slug}}</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 8px; margin-right: auto; min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px"><span class="prio">P1</span><h1 style="margin: 0; font-size: 20px; font-weight: 700">{{m.title}}</h1></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--fg2)">
+<span class="badge {{statusClass}}"><span class="dot"></span>{{statusLabel}}</span>
+<sc-for list="{{m.tags}}" as="t" hint-placeholder-count="3"><span class="tag">{{t}}</span></sc-for>
+<span>allovoisins/front</span><span aria-hidden="true">·</span><span>Portée équipe</span><span aria-hidden="true">·</span><span>{{dueLabel}}</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px">
+<sc-for list="{{actions}}" as="a" hint-placeholder-count="2"><button class="btn {{a.cls}}" type="button">{{a.label}}</button></sc-for>
+</div>
+</div>
+
+<ol aria-label="Cycle de vie de la mission" style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 0">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+<li style="display: flex; align-items: center; flex: 1 1 0; min-width: 0">
+<div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<span style="flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 600 11px 'JetBrains Mono', monospace; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.bd}}">{{s.n}}</span>
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 12px; font-weight: {{s.weight}}; color: {{s.text}}">{{s.label}}</span><span style="font-size: 11px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.sub}}</span></span>
+</div>
+<sc-if value="{{s.line}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="flex-grow: 1; height: 1px; margin: 0 12px; background: {{s.lineColor}}"></span></sc-if>
+</li>
+</sc-for>
+</ol>
+</header>
+
+<sc-if value="{{isDraft}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display: flex; align-items: center; gap: 10px; margin: 16px 24px 0; padding: 10px 12px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-size: 12px">
+<svg style="flex: none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="M12 9v4M12 16h.01"/></svg>
+<span style="flex-grow: 1"><strong>Validation requise.</strong> Cette mission a été écrite par une session et sera exécutée par d’autres, en portée équipe. Relisez le prompt : c’est une instruction qui sera suivie, pas une simple donnée.</span>
+</div>
+</sc-if>
+<sc-if value="{{hasDrift}}" hint-placeholder-val="{{ false }}">
+<div role="alert" style="display: flex; align-items: center; gap: 10px; margin: 16px 24px 0; padding: 10px 12px; border: 1px solid var(--warn); border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-size: 12px">
+<svg style="flex: none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
+<span style="flex-grow: 1"><strong>Le code a changé depuis la création.</strong> 2 des 3 fichiers cités ont été modifiés après <span class="mono">a41c9e2</span>. La session qui prendra la mission revérifiera le constat avant d’agir.</span>
+<button class="btn btn-sm" type="button">Voir le diff</button>
+</div>
+</sc-if>
+
+<div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; padding: 20px 24px 28px">
+<div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<article class="panel md" aria-labelledby="pr" style="padding: 18px 22px">
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px">
+<h2 id="pr" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Prompt de la mission</h2>
+<span style="font-size: 11px; color: var(--fg3)">≈ 420 tokens · autonome</span>
+</div>
+<h3>Objectif</h3>
+<p style="margin: 0">Faire passer le LCP mobile de la page d’accueil sous 2,5 s en retardant le chargement du carrousel des catégories.</p>
+<h3>Constat</h3>
+<p style="margin: 0 0 4px; font-size: 12px; color: var(--fg3)">Audit du 25 nov., commit <span class="mono">a41c9e2</span></p>
+<ul>
+<li>LCP mobile (Lighthouse, Moto G Power, 4G lente) : <strong>3,8 s</strong>. L’élément LCP est la première image du carrousel.</li>
+<li><code>HomeCarousel.vue</code> est importé de façon synchrone et charge 8 images en eager.</li>
+</ul>
+<h3>Fichiers</h3>
+<ul><li><code>app/pages/index.vue</code></li><li><code>app/components/home/HomeCarousel.vue</code></li><li><code>nuxt.config.ts</code> (config <code>@nuxt/image</code>)</li></ul>
+<h3>À faire</h3>
+<ul>
+<li>Première image : <code>fetchpriority="high"</code>, préchargée ; les suivantes en <code>loading="lazy"</code>.</li>
+<li>Rendre le reste du carrousel en <code>LazyHomeCarousel</code> hors du viewport initial.</li>
+</ul>
+<h3>Critères d’acceptation</h3>
+<ul><li>LCP mobile ≤ 2,5 s sur 3 mesures. Pas de CLS ajouté (≤ 0,05).</li><li>Tests du composant verts. Aucun changement visuel au-dessus de la ligne de flottaison.</li></ul>
+<p style="margin: 12px 0 0; font-size: 12px; color: var(--fg3)">Contexte lié : <a href="Detail.dc.html">Conventions Nuxt 4 — composables &amp; auto-imports</a> (v4)</p>
+</article>
+
+<section class="panel" aria-labelledby="res" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; border-color: {{resBorder}}">
+<h2 id="res" style="margin: 0; font-size: 14px; font-weight: 700">Résultat</h2>
+<sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 13.5px; line-height: 1.6">Première image préchargée avec <code class="mono" style="font-size: 12px">fetchpriority="high"</code>. Les 7 autres sont en lazy, et le carrousel passe en <code class="mono" style="font-size: 12px">LazyHomeCarousel</code> sous la ligne de flottaison.</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div style="padding: 10px 12px; border-radius: 6px; background: var(--ok-soft)"><span style="display: block; font-size: 11px; color: var(--fg2)">LCP mobile</span><span class="mono" style="font-size: 15px; font-weight: 500; color: var(--ok)">3,8 → 2,3 s</span></div>
+<div style="padding: 10px 12px; border-radius: 6px; background: var(--surface)"><span style="display: block; font-size: 11px; color: var(--fg2)">CLS</span><span class="mono" style="font-size: 15px; font-weight: 500">0,02 → 0,02</span></div>
+<div style="padding: 10px 12px; border-radius: 6px; background: var(--surface)"><span style="display: block; font-size: 11px; color: var(--fg2)">Livrable</span><a class="mono" href="Mission.dc.html" style="font-size: 13px">PR !4830</a></div>
+</div>
+<span style="font-size: 11px; color: var(--fg3)">Terminée par <span class="mono">web-2</span> (Camille) le 26 nov. à 10:42 · critères d’acceptation déclarés remplis</span>
+</sc-if>
+<sc-if value="{{isProgress}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 13px; color: var(--fg2)">En cours de traitement par <span class="mono">web-2</span>. La session enregistrera ici son résumé, ses livrables et ses mesures avec <span class="mono">mission_complete</span>, ou une raison d’abandon avec <span class="mono">mission_drop</span>.</p>
+</sc-if>
+<sc-if value="{{isWaiting}}" hint-placeholder-val="{{ true }}">
+<p style="margin: 0; font-size: 13px; color: var(--fg3)">Pas encore de résultat. La session qui traitera la mission le renseignera à la fin : résumé, livrables (PR, commits) et mesures avant / après.</p>
+</sc-if>
+</section>
+</div>
+
+<aside style="flex: 1 1 340px; max-width: 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<sc-if value="{{showTake}}" hint-placeholder-val="{{ true }}">
+<section class="panel" aria-labelledby="take" style="display: flex; flex-direction: column; gap: 10px; padding: 14px">
+<div style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 17 6-5-6-5M12 19h8"/></svg><h2 id="take" style="margin: 0; font-size: 14px; font-weight: 700">Prendre depuis Claude Code</h2></div>
+<div class="snip"><code>/context-hub:take {{m.slug}}</code><button class="btn btn-sm" type="button" onClick="{{copy}}" aria-label="Copier la commande">{{lbl}}</button></div>
+<span style="font-size: 11px; color: var(--fg3)">ou <span class="mono">/context-hub:next perf</span> pour prendre la mission prête la plus prioritaire.</span>
+<ol style="margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; color: var(--fg2)">
+<li>La session réserve la mission. Aucune autre session ne peut la prendre.</li>
+<li>Elle vérifie que le code n’a pas changé depuis <span class="mono">a41c9e2</span>.</li>
+<li>Elle vous <strong>montre le prompt et demande votre accord</strong> avant d’agir.</li>
+<li>Elle traite la mission, puis enregistre le résultat.</li>
+</ol>
+</section>
+</sc-if>
+
+<sc-if value="{{isProgress}}" hint-placeholder-val="{{ false }}">
+<section class="panel" aria-labelledby="hold" style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-color: var(--accent)">
+<h2 id="hold" style="margin: 0; font-size: 14px; font-weight: 700">Prise en charge</h2>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px"><span class="dot" style="color: var(--ok)" aria-hidden="true"></span><span class="mono" style="font-weight: 500">web-2</span><span style="color: var(--fg3)">Camille · allovoisins/front</span></div>
+<span style="font-size: 12px; color: var(--fg2)">Réservée depuis 18 min, dernière activité il y a 1 min. La réservation est relâchée automatiquement après 30 min sans activité : la mission redevient alors prête.</span>
+<button class="btn btn-sm" type="button" style="align-self: flex-start">Libérer la mission</button>
+</section>
+</sc-if>
+
+<section class="panel" aria-labelledby="fresh" style="display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border)"><h2 id="fresh" style="margin: 0; font-size: 14px; font-weight: 700; margin-right: auto">Code d’origine</h2><span class="mono" style="font-size: 11px; color: var(--fg3)">a41c9e2</span></div>
+<ul style="list-style: none; margin: 0; padding: 0">
+<sc-for list="{{files}}" as="f" hint-placeholder-count="3">
+<li style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border)"><code class="mono" style="flex-grow: 1; min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{f.path}}</code><span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: {{f.color}}"><span class="dot" aria-hidden="true"></span>{{f.state}}</span></li>
+</sc-for>
+</ul>
+<span style="padding: 10px 14px; font-size: 11px; color: var(--fg3)">Vérifié à chaque consultation et au moment de la prise.</span>
+</section>
+
+<section class="panel" aria-labelledby="orig" style="display: flex; flex-direction: column; gap: 10px; padding: 14px">
+<h2 id="orig" style="margin: 0; font-size: 14px; font-weight: 700">Origine et sécurité</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); row-gap: 7px; column-gap: 10px; font-size: 12px">
+<dt style="color: var(--fg3)">Créée par</dt><dd style="margin: 0">Session <span class="mono">perf-1</span> (Brice)</dd>
+<dt style="color: var(--fg3)">Depuis</dt><dd style="margin: 0">Audit perf · page d’accueil Nuxt</dd>
+<dt style="color: var(--fg3)">Scan</dt><dd style="margin: 0; color: var(--ok)">Aucun secret, aucune instruction suspecte</dd>
+<dt style="color: var(--fg3)">Validation</dt><dd style="margin: 0; color: {{validColor}}">{{validLabel}}</dd>
+</dl>
+</section>
+
+<section class="panel" aria-labelledby="hist" style="display: flex; flex-direction: column">
+<h2 id="hist" style="margin: 0; padding: 12px 14px; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--border)">Historique</h2>
+<ol style="list-style: none; margin: 0; padding: 0">
+<sc-for list="{{history}}" as="h" hint-placeholder-count="3">
+<li style="display: flex; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px"><span style="flex-grow: 1; color: var(--fg)">{{h.what}}</span><span style="color: var(--fg3); white-space: nowrap">{{h.when}}</span></li>
+</sc-for>
+</ol>
+</section>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"statut":{"editor":"enum","options":["a-valider","prete","en-cours","terminee"],"default":"prete"},"derive":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const theme = s.theme || this.props.theme || 'light';
+    const st = this.props.statut || 'prete';
+    const drift = !!this.props.derive;
+    const order = ['a-valider', 'prete', 'en-cours', 'terminee'];
+    const cur = order.indexOf(st);
+    const meta = [
+      ['À valider', 'écrite par perf-1'],
+      ['Prête', cur >= 1 ? 'validée par Brice' : 'après validation'],
+      ['En cours', cur >= 2 ? 'web-2 · 18 min' : 'prise par 1 session'],
+      ['Terminée', cur >= 3 ? 'résultat enregistré' : 'puis archivée']
+    ];
+    const steps = meta.map(([label, sub], i) => {
+      const done = i < cur, now = i === cur;
+      return {
+        n: done ? '✓' : String(i + 1), label, sub, line: i < 3,
+        bg: done ? 'var(--ok-soft)' : now ? 'var(--accent)' : 'var(--bg)',
+        fg: done ? 'var(--ok)' : now ? 'var(--accent-fg)' : 'var(--fg3)',
+        bd: done ? 'var(--ok)' : now ? 'var(--accent)' : 'var(--border-strong)',
+        text: now ? 'var(--fg)' : done ? 'var(--fg2)' : 'var(--fg3)', weight: now ? 700 : 500,
+        lineColor: done ? 'var(--ok)' : 'var(--border-strong)'
+      };
+    });
+    const labels = { 'a-valider': ['À valider', 'b-draft'], prete: ['Prête', 'b-arch'], 'en-cours': ['En cours', 'b-acc'], terminee: ['Terminée', 'b-pub'] };
+    const actions = st === 'a-valider'
+      ? [{ label: 'Rejeter', cls: '' }, { label: 'Modifier', cls: '' }, { label: 'Valider la mission', cls: 'btn-primary' }]
+      : st === 'prete' ? [{ label: 'Abandonner…', cls: '' }, { label: 'Modifier', cls: '' }]
+      : st === 'en-cours' ? [{ label: 'Libérer', cls: '' }]
+      : [{ label: 'Rouvrir', cls: '' }, { label: 'Proposer comme contexte', cls: '' }];
+    const files = [
+      { path: 'app/pages/index.vue', state: drift ? 'modifié · 3 commits' : 'inchangé', color: drift ? 'var(--warn)' : 'var(--ok)' },
+      { path: 'app/components/home/HomeCarousel.vue', state: drift ? 'modifié · 1 commit' : 'inchangé', color: drift ? 'var(--warn)' : 'var(--ok)' },
+      { path: 'nuxt.config.ts', state: 'inchangé', color: 'var(--ok)' }
+    ];
+    const history = [{ what: 'Créée par perf-1 depuis l’audit perf', when: '25 nov. 14:06' }];
+    if (cur >= 1) history.push({ what: 'Validée par Brice', when: '25 nov. 14:20' });
+    if (cur >= 2) history.push({ what: 'Prise par web-2 · code vérifié à jour', when: '26 nov. 09:58' });
+    if (cur >= 3) history.push({ what: 'Terminée par web-2 · PR !4830', when: '26 nov. 10:42' });
+    history.reverse();
+    const copied = s.copied;
+    return {
+      themeClass: theme === 'dark' ? 'dark' : '',
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      m: { slug: 'perf-lcp-carrousel', title: 'Lazy-load du carrousel de la home', tags: ['perf', 'lcp', 'nuxt'] },
+      statusLabel: labels[st][0], statusClass: labels[st][1],
+      dueLabel: st === 'terminee' ? 'archivée le 26 nov.' : 'expire dans 13 j',
+      steps, actions, files, history,
+      isDraft: st === 'a-valider', hasDrift: drift && st !== 'terminee',
+      isDone: st === 'terminee', isProgress: st === 'en-cours', isWaiting: st === 'a-valider' || st === 'prete',
+      showTake: st === 'prete',
+      resBorder: st === 'terminee' ? 'var(--ok)' : 'var(--border)',
+      validLabel: cur >= 1 ? 'Validée par Brice le 25 nov.' : 'En attente (portée équipe)',
+      validColor: cur >= 1 ? 'var(--ok)' : 'var(--warn)',
+      copy: () => this.setState({ copied: true }), lbl: copied ? 'Copié ✓' : 'Copier'
+    };
+  }
+}
+</script>
+</body>
+</html>
