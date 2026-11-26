@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { LCP_PROMPT } from '@context-hub/domain/fixtures/missions.ts'
 import { MissionNotFoundError } from '@context-hub/domain/missions/errors.ts'
@@ -168,6 +168,23 @@ describe('Mission : à valider (maquette 34)', () => {
     expect(history()[0]).toBe('Validée par Brice')
     expect(currentStep()).toHaveTextContent('Prête (étape actuelle)validée par Brice')
     expect(region('Prendre depuis Claude Code')).toBeInTheDocument()
+  })
+
+  it('Valider ne redemande pas le détail renvoyé ; la sidebar est rechargée', async () => {
+    const services = createTestServices()
+    const get = vi.spyOn(services.missions, 'get')
+    const overview = vi.spyOn(services.overview, 'getOverview')
+    renderApp(DRAFT, { services })
+    await title('Hydratation différée du footer')
+    const overviewCalls = overview.mock.calls.length
+    await userEvent.click(screen.getByRole('button', { name: 'Valider la mission' }))
+    await waitFor(() => {
+      expect(meta()).toHaveTextContent(/^Prête/)
+    })
+    await waitFor(() => {
+      expect(overview.mock.calls.length).toBeGreaterThan(overviewCalls)
+    })
+    expect(get).toHaveBeenCalledTimes(1)
   })
 
   it('Rejeter (raison facultative) supprime la mission et revient à la file', async () => {
