@@ -49,8 +49,9 @@ export interface UpdateMissionCommand {
 }
 
 /**
- * Missions (SPEC §8). Erreurs : `MissionNotFoundError`, `MissionTransitionError` (action refusée par
- * le cycle de vie), `MissionConflictError` (modifiée entre-temps), `MissionRuleError` (gabarit, scan).
+ * Missions (SPEC §8). Erreurs : `MissionNotFoundError` (`MissionBatchNotFoundError` pour un lot),
+ * `MissionTransitionError` (action refusée par le cycle de vie), `MissionConflictError` (modifiée
+ * entre-temps), `MissionRuleError` (gabarit, scan, contexte lié non publié ou hors de portée).
  */
 export interface MissionRepository {
   list(query: MissionListQuery): Promise<MissionList>

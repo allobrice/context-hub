@@ -10,6 +10,7 @@ import type { ContextDraftInput } from '@context-hub/domain/context/editing.ts'
 import { NUXT4_CONTEXT_ID } from '@context-hub/domain/fixtures/contexts.ts'
 import { AUDIT_BATCH_ID, LCP_PROMPT } from '@context-hub/domain/fixtures/missions.ts'
 import {
+  MissionBatchNotFoundError,
   MissionConflictError,
   MissionNotFoundError,
   MissionRuleError,
@@ -382,6 +383,12 @@ export function describeServicesContract(
         expect(batch.session?.sessionLabel).toBe('perf-1')
       })
 
+      it('batch : un lot inconnu lève MissionBatchNotFoundError', async () => {
+        await expect(services.missions.batch('lot-inconnu')).rejects.toBeInstanceOf(
+          MissionBatchNotFoundError,
+        )
+      })
+
       it('get : prompt, contexte lié publié, historique (maquette 35)', async () => {
         const detail = await services.missions.get('perf-lcp-carrousel')
         expect(detail.mission.prompt).toContain('## Critères d’acceptation')
@@ -468,6 +475,26 @@ export function describeServicesContract(
             linkedContextIds: [],
           }),
         ).rejects.toBeInstanceOf(MissionRuleError)
+      })
+
+      it.each([
+        ['brouillon jamais publié', 'ctx-vue-migration'],
+        ['archivé', 'ctx-github-actions'],
+        ['inconnu', 'ctx-inconnu'],
+      ])('create : contexte lié %s refusé (unknown-context)', async (_label, contextId) => {
+        const creation = services.missions.create({
+          title: 'Mission liée',
+          summary: 'Contexte lié non publié',
+          prompt: LCP_PROMPT,
+          priority: 'P3',
+          tags: [],
+          scope: { kind: 'team', team: 'allovoisins' },
+          origin: { label: 'Contrat', batchId: null },
+          codeRef: { repo: 'allovoisins/front', commit: 'a41c9e2', files: [] },
+          linkedContextIds: [NUXT4_CONTEXT_ID, contextId],
+        })
+        await expect(creation).rejects.toBeInstanceOf(MissionRuleError)
+        await expect(creation).rejects.toMatchObject({ violations: ['unknown-context'] })
       })
     })
   })

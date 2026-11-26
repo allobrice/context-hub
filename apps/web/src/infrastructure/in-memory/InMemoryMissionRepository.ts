@@ -135,8 +135,7 @@ export class InMemoryMissionRepository implements MissionRepository {
       if (review.violations.length > 0) {
         throw new MissionRuleError(review.violations, review.missingSections)
       }
-      const known = new Set(this.state.contexts.map(({ context }) => context.id))
-      if (!command.linkedContextIds.every((id) => known.has(toContextId(id)))) {
+      if (!command.linkedContextIds.every((id) => this.isLinkable(id))) {
         throw new MissionRuleError(['unknown-context'])
       }
       this.sequence += 1
@@ -280,6 +279,13 @@ export class InMemoryMissionRepository implements MissionRepository {
       slug = `${base}-${String(attempt)}`
     }
     return slug
+  }
+
+  /** Comme le serveur (`checkLinkedContexts`) : contexte publié et visible de l'utilisateur. */
+  private isLinkable(id: string): boolean {
+    const context = this.state.contexts.find((record) => record.context.id === id)?.context
+    if (context?.status !== 'published' || context.publishedVersion === null) return false
+    return context.scope.kind !== 'personal' || context.scope.owner === CURRENT_USER_ID
   }
 
   private detail(record: MissionRecord): MissionDetail {
