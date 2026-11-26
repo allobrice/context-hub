@@ -9,7 +9,7 @@
 import { randomInt } from 'node:crypto'
 
 import { slugify } from '@context-hub/domain/context/slug.ts'
-import { toContextId, type Scope } from '@context-hub/domain/context/types.ts'
+import type { ContextId, Scope } from '@context-hub/domain/context/types.ts'
 import {
   MissionBatchNotFoundError,
   MissionConflictError,
@@ -48,6 +48,7 @@ import {
   promptTokens,
   toMissionSummary,
 } from '@context-hub/domain/missions/types.ts'
+import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
 import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
 
 import type { Clock } from '../ports/Clock.ts'
@@ -440,7 +441,7 @@ export class MissionService {
           },
           codeRef: { ...input.codeRef, files: review.files },
           freshness: null,
-          linkedContextIds: linkedContextIds.map(toContextId),
+          linkedContextIds,
           workspaceId: null,
           suspicious: review.suspicious,
         },
@@ -526,32 +527,18 @@ export class MissionService {
     }
   }
 
-  /** Contextes liés publiés et visibles, dans l'ordre demandé. @throws MissionRuleError */
-  private async checkLinkedContexts(viewer: Viewer, ids: readonly string[]): Promise<string[]> {
-    if (ids.length === 0) return []
-    const published = new Set<string>(
-      (await this.contextStore.listPublished(viewer)).map(({ id }) => id),
-    )
-    const unique = [...new Set(ids)]
-    if (!unique.every((id) => published.has(id))) throw new MissionRuleError(['unknown-context'])
-    return unique
+  /** Contextes liés publiés et visibles, sans doublon. @throws MissionRuleError */
+  private async checkLinkedContexts(viewer: Viewer, ids: readonly string[]): Promise<ContextId[]> {
+    const checked = await checkLinkedContexts(this.contextStore, viewer, ids)
+    if (checked === null) throw new MissionRuleError(['unknown-context'])
+    return checked
   }
 
-  /** Contextes liés encore publiés et visibles (un contexte archivé disparaît du détail). */
-  private async linkedContexts(
+  private linkedContexts(
     viewer: Viewer,
     mission: Pick<Mission, 'linkedContextIds'>,
   ): Promise<MissionLinkedContext[]> {
-    if (mission.linkedContextIds.length === 0) return []
-    const published = new Map(
-      (await this.contextStore.listPublished(viewer)).map((summary) => [summary.id, summary]),
-    )
-    return mission.linkedContextIds.flatMap((id) => {
-      const summary = published.get(id)
-      return summary
-        ? [{ id, slug: summary.slug, title: summary.title, version: summary.version }]
-        : []
-    })
+    return resolveLinkedContexts(this.contextStore, viewer, mission.linkedContextIds)
   }
 }
 

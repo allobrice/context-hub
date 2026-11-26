@@ -272,6 +272,14 @@ export class DrizzleContextStore implements ContextStore {
     return deferred(() => publishedRows(this.db, viewer, undefined).map(toSummary))
   }
 
+  findPublishedByIds(viewer: Viewer, ids: readonly string[]): Promise<readonly PublishedSummary[]> {
+    return deferred(() =>
+      ids.length === 0
+        ? []
+        : publishedRows(this.db, viewer, inArray(contexts.id, [...new Set(ids)])).map(toSummary),
+    )
+  }
+
   findPublished(viewer: Viewer, slug: string): Promise<PublishedDetail | null> {
     return deferred(() => {
       const [row] = publishedRows(this.db, viewer, eq(contexts.slug, slug))

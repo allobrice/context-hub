@@ -170,6 +170,30 @@ describe('DrizzleContextStore : lecture', () => {
     expect(await database.contexts.find(BRICE, 'inconnu/nulle-part')).toBeNull()
   })
 
+  it('findPublishedByIds : seulement les contextes publiés et visibles demandés, triés par slug', async () => {
+    const published = FIXTURES.filter((context) => context.status === 'published')
+    const draft = FIXTURES.find((context) => context.status === 'draft')
+    const archived = FIXTURES.find((context) => context.status === 'archived')
+    const personal = PERSONAL.find((context) => context.status === 'published')
+    const team = published.filter((context) => context.scope.kind !== 'personal').slice(0, 2)
+    expect([draft, archived, personal]).not.toContain(undefined)
+    if (!draft || !archived || !personal || team.length < 2) return
+
+    const ids = [...team, draft, archived, personal].map(({ id }) => id)
+    const found = await database.contexts.findPublishedByIds(BRICE, [
+      ...ids,
+      'inconnu',
+      ids[0] ?? '',
+    ])
+    const expected = [...team, personal].sort((a, b) => a.slug.localeCompare(b.slug))
+    expect(found.map(({ id }) => id)).toEqual(expected.map(({ id }) => id))
+    expect(found[0]?.version).toBe(expected[0]?.publishedVersion?.number)
+
+    const forCamille = await database.contexts.findPublishedByIds(CAMILLE, ids)
+    expect(forCamille.map(({ id }) => id)).not.toContain(personal.id)
+    expect(await database.contexts.findPublishedByIds(BRICE, [])).toEqual([])
+  })
+
   it('repère les slugs déjà pris, sauf par le contexte lui-même', async () => {
     if (!NUXT4) return
     expect(await database.contexts.isSlugTaken(NUXT4.slug, null)).toBe(true)
