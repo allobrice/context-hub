@@ -6,7 +6,6 @@ import type { MissionEvent } from '@context-hub/domain/missions/types.ts'
 import {
   codeFileStates,
   deliverableLabel,
-  freshnessCount,
   freshnessWarning,
   historyItems,
   originPhrase,
@@ -96,13 +95,6 @@ describe('libellés', () => {
     expect(originPhrase('Audit perf · page d’accueil Nuxt')).toBe('l’audit perf')
     expect(originPhrase('Revue de code')).toBe('« Revue de code »')
     expect(originPhrase('')).toBe('')
-  })
-
-  it('freshnessCount lit le nombre rapporté par la session', () => {
-    expect(freshnessCount('2 fichier(s) modifié(s)')).toBe(2)
-    expect(freshnessCount('0 fichier(s) modifié(s)')).toBe(0)
-    expect(freshnessCount(null)).toBeNull()
-    expect(freshnessCount('inconnu')).toBeNull()
   })
 
   it('deliverableLabel', () => {

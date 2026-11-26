@@ -9,6 +9,7 @@ import type { Scope } from '../context/types.ts'
 import { isLeaseExpired, leaseUntil } from '../sessions/lease.ts'
 import { isSameSession, type SessionRef } from '../sessions/session.ts'
 import { err, ok, type Result } from '../shared/result.ts'
+import { MISSION_EVENT_DETAILS } from './eventDetails.ts'
 import {
   MISSION_EXPIRY_MS,
   MISSION_RESERVATION_MINUTES,
@@ -201,7 +202,7 @@ export function transition(
     case 'expireClaim':
       if (mission.status !== 'in_progress') return refuse('invalid-status')
       if (!isLeaseExpired(mission.claim, now)) return refuse('not-due')
-      return updated(toReady(mission, at), 'released', 'réservation expirée')
+      return updated(toReady(mission, at), 'released', MISSION_EVENT_DETAILS.claimExpired)
     case 'freshness': {
       if (mission.status !== 'in_progress' || actor.kind !== 'session') {
         return refuse('invalid-status')
@@ -216,7 +217,7 @@ export function transition(
       return updated(
         { ...renewed(mission, now), freshness, updatedAt: at },
         'freshness',
-        `${String(changedFiles.length)} fichier(s) modifié(s)`,
+        MISSION_EVENT_DETAILS.freshness(changedFiles.length),
       )
     }
     case 'complete': {

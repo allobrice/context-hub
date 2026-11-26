@@ -13,6 +13,7 @@ import {
   type MissionEventActor,
   type MissionEventType,
 } from '../missions/types.ts'
+import { MISSION_EVENT_DETAILS } from '../missions/eventDetails.ts'
 import { NUXT4_CONTEXT_ID } from './contexts.ts'
 import { DEMO_NOW } from './now.ts'
 import { DEMO_USERS } from './workspaces.ts'
@@ -292,7 +293,7 @@ export const MISSION_FIXTURES: readonly MissionFixture[] = [
       created(FONTS),
       event(FONTS, 'validated', BRICE, VALIDATED_AGO),
       event(FONTS, 'taken', WEB_2, 18 * MINUTE),
-      event(FONTS, 'freshness', WEB_2, 17 * MINUTE, '0 fichier(s) modifié(s)'),
+      event(FONTS, 'freshness', WEB_2, 17 * MINUTE, MISSION_EVENT_DETAILS.freshness(0)),
     ],
   },
   {
@@ -301,7 +302,7 @@ export const MISSION_FIXTURES: readonly MissionFixture[] = [
       created(VENDOR),
       event(VENDOR, 'validated', BRICE, VALIDATED_AGO),
       event(VENDOR, 'taken', WEB_2, 2 * HOUR + 5 * MINUTE),
-      event(VENDOR, 'freshness', WEB_2, 2 * HOUR, '2 fichier(s) modifié(s)'),
+      event(VENDOR, 'freshness', WEB_2, 2 * HOUR, MISSION_EVENT_DETAILS.freshness(2)),
       event(VENDOR, 'released', WEB_2, 2 * HOUR - MINUTE),
     ],
   },
@@ -332,7 +333,7 @@ export const MISSION_FIXTURES: readonly MissionFixture[] = [
       created(IMAGES),
       event(IMAGES, 'validated', BRICE, VALIDATED_AGO),
       event(IMAGES, 'taken', WEB_2, 5 * HOUR),
-      event(IMAGES, 'freshness', WEB_2, 5 * HOUR - MINUTE, '0 fichier(s) modifié(s)'),
+      event(IMAGES, 'freshness', WEB_2, 5 * HOUR - MINUTE, MISSION_EVENT_DETAILS.freshness(0)),
       event(IMAGES, 'completed', WEB_2, 3 * HOUR),
     ],
   },
