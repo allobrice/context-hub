@@ -418,6 +418,39 @@ export function describeServicesContract(
         expect(reopened.mission).toMatchObject({ status: 'ready', dropReason: null })
       })
 
+      it('validate / drop / release : garde expectedUpdatedAt (MissionConflictError), sans effet', async () => {
+        const { mission } = await services.missions.get('perf-lcp-carrousel')
+        const seen = mission.updatedAt
+        const edited = await services.missions.update('perf-lcp-carrousel', {
+          title: mission.title,
+          summary: mission.summary,
+          prompt: mission.prompt,
+          priority: 'P3',
+          tags: mission.tags,
+          expectedUpdatedAt: seen,
+        })
+        const stale = services.missions.drop('perf-lcp-carrousel', 'Doublon', seen)
+        await expect(stale).rejects.toBeInstanceOf(MissionConflictError)
+        await expect(stale).rejects.toMatchObject({
+          slug: 'perf-lcp-carrousel',
+          updatedAt: edited.mission.updatedAt,
+        })
+        expect((await services.missions.get('perf-lcp-carrousel')).mission.status).toBe('ready')
+        const dropped = await services.missions.drop(
+          'perf-lcp-carrousel',
+          'Doublon',
+          edited.mission.updatedAt,
+        )
+        expect(dropped.mission.status).toBe('dropped')
+
+        await expect(
+          services.missions.validate('perf-hydratation-footer', '2000-01-01T00:00:00.000Z'),
+        ).rejects.toBeInstanceOf(MissionConflictError)
+        await expect(
+          services.missions.release('perf-precharger-polices', '2000-01-01T00:00:00.000Z'),
+        ).rejects.toBeInstanceOf(MissionConflictError)
+      })
+
       it('reject : la mission à valider disparaît ; une action sur un mauvais statut est refusée', async () => {
         await services.missions.reject('perf-hydratation-footer', 'Hors sujet')
         await expect(services.missions.get('perf-hydratation-footer')).rejects.toBeInstanceOf(

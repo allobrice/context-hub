@@ -222,8 +222,8 @@ export class InMemoryMissionRepository implements MissionRepository {
     })
   }
 
-  validate(slug: string): Promise<MissionDetail> {
-    return this.act(slug, { type: 'validate' })
+  validate(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.act(slug, { type: 'validate' }, expectedUpdatedAt)
   }
 
   async reject(slug: string, reason: string | null): Promise<void> {
@@ -235,21 +235,29 @@ export class InMemoryMissionRepository implements MissionRepository {
     })
   }
 
-  release(slug: string): Promise<MissionDetail> {
-    return this.act(slug, { type: 'release' })
+  release(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.act(slug, { type: 'release' }, expectedUpdatedAt)
   }
 
-  drop(slug: string, reason: string): Promise<MissionDetail> {
-    return this.act(slug, { type: 'drop', reason: redactReason(reason) })
+  drop(slug: string, reason: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.act(slug, { type: 'drop', reason: redactReason(reason) }, expectedUpdatedAt)
   }
 
   reopen(slug: string): Promise<MissionDetail> {
     return this.act(slug, { type: 'reopen' })
   }
 
-  private act(slug: string, command: MissionCommand): Promise<MissionDetail> {
+  private act(
+    slug: string,
+    command: MissionCommand,
+    expectedUpdatedAt?: string,
+  ): Promise<MissionDetail> {
     return simulateMutation(this.simulation, () => {
       const record = this.find(slug)
+      // Comme le serveur : garde facultative contre une mission modifiée depuis son affichage.
+      if (expectedUpdatedAt !== undefined && record.mission.updatedAt !== expectedUpdatedAt) {
+        throw new MissionConflictError(slug, record.mission.updatedAt)
+      }
       this.apply(record, command)
       return this.detail(record)
     })

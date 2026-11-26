@@ -3263,6 +3263,16 @@
           "expectedUpdatedAt"
         ]
       },
+      "MissionActionInput": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "`updatedAt` de la mission affichée : 409 MISSION_CONFLICT si elle a changé depuis (facultatif)."
+          }
+        }
+      },
       "RejectMissionInput": {
         "type": "object",
         "properties": {
@@ -3283,6 +3293,11 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 1000
+          },
+          "expectedUpdatedAt": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "`updatedAt` de la mission affichée : 409 MISSION_CONFLICT si elle a changé depuis (facultatif)."
           }
         },
         "required": [
@@ -7093,7 +7108,7 @@
         "tags": [
           "Missions"
         ],
-        "summary": "Valide une mission à valider : elle devient prête",
+        "summary": "Valide une mission à valider : elle devient prête (garde `expectedUpdatedAt` facultative)",
         "parameters": [
           {
             "schema": {
@@ -7109,6 +7124,16 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MissionActionInput"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Mission après l’action",
@@ -7321,7 +7346,7 @@
         "tags": [
           "Missions"
         ],
-        "summary": "Libère une mission en cours : elle redevient prête",
+        "summary": "Libère une mission en cours : elle redevient prête (garde `expectedUpdatedAt` facultative)",
         "parameters": [
           {
             "schema": {
@@ -7337,6 +7362,16 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MissionActionInput"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Mission après l’action",
@@ -7430,7 +7465,7 @@
         "tags": [
           "Missions"
         ],
-        "summary": "Abandonne une mission prête ou en cours (raison obligatoire)",
+        "summary": "Abandonne une mission prête ou en cours (raison obligatoire, garde `expectedUpdatedAt` facultative)",
         "parameters": [
           {
             "schema": {

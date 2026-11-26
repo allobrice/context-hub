@@ -70,6 +70,8 @@ export interface ApplyWrite {
   readonly actor: MissionActor
   /** Exigé quand une session agit sur la mission qu'elle tient ; ignoré sinon. */
   readonly tokenHash: string | null
+  /** `updatedAt` vu par l'humain : l'action est refusée si la mission a changé depuis. */
+  readonly expectedUpdatedAt?: string
   readonly at: Date
 }
 
@@ -79,6 +81,8 @@ export type ApplyResult =
   | { readonly kind: 'refused'; readonly error: TransitionError }
   /** La session détentrice n'a pas présenté le bon jeton de réservation. */
   | { readonly kind: 'token-mismatch' }
+  /** La mission a changé depuis `expectedUpdatedAt`. */
+  | { readonly kind: 'conflict'; readonly updatedAt: string }
 
 export interface RenewWrite {
   readonly viewer: Viewer

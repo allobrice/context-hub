@@ -133,6 +133,34 @@ describe('Mission : détail prête (maquette 35)', () => {
     expect(history()[0]).toBe('Abandonnée par Brice')
   })
 
+  it('Abandonner une mission modifiée entre-temps : refusé, message dans le dialog', async () => {
+    const services = createTestServices()
+    renderApp(READY, { services })
+    await title('Lazy-load du carrousel de la home')
+    await userEvent.click(screen.getByRole('button', { name: 'Abandonner…' }))
+    const dialog = screen.getByRole('alertdialog', { name: 'Abandonner la mission ?' })
+    await userEvent.type(within(dialog).getByLabelText('Raison (requise)'), 'Déjà corrigé')
+
+    // Pendant que le dialog est ouvert, quelqu'un d'autre modifie la mission.
+    const { mission } = await services.missions.get('perf-lcp-carrousel')
+    await services.missions.update('perf-lcp-carrousel', {
+      title: mission.title,
+      summary: mission.summary,
+      prompt: mission.prompt,
+      priority: 'P3',
+      tags: mission.tags,
+      expectedUpdatedAt: mission.updatedAt,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Abandonner la mission' }))
+
+    expect(
+      await within(dialog).findByText(
+        'La mission a été modifiée entre-temps : rechargez-la avant de réessayer.',
+      ),
+    ).toBeInTheDocument()
+    expect((await services.missions.get('perf-lcp-carrousel')).mission.status).toBe('ready')
+  })
+
   it('Modifier ouvre le formulaire d’édition', async () => {
     renderApp(READY)
     await title('Lazy-load du carrousel de la home')

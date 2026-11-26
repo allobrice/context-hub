@@ -259,8 +259,18 @@ export const RejectMissionInputSchema = z
   .object({ reason: text(MISSION_REASON_MAX_LENGTH).nullable().default(null) })
   .meta({ id: 'RejectMissionInput' })
 
+const expectedUpdatedAt = z.string().max(40).optional().meta({
+  description:
+    '`updatedAt` de la mission affichée : 409 MISSION_CONFLICT si elle a changé depuis (facultatif).',
+})
+
+/** Action humaine (valider, libérer) : garde facultative contre une mission modifiée entre-temps. */
+export const MissionActionInputSchema = z
+  .object({ expectedUpdatedAt })
+  .meta({ id: 'MissionActionInput' })
+
 export const DropMissionInputSchema = z
-  .object({ reason: z.string().min(1).max(MISSION_REASON_MAX_LENGTH) })
+  .object({ reason: z.string().min(1).max(MISSION_REASON_MAX_LENGTH), expectedUpdatedAt })
   .meta({ id: 'DropMissionInput' })
 
 /** Session qui agit sur une mission qu'elle tient : label, repo et jeton remis par `take`. */

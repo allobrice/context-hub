@@ -97,7 +97,12 @@ export type MissionAction =
   | { readonly kind: 'drop'; readonly reason: string }
   | { readonly kind: 'reopen' }
 
-export function useMissionAction(slug: string) {
+/**
+ * `updatedAt` : celui de la mission affichée, envoyé avec Valider, Libérer et Abandonner. Si elle a
+ * changé entre l'affichage et la confirmation (ex. reprise par une autre session), l'action est
+ * refusée (MissionConflictError) au lieu de porter sur un état que l'humain n'a pas vu.
+ */
+export function useMissionAction(slug: string, updatedAt: string) {
   const { missions } = useServices()
   const queryClient = useQueryClient()
   const invalidate = useInvalidateMissions()
@@ -105,14 +110,14 @@ export function useMissionAction(slug: string) {
     mutationFn: async (action: MissionAction): Promise<MissionDetail | null> => {
       switch (action.kind) {
         case 'validate':
-          return missions.validate(slug)
+          return missions.validate(slug, updatedAt)
         case 'reject':
           await missions.reject(slug, action.reason)
           return null
         case 'release':
-          return missions.release(slug)
+          return missions.release(slug, updatedAt)
         case 'drop':
-          return missions.drop(slug, action.reason)
+          return missions.drop(slug, action.reason, updatedAt)
         case 'reopen':
           return missions.reopen(slug)
       }

@@ -257,8 +257,9 @@ export class MissionService {
 
   // ── Actions humaines (UI) ──────────────────────────────────────────────────
 
-  validate(viewer: Viewer, slug: string): Promise<MissionDetail> {
-    return this.human(viewer, slug, { type: 'validate' })
+  /** `expectedUpdatedAt` : mission affichée ; MissionConflictError si elle a changé depuis. */
+  validate(viewer: Viewer, slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.human(viewer, slug, { type: 'validate' }, expectedUpdatedAt)
   }
 
   /** Rejet d'une mission à valider : elle est supprimée ; renvoie l'événement. */
@@ -273,12 +274,22 @@ export class MissionService {
   }
 
   /** Libération forcée par un humain : la mission redevient prête. */
-  release(viewer: Viewer, slug: string): Promise<MissionDetail> {
-    return this.human(viewer, slug, { type: 'release' })
+  release(viewer: Viewer, slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.human(viewer, slug, { type: 'release' }, expectedUpdatedAt)
   }
 
-  drop(viewer: Viewer, slug: string, reason: string): Promise<MissionDetail> {
-    return this.human(viewer, slug, { type: 'drop', reason: redactReason(reason) })
+  drop(
+    viewer: Viewer,
+    slug: string,
+    reason: string,
+    expectedUpdatedAt?: string,
+  ): Promise<MissionDetail> {
+    return this.human(
+      viewer,
+      slug,
+      { type: 'drop', reason: redactReason(reason) },
+      expectedUpdatedAt,
+    )
   }
 
   reopen(viewer: Viewer, slug: string): Promise<MissionDetail> {
@@ -453,8 +464,15 @@ export class MissionService {
     return { mission, promptTokens: promptTokens(mission.prompt), linkedContexts, events }
   }
 
-  private async human(viewer: Viewer, slug: string, command: ApplyCommand): Promise<MissionDetail> {
-    const transition = await this.applyAs(viewer, slug, command, human(viewer))
+  private async human(
+    viewer: Viewer,
+    slug: string,
+    command: ApplyCommand,
+    expectedUpdatedAt?: string,
+  ): Promise<MissionDetail> {
+    const transition = await this.applyAs(viewer, slug, command, human(viewer), {
+      expectedUpdatedAt,
+    })
     if (transition.kind === 'deleted') throw new MissionNotFoundError(slug)
     return this.detail(viewer, transition.mission)
   }
@@ -471,7 +489,7 @@ export class MissionService {
       slug,
       command,
       { kind: 'session', session },
-      hashReservationToken(holder.token),
+      { tokenHash: hashReservationToken(holder.token) },
     )
     if (transition.kind === 'deleted') throw new MissionNotFoundError(slug)
     return transition.mission
@@ -482,14 +500,17 @@ export class MissionService {
     slug: string,
     command: ApplyCommand,
     actor: HumanOrSession,
-    tokenHash: string | null = null,
+    guard: { readonly tokenHash?: string; readonly expectedUpdatedAt?: string | undefined } = {},
   ): Promise<Transition> {
     const result: ApplyResult = await this.store.apply({
       viewer,
       slug,
       command,
       actor,
-      tokenHash,
+      tokenHash: guard.tokenHash ?? null,
+      ...(guard.expectedUpdatedAt === undefined
+        ? {}
+        : { expectedUpdatedAt: guard.expectedUpdatedAt }),
       at: this.clock.now(),
     })
     switch (result.kind) {
@@ -501,6 +522,8 @@ export class MissionService {
         throw new MissionTransitionError(result.error)
       case 'token-mismatch':
         throw new MissionReservationError(slug)
+      case 'conflict':
+        throw new MissionConflictError(slug, result.updatedAt)
     }
   }
 

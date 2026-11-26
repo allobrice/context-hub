@@ -513,6 +513,52 @@ describe('actions humaines', () => {
     })
   })
 
+  it('garde `expectedUpdatedAt` : 409 MISSION_CONFLICT si la mission a changé depuis, sans effet', async () => {
+    // Libération : l'humain voit web-1 ; entre-temps web-1 libère et web-2 reprend.
+    const held = await createInProgress()
+    const seen = (await getMission(held)).mission.updatedAt
+    clock.advanceMinutes(1)
+    expect((await post(`/api/missions/${held}/release`)).status).toBe(200)
+    clock.advanceMinutes(1)
+    await take(held, WEB_2)
+    const stale = await post(`/api/missions/${held}/release`, { expectedUpdatedAt: seen })
+    expect(stale.status).toBe(409)
+    const current = (await getMission(held)).mission
+    expect(await error(stale)).toMatchObject({
+      code: 'MISSION_CONFLICT',
+      details: { slug: held, updatedAt: current.updatedAt },
+    })
+    expect(current).toMatchObject({
+      status: 'in_progress',
+      claim: { session: { sessionLabel: 'web-2' } },
+    })
+    const fresh = await post(`/api/missions/${held}/release`, {
+      expectedUpdatedAt: current.updatedAt,
+    })
+    expect(fresh.status).toBe(200)
+
+    // Validation et abandon : modifiées entre-temps (« Modifier »).
+    for (const [create, action, extra] of [
+      [createDraft, 'validate', {}],
+      [createReady, 'drop', { reason: 'Doublon' }],
+    ] as const) {
+      const slug = await create()
+      const before = (await getMission(slug)).mission.updatedAt
+      clock.advanceMinutes(1)
+      const edited = await api.request(`/api/missions/${slug}`, {
+        method: 'PATCH',
+        body: { priority: 'P1', expectedUpdatedAt: before },
+      })
+      expect(edited.status).toBe(200)
+      const refused = await post(`/api/missions/${slug}/${action}`, {
+        ...extra,
+        expectedUpdatedAt: before,
+      })
+      expect(refused.status).toBe(409)
+      expect((await error(refused)).code).toBe('MISSION_CONFLICT')
+    }
+  })
+
   it('reopen : terminée → prête, résultat effacé', async () => {
     const slug = await createDone()
     expect((await getMission(slug)).mission.result).toEqual(RESULT)

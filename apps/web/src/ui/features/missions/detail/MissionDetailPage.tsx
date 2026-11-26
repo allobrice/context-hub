@@ -39,7 +39,7 @@ export function MissionDetailPage() {
 
 function MissionView({ detail }: { detail: MissionDetail }) {
   const { mission } = detail
-  const action = useMissionAction(mission.slug)
+  const action = useMissionAction(mission.slug, mission.updatedAt)
   const [dialog, setDialog] = useState<MissionDialog | null>(null)
   const close = () => {
     setDialog(null)

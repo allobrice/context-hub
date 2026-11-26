@@ -3199,7 +3199,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Valide une mission à valider : elle devient prête */
+        /** Valide une mission à valider : elle devient prête (garde `expectedUpdatedAt` facultative) */
         post: {
             parameters: {
                 query?: never;
@@ -3210,7 +3210,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["MissionActionInput"];
+                };
+            };
             responses: {
                 /** @description Mission après l’action */
                 200: {
@@ -3389,7 +3393,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Libère une mission en cours : elle redevient prête */
+        /** Libère une mission en cours : elle redevient prête (garde `expectedUpdatedAt` facultative) */
         post: {
             parameters: {
                 query?: never;
@@ -3400,7 +3404,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["MissionActionInput"];
+                };
+            };
             responses: {
                 /** @description Mission après l’action */
                 200: {
@@ -3482,7 +3490,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Abandonne une mission prête ou en cours (raison obligatoire) */
+        /** Abandonne une mission prête ou en cours (raison obligatoire, garde `expectedUpdatedAt` facultative) */
         post: {
             parameters: {
                 query?: never;
@@ -4642,12 +4650,18 @@ export interface components {
             /** @description `updatedAt` lu : 409 MISSION_CONFLICT si la mission a changé depuis. */
             expectedUpdatedAt: string;
         };
+        MissionActionInput: {
+            /** @description `updatedAt` de la mission affichée : 409 MISSION_CONFLICT si elle a changé depuis (facultatif). */
+            expectedUpdatedAt?: string;
+        };
         RejectMissionInput: {
             /** @default null */
             reason: string | null;
         };
         DropMissionInput: {
             reason: string;
+            /** @description `updatedAt` de la mission affichée : 409 MISSION_CONFLICT si elle a changé depuis (facultatif). */
+            expectedUpdatedAt?: string;
         };
         TakeMissionResult: {
             /** @description null : aucune mission prête (`next`). */
