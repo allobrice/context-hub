@@ -129,6 +129,14 @@ describe('Missions : file (maquette 31)', () => {
     })
   })
 
+  it('menus Tags et Repo : toutes les valeurs de la file, quel que soit le statut filtré', async () => {
+    renderApp('/missions?filter=ready')
+    expect(await rows()).toHaveLength(2)
+    await userEvent.click(screen.getByRole('button', { name: 'Tags' }))
+    // `fonts` n'est porté que par une mission en cours, absente du filtre « Prêtes ».
+    expect(screen.getByRole('menuitemcheckbox', { name: 'fonts' })).toBeInTheDocument()
+  })
+
   it('filtre par repo', async () => {
     const { location } = renderApp('/missions')
     await rows()

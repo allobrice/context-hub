@@ -568,3 +568,39 @@ describe('DrizzleMissionStore : balayage et modification', () => {
     })
   })
 })
+
+describe('DrizzleMissionStore : facets', () => {
+  it('tags et repos de toutes les missions visibles, tous statuts, triés ; filtre de lot seul', async () => {
+    await seed('prete', { tags: ['perf', 'lcp'] })
+    await seed('autre-repo', {
+      tags: ['fonts'],
+      codeRef: { repo: 'allovoisins/api', commit: 'abc1234', files: [] },
+    })
+    await seed('autre-lot', {
+      tags: ['seo'],
+      origin: { ...newMission('x').origin, batchId: 'batch-seo' },
+    })
+    await seed('privee-camille', {
+      tags: ['secret-camille'],
+      scope: { kind: 'personal', owner: 'camille' },
+    })
+    await store.apply({
+      viewer: BRICE,
+      slug: 'autre-repo',
+      command: { type: 'drop', reason: 'Obsolète' },
+      actor: { kind: 'human', userId: 'brice' },
+      tokenHash: null,
+      at: later(1),
+    })
+
+    expect(await store.facets(BRICE, null)).toEqual({
+      tags: ['fonts', 'lcp', 'perf', 'seo'],
+      repos: ['allovoisins/api', 'allovoisins/front'],
+    })
+    expect(await store.facets(BRICE, 'batch-perf')).toEqual({
+      tags: ['fonts', 'lcp', 'perf'],
+      repos: ['allovoisins/api', 'allovoisins/front'],
+    })
+    expect(await store.facets(BRICE, 'inconnu')).toEqual({ tags: [], repos: [] })
+  })
+})

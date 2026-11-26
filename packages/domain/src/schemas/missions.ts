@@ -142,6 +142,12 @@ export const MissionListSchema = z
     counts: z.object(
       Object.fromEntries(MISSION_QUEUE_FILTERS.map((filter) => [filter, z.number().int()])),
     ),
+    facets: z
+      .object({ tags: z.array(z.string()).readonly(), repos: z.array(z.string()).readonly() })
+      .meta({
+        id: 'MissionFacets',
+        description: 'Valeurs des menus Tags et Repo : toutes les missions visibles (du lot).',
+      }),
   })
   .meta({ id: 'MissionList' })
 

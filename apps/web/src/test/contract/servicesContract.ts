@@ -371,6 +371,15 @@ export function describeServicesContract(
         expect(batch.counts.all).toBe(6)
       })
 
+      it('list : facettes Tags et Repo indépendantes du filtre de statut et des tags choisis', async () => {
+        const ready = await services.missions.list({ ...TODO_QUERY, filter: 'ready' })
+        const all = await services.missions.list({ ...TODO_QUERY, filter: 'all', tags: ['lcp'] })
+        expect(ready.facets).toEqual(all.facets)
+        expect(ready.facets.tags).toContain('fonts')
+        expect(ready.items.flatMap((item) => item.tags)).not.toContain('fonts')
+        expect(ready.facets.repos).toEqual(['allovoisins/front'])
+      })
+
       it('batch : bloc « Origine » du lot', async () => {
         const batch = await services.missions.batch(AUDIT_BATCH_ID)
         expect(batch).toMatchObject({

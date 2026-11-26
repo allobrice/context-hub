@@ -99,8 +99,8 @@ export function nextCommand(tags: readonly string[]): string {
 }
 
 /**
- * Valeurs proposées par un menu de filtre (tags, repo) : celles des missions affichées, plus celles
- * déjà sélectionnées pour pouvoir les retirer. Triées, sans doublon.
+ * Valeurs proposées par un menu de filtre (tags, repo) : les facettes de la file (toutes les missions
+ * visibles du lot), plus celles déjà sélectionnées pour pouvoir les retirer. Triées, sans doublon.
  */
 export function facetValues(shown: Iterable<string>, selected: Iterable<string>): string[] {
   return [...new Set([...shown, ...selected])].sort((a, b) => a.localeCompare(b, 'fr'))

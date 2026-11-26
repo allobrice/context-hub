@@ -2133,11 +2133,15 @@
               "archived",
               "all"
             ]
+          },
+          "facets": {
+            "$ref": "#/components/schemas/MissionFacets"
           }
         },
         "required": [
           "items",
-          "counts"
+          "counts",
+          "facets"
         ]
       },
       "MissionSummary": {
@@ -2477,6 +2481,28 @@
           "before",
           "after"
         ]
+      },
+      "MissionFacets": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "repos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "tags",
+          "repos"
+        ],
+        "description": "Valeurs des menus Tags et Repo : toutes les missions visibles (du lot)."
       },
       "MissionQueueFilter": {
         "type": "string",

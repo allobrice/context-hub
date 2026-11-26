@@ -32,6 +32,7 @@ import {
 import {
   MISSION_FILTER_STATUSES,
   missionFromFields,
+  toMissionFacets,
   toMissionSummary,
   type DraftMission,
   type Mission,
@@ -41,6 +42,7 @@ import {
   type MissionCore,
   type MissionEvent,
   type MissionEventActor,
+  type MissionFacets,
   type MissionStatusCounts,
   type MissionStatusFields,
   type MissionSummary,
@@ -508,6 +510,27 @@ export class DrizzleMissionStore implements MissionStore {
         return true
       }, IMMEDIATE),
     )
+  }
+
+  facets(viewer: Viewer, batchId: string | null): Promise<MissionFacets> {
+    return deferred(() => {
+      const conditions = queueConditions(this.db, viewer, { tags: [], repo: null, batchId })
+      const tags = this.db
+        .selectDistinct({ tag: missionTags.tag })
+        .from(missionTags)
+        .innerJoin(missions, eq(missions.id, missionTags.missionId))
+        .where(and(...conditions))
+        .all()
+      const repos = this.db
+        .selectDistinct({ repo: missions.codeRefRepo })
+        .from(missions)
+        .where(and(...conditions))
+        .all()
+      return toMissionFacets(
+        tags.map(({ tag }) => tag),
+        repos.map(({ repo }) => repo),
+      )
+    })
   }
 
   batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null> {

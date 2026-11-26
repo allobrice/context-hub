@@ -159,14 +159,17 @@ export class MissionService {
   // ── Lecture ────────────────────────────────────────────────────────────────
 
   async list(viewer: Viewer, query: MissionListQuery): Promise<MissionList> {
-    const { missions, statusCounts } = await this.store.list(viewer, {
-      statuses: MISSION_FILTER_STATUSES[query.filter],
-      tags: query.tags,
-      repo: query.repo,
-      batchId: query.batchId,
-      archiveLimit: MISSION_ARCHIVE_LIMIT,
-    })
-    return { items: missions, counts: toFilterCounts(statusCounts) }
+    const [{ missions, statusCounts }, facets] = await Promise.all([
+      this.store.list(viewer, {
+        statuses: MISSION_FILTER_STATUSES[query.filter],
+        tags: query.tags,
+        repo: query.repo,
+        batchId: query.batchId,
+        archiveLimit: MISSION_ARCHIVE_LIMIT,
+      }),
+      this.store.facets(viewer, query.batchId),
+    ])
+    return { items: missions, counts: toFilterCounts(statusCounts), facets }
   }
 
   /** Compteur « À traiter » de la sidebar, sans charger les missions. */
