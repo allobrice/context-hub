@@ -1,5 +1,8 @@
-import { MissionNotFoundError } from '@context-hub/domain/missions/errors.ts'
-import { MissionConflictError } from '@context-hub/domain/missions/errors.ts'
+import {
+  MissionBatchNotFoundError,
+  MissionConflictError,
+  MissionNotFoundError,
+} from '@context-hub/domain/missions/errors.ts'
 import type {
   MissionBatch,
   MissionDetail,
@@ -50,10 +53,15 @@ export class HttpMissionRepository implements MissionRepository {
     )
   }
 
-  batch(batchId: string): Promise<MissionBatch> {
-    return missionCall(batchId, () =>
-      unwrap(this.api.GET('/api/missions/batches/{id}', { params: { path: { id: batchId } } })),
-    )
+  async batch(batchId: string): Promise<MissionBatch> {
+    try {
+      return await unwrap(
+        this.api.GET('/api/missions/batches/{id}', { params: { path: { id: batchId } } }),
+      )
+    } catch (error) {
+      if (error instanceof ContextNotFoundError) throw new MissionBatchNotFoundError(batchId)
+      throw error
+    }
   }
 
   get(slug: string): Promise<MissionDetail> {
