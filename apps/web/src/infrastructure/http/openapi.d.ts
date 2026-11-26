@@ -2791,6 +2791,975 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/missions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** File des missions : filtre segmenté, tags, repo, lot ; tri priorité puis ancienneté */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description todo : à valider, prêtes et en cours ; archived : terminées, abandonnées et expirées. */
+                    filter?: components["schemas"]["MissionQueueFilter"];
+                    /** @description Tags séparés par des virgules : la mission doit les porter tous. */
+                    tags?: string;
+                    /** @description `owner/name`, ex. « allovoisins/front ». */
+                    repo?: string;
+                    /** @description Lot : les missions d’une même analyse, ex. « audit-perf-home-2026-11-25 ». */
+                    batch?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Missions (sans prompt) et compteurs */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionList"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Crée une mission (humain : prête directement) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateMissionInput"];
+                };
+            };
+            responses: {
+                /** @description Mission créée */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Mission refusée (gabarit, scan, champ) */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/batches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Synthèse d’un lot (bloc « Origine ») : libellé, session, repo@commit, statuts */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Lot : les missions d’une même analyse, ex. « audit-perf-home-2026-11-25 ». */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Synthèse du lot */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionBatch"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Détail d’une mission : prompt, contextes liés, historique */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mission */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Modifie une mission à valider ou prête (garde `expectedUpdatedAt`) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateMissionInput"];
+                };
+            };
+            responses: {
+                /** @description Mission modifiée */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Mission refusée (gabarit, scan, champ) */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionRuleError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/missions/{slug}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Valide une mission à valider : elle devient prête */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mission après l’action */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejette une mission à valider : elle est supprimée, l’événement reste */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RejectMissionInput"];
+                };
+            };
+            responses: {
+                /** @description Événement de rejet */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionEvent"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Libère une mission en cours : elle redevient prête */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mission après l’action */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}/drop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abandonne une mission prête ou en cours (raison obligatoire) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DropMissionInput"];
+                };
+            };
+            responses: {
+                /** @description Mission abandonnée */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rouvre une mission terminée ou abandonnée */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mission après l’action */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionDetail"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/missions/{slug}/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Heartbeat du plugin : prolonge la réservation de la session détentrice */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Minuscules, chiffres et tirets, ex. « perf-lcp-carrousel ». */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MissionSessionInput"];
+                };
+            };
+            responses: {
+                /** @description Nouvelle échéance */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionHeartbeatResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2870,6 +3839,7 @@ export interface components {
             updatedAt: string;
             author: string;
             mcpReads7d: number;
+            exposeAsPrompt: boolean;
         };
         Scope: {
             /** @enum {string} */
@@ -2974,6 +3944,8 @@ export interface components {
             scope: components["schemas"]["Scope"];
             content: string;
             versionNote: string;
+            /** @description Publier comme prompt MCP (modèle réutilisable, SPEC §8.5). Absent : valeur courante conservée. */
+            exposeAsPrompt?: boolean;
         };
         VersionConflictError: {
             /** @enum {string} */
@@ -3319,6 +4291,275 @@ export interface components {
             path: string;
             /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
             session: string;
+        };
+        MissionList: {
+            items: components["schemas"]["MissionSummary"][];
+            counts: {
+                todo: number;
+                to_validate: number;
+                ready: number;
+                archived: number;
+                all: number;
+            };
+        };
+        MissionSummary: {
+            id: string;
+            slug: string;
+            title: string;
+            summary: string;
+            priority: components["schemas"]["Priority"];
+            tags: string[];
+            scope: components["schemas"]["Scope"];
+            status: components["schemas"]["MissionStatus"];
+            origin: components["schemas"]["MissionOrigin"];
+            codeRef: components["schemas"]["CodeRef"];
+            freshness: components["schemas"]["Freshness"];
+            linkedContextIds: string[];
+            workspaceId: string | null;
+            /** @description Instruction suspecte conservée (création humaine). */
+            suspicious: boolean;
+            validation: components["schemas"]["MissionValidation"];
+            claim: components["schemas"]["MissionClaim"];
+            result: components["schemas"]["MissionResult"];
+            dropReason: string | null;
+            createdAt: string;
+            expiresAt: string;
+            closedAt: string | null;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        Priority: "P1" | "P2" | "P3";
+        /** @enum {string} */
+        MissionStatus: "draft" | "ready" | "in_progress" | "done" | "dropped" | "expired";
+        MissionOrigin: {
+            label: string;
+            batchId: string | null;
+            session: components["schemas"]["SessionRef"] & (Record<string, never> | null);
+            createdBy: string;
+        };
+        CodeRef: {
+            repo: string;
+            commit: string;
+            files: string[];
+        };
+        Freshness: {
+            checkedAt: string;
+            changedFiles: string[];
+            checkedBy: components["schemas"]["SessionRef"];
+        } | null;
+        MissionValidation: {
+            by: string;
+            at: string;
+        } | null;
+        MissionClaim: {
+            session: components["schemas"]["SessionRef"];
+            acquiredAt: string;
+            expiresAt: string;
+        } | null;
+        MissionResult: {
+            summary: string;
+            deliverables: components["schemas"]["Deliverable"][];
+            metrics: components["schemas"]["Metric"][];
+            acceptanceMet: boolean;
+        } | null;
+        Deliverable: {
+            /** @enum {string} */
+            kind: "pr" | "commit" | "url";
+            ref: string;
+        };
+        Metric: {
+            name: string;
+            before: string;
+            after: string;
+        };
+        /**
+         * @description todo : à valider, prêtes et en cours ; archived : terminées, abandonnées et expirées.
+         * @default todo
+         * @enum {string}
+         */
+        MissionQueueFilter: "todo" | "to_validate" | "ready" | "archived" | "all";
+        MissionDetail: {
+            mission: components["schemas"]["Mission"];
+            promptTokens: number;
+            linkedContexts: components["schemas"]["MissionLinkedContext"][];
+            events: components["schemas"]["MissionEvent"][];
+        };
+        Mission: {
+            id: string;
+            slug: string;
+            title: string;
+            summary: string;
+            prompt: string;
+            priority: components["schemas"]["Priority"];
+            tags: string[];
+            scope: components["schemas"]["Scope"];
+            status: components["schemas"]["MissionStatus"];
+            origin: components["schemas"]["MissionOrigin"];
+            codeRef: components["schemas"]["CodeRef"];
+            freshness: components["schemas"]["Freshness"];
+            linkedContextIds: string[];
+            workspaceId: string | null;
+            /** @description Instruction suspecte conservée (création humaine). */
+            suspicious: boolean;
+            validation: components["schemas"]["MissionValidation"];
+            claim: components["schemas"]["MissionClaim"];
+            result: components["schemas"]["MissionResult"];
+            dropReason: string | null;
+            createdAt: string;
+            expiresAt: string;
+            closedAt: string | null;
+            updatedAt: string;
+        };
+        MissionLinkedContext: {
+            id: string;
+            slug: string;
+            title: string;
+            version: number;
+        };
+        MissionEvent: {
+            missionId: string;
+            missionSlug: string;
+            missionTitle: string;
+            at: string;
+            actor: components["schemas"]["MissionEventActor"];
+            /** @enum {string} */
+            type: "created" | "validated" | "rejected" | "taken" | "released" | "freshness" | "completed" | "dropped" | "expired" | "reopened";
+            detail: string | null;
+        };
+        MissionEventActor: components["schemas"]["SessionRef"] | {
+            userId: string;
+        } | {
+            /** @enum {string} */
+            system: "job";
+        };
+        /** @description Jeton de réservation absent ou invalide pour la session détentrice. */
+        MissionReservationError: {
+            /** @enum {string} */
+            code: "MISSION_RESERVATION";
+            message: string;
+            details: {
+                slug: string;
+            };
+        };
+        /** @description Mission refusée : gabarit incomplet, secret, instruction suspecte, champ invalide. */
+        MissionRuleError: {
+            /** @enum {string} */
+            code: "MISSION_RULE";
+            message: string;
+            details: {
+                violations: ("title-empty" | "title-too-long" | "summary-empty" | "summary-too-long" | "prompt-too-long" | "template-incomplete" | "secret-detected" | "suspicious-instruction" | "tag-invalid" | "too-many-tags" | "repo-invalid" | "commit-invalid" | "path-invalid" | "too-many-files" | "slug-taken" | "unknown-context" | "team-required")[];
+                missingSections: ("objective" | "finding" | "files" | "todo" | "acceptance")[];
+            };
+        };
+        CreateMissionInput: {
+            title: string;
+            summary: string;
+            /** @description Markdown autonome : Objectif, Constat, Fichiers, À faire, Critères d’acceptation. */
+            prompt: string;
+            priority?: components["schemas"]["Priority"];
+            /** @default [] */
+            tags: string[];
+            scope: components["schemas"]["MissionScopeInput"];
+            origin: {
+                label: string;
+                /**
+                 * @description Lot : les missions d’une même analyse, ex. « audit-perf-home-2026-11-25 ».
+                 * @default null
+                 */
+                batchId: string | null;
+            };
+            codeRef: components["schemas"]["CodeRefInput"];
+            /** @default [] */
+            linkedContextIds: string[];
+        };
+        MissionScopeInput: {
+            /** @enum {string} */
+            kind: "personal";
+        } | {
+            /** @enum {string} */
+            kind: "team";
+            team: string;
+        } | {
+            /** @enum {string} */
+            kind: "project";
+            /** @description `owner/name`, ex. « allovoisins/front ». */
+            repo: string;
+        };
+        CodeRefInput: {
+            /** @description `owner/name`, ex. « allovoisins/front ». */
+            repo: string;
+            commit: string;
+            /** @default [] */
+            files: string[];
+        };
+        MissionBatch: {
+            batchId: string;
+            label: string;
+            session: components["schemas"]["SessionRef"] & (Record<string, never> | null);
+            repo: string;
+            commit: string;
+            createdAt: string;
+            counts: {
+                draft: number;
+                ready: number;
+                in_progress: number;
+                done: number;
+                dropped: number;
+                expired: number;
+            };
+            total: number;
+        };
+        /** @description Commande refusée par le cycle de vie. */
+        MissionTransitionError: {
+            /** @enum {string} */
+            code: "MISSION_TRANSITION";
+            message: string;
+            details: {
+                /** @enum {string} */
+                rejection: "invalid-status" | "actor-not-allowed" | "not-holder" | "claim-expired" | "not-due" | "reason-required" | "summary-required";
+                status: components["schemas"]["MissionStatus"];
+                /** @enum {string} */
+                command: "validate" | "reject" | "take" | "release" | "expireClaim" | "freshness" | "complete" | "drop" | "expire" | "reopen" | "renew" | "edit";
+            };
+        };
+        /** @description Mission modifiée entre-temps : recharger. */
+        MissionConflictError: {
+            /** @enum {string} */
+            code: "MISSION_CONFLICT";
+            message: string;
+            details: {
+                updatedAt: string;
+            };
+        };
+        UpdateMissionInput: {
+            title?: string;
+            summary?: string;
+            prompt?: string;
+            priority?: components["schemas"]["Priority"];
+            tags?: string[];
+            /** @description `updatedAt` lu : 409 MISSION_CONFLICT si la mission a changé depuis. */
+            expectedUpdatedAt: string;
+        };
+        RejectMissionInput: {
+            /** @default null */
+            reason: string | null;
+        };
+        DropMissionInput: {
+            reason: string;
+        };
+        MissionHeartbeatResult: {
+            expiresAt: string;
+        };
+        MissionSessionInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+            /** @description Jeton de réservation remis par take. */
+            token: string;
         };
     };
     responses: never;

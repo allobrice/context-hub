@@ -119,6 +119,9 @@ export function maskSecretsIn(text: string): string {
 const PRIVATE_KEY_BLOCK =
   /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g
 
+/** Remplace un secret dans un texte conservé (journal, résultat de mission) : rien n'est stocké. */
+export const REDACTED_SECRET = '[secret masqué]'
+
 /**
  * REMPLACE chaque secret reconnu par `replacement` (contrairement à `maskSecretsIn`, rien de la valeur
  * ne subsiste) et compte les remplacements. Une clé privée est retirée en entier, corps compris.

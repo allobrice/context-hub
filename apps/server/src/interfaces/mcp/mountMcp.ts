@@ -22,6 +22,7 @@ import type { ContextCatalog } from '../../application/mcp/ContextCatalog.ts'
 import type { ContextEvents } from '../../application/ports/ContextEvents.ts'
 import type { Logger } from '../../application/ports/Logger.ts'
 import type { WorkspaceEvents } from '../../application/ports/WorkspaceEvents.ts'
+import type { MissionService } from '../../application/missions/MissionService.ts'
 import type { WorkspaceService } from '../../application/workspaces/WorkspaceService.ts'
 import { workspaceUri } from '@context-hub/domain/workspaces/types.ts'
 import { toUserId, type Viewer } from '../../application/viewer.ts'
@@ -33,14 +34,18 @@ import { LegacySessions } from './legacySessions.ts'
 export const MCP_PATH = '/mcp'
 
 const MAX_MCP_BODY_BYTES = 1024 * 1024
-/** Capacités exposées : lecture des contextes publiés, travail dans les workspaces dont on est membre. */
-const MCP_SCOPES = ['contexts:read', 'workspaces:write']
+/**
+ * Capacités exposées : lecture des contextes publiés, travail dans les workspaces dont on est membre,
+ * missions (création, prise, résultat).
+ */
+const MCP_SCOPES = ['contexts:read', 'workspaces:write', 'missions:write']
 
 export interface McpMountDependencies {
   readonly auth: AuthService
   readonly catalog: ContextCatalog
   readonly events: ContextEvents
   readonly workspaces: WorkspaceService
+  readonly missions: MissionService
   readonly workspaceEvents: WorkspaceEvents
   readonly logger: Logger
   /** Noms d'hôte acceptés dans `Host` (sans port). */
@@ -63,7 +68,12 @@ function viewerOf(authInfo: AuthInfo | undefined): Viewer {
 export function mountMcp(app: OpenAPIHono<AppEnv>, deps: McpMountDependencies): McpMount {
   const createServer = (viewer: Viewer) =>
     createContextHubMcpServer(
-      { catalog: deps.catalog, workspaces: deps.workspaces, logger: deps.logger },
+      {
+        catalog: deps.catalog,
+        workspaces: deps.workspaces,
+        missions: deps.missions,
+        logger: deps.logger,
+      },
       viewer,
     )
   const legacy = new LegacySessions(createServer, deps.logger)
@@ -77,6 +87,7 @@ export function mountMcp(app: OpenAPIHono<AppEnv>, deps: McpMountDependencies): 
   const unsubscribe = deps.events.subscribe(() => {
     legacy.notifyResourcesChanged()
     modern.notify.resourcesChanged()
+    modern.notify.promptsChanged()
   })
 
   const unsubscribeWorkspaces = deps.workspaceEvents.subscribe(({ slug, memberIds }) => {

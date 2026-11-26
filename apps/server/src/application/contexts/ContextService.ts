@@ -61,7 +61,8 @@ function ownedBy(input: ContextDraftInput, viewer: Viewer): ContextDraftInput {
   return { ...input, scope: { kind: 'personal', owner: viewer.userId } }
 }
 
-function metadataOf(input: ContextDraftInput): ContextMetadata {
+/** `current` : marquage « prompt MCP » à conserver si l'entrée ne le précise pas. */
+function metadataOf(input: ContextDraftInput, current: boolean): ContextMetadata {
   return {
     slug: input.slug,
     title: input.title,
@@ -69,6 +70,7 @@ function metadataOf(input: ContextDraftInput): ContextMetadata {
     collectionId: input.collectionId,
     tags: input.tags,
     scope: input.scope,
+    exposeAsPrompt: input.exposeAsPrompt ?? current,
   }
 }
 
@@ -87,6 +89,7 @@ function draftInputOf(context: Context, draft: ContextVersion, note: string): Co
     scope: context.scope,
     content: draft.content,
     versionNote: note,
+    exposeAsPrompt: context.exposeAsPrompt,
   }
 }
 
@@ -135,7 +138,7 @@ export class ContextService {
     const id = this.newId()
     await this.store.create({
       id,
-      metadata: metadataOf(input),
+      metadata: metadataOf(input, false),
       draft: revisionOf(1, input.content, input.versionNote, viewer),
       at: this.clock.now(),
     })
@@ -158,7 +161,7 @@ export class ContextService {
     await this.store.saveDraft({
       id,
       expectedPublishedVersion: baseVersion,
-      metadata: metadataOf(input),
+      metadata: metadataOf(input, current.context.exposeAsPrompt),
       draft: revisionOf(
         nextDraftNumber(current.context, current.history),
         input.content,
@@ -196,7 +199,7 @@ export class ContextService {
     await this.store.publish({
       id,
       expectedPublishedVersion: baseVersion,
-      metadata: metadataOf(input),
+      metadata: metadataOf(input, current.context.exposeAsPrompt),
       version: revisionOf(draft.number, draft.content, note, viewer),
       falsePositives: falsePositives.filter((item) => keys.has(item.findingKey)),
       expectedDraftUpdatedAt: draft.createdAt,

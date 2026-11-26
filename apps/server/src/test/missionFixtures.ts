@@ -47,6 +47,7 @@ export function newMission(slug: string, overrides: Partial<NewMission> = {}): N
     freshness: null,
     linkedContextIds: [],
     workspaceId: null,
+    suspicious: false,
     ...overrides,
   }
 }

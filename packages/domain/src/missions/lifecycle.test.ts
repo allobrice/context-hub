@@ -4,6 +4,7 @@ import type { Scope } from '../context/types.ts'
 import type { SessionRef } from '../sessions/session.ts'
 import type { Result } from '../shared/result.ts'
 import {
+  MISSION_COMMAND_TYPES,
   MISSION_TRANSITIONS,
   createMission,
   initialStatus,
@@ -111,6 +112,7 @@ const NEW_MISSION: NewMission = {
   freshness: null,
   linkedContextIds: [],
   workspaceId: null,
+  suspicious: false,
 }
 
 const CORE: MissionCore = {
@@ -711,5 +713,11 @@ describe('renewClaim', () => {
       status: mission.status,
       command: 'renew',
     })
+  })
+})
+
+describe('listes dérivées de la table', () => {
+  it('MISSION_COMMAND_TYPES couvre exactement les commandes de MISSION_TRANSITIONS', () => {
+    expect([...MISSION_COMMAND_TYPES].sort()).toEqual(Object.keys(MISSION_TRANSITIONS).sort())
   })
 })

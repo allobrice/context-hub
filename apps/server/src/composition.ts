@@ -13,6 +13,7 @@ import { ContextCatalog } from './application/mcp/ContextCatalog.ts'
 import type { Clock } from './application/ports/Clock.ts'
 import type { Logger } from './application/ports/Logger.ts'
 import { TaxonomyService } from './application/taxonomy/TaxonomyService.ts'
+import { MissionService } from './application/missions/MissionService.ts'
 import { WorkspaceService } from './application/workspaces/WorkspaceService.ts'
 import { OverviewService } from './application/overview/OverviewService.ts'
 import type { AppDatabase } from './infrastructure/db/connection.ts'
@@ -40,6 +41,9 @@ export interface CompositionOptions {
   readonly newContextId?: () => ContextId
   /** Identifiants des workspaces et claims (tests : prévisibles). */
   readonly newWorkspaceId?: (prefix: 'ws' | 'claim') => string
+  /** Identifiants et jetons de réservation des missions (tests : prévisibles). */
+  readonly newMissionId?: () => string
+  readonly newReservationToken?: () => string
 }
 
 /** Origines locales, plus celle du front : les autres sont refusées sur /mcp (403). */
@@ -49,6 +53,7 @@ function allowedOrigins(webOrigin: string): string[] {
 
 const newContextId = (): ContextId => toContextId(`ctx-${randomUUID()}`)
 const newWorkspaceId = (prefix: 'ws' | 'claim'): string => `${prefix}-${randomUUID()}`
+const newMissionId = (): string => `mission-${randomUUID()}`
 
 export function composeServer(db: AppDatabase, options: CompositionOptions) {
   const searchIndex = new Fts5SearchIndex()
@@ -77,12 +82,20 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
     events: workspaceEvents,
   })
   const missionStore = new DrizzleMissionStore(db)
+  const missions = new MissionService({
+    store: missionStore,
+    contextStore,
+    clock: options.clock,
+    newId: options.newMissionId ?? newMissionId,
+    ...(options.newReservationToken ? { newToken: options.newReservationToken } : {}),
+  })
   const app = createHttpApp({
     auth,
     contexts,
     taxonomy: new TaxonomyService(taxonomyStore, options.clock),
     overview: new OverviewService(contextStore, taxonomyStore, options.workspaceName, workspaces),
     workspaces,
+    missions,
     logger: options.logger,
     webOrigin: options.webOrigin,
   })
@@ -91,6 +104,7 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
     catalog: new ContextCatalog(contextStore, new DrizzleMcpReadLog(db), options.clock),
     events,
     workspaces,
+    missions,
     workspaceEvents,
     logger: options.logger,
     allowedHosts: options.allowedHosts,
@@ -104,5 +118,5 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
       run: async () => ({ ...(await missionStore.expireDue(options.clock.now())) }),
     },
   ]
-  return { app, mcp, workspaces, maintenance }
+  return { app, mcp, workspaces, missions, maintenance }
 }

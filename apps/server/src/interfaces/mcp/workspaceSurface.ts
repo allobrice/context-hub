@@ -17,10 +17,9 @@ import { z } from 'zod'
 import { resourceUri } from '@context-hub/domain/context/uri.ts'
 import {
   ClaimSchema,
-  RepoSchema,
-  SessionLabelSchema,
   WorkspaceSlugSchema,
 } from '@context-hub/domain/schemas/workspaces.ts'
+import { RepoSchema, SessionLabelSchema } from '@context-hub/domain/schemas/sessions.ts'
 import { ClaimConflictError, isDomainError } from '@context-hub/domain/shared/errors.ts'
 import { DATA_NOT_INSTRUCTIONS } from '@context-hub/domain/workspaces/digest.ts'
 import {

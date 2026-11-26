@@ -48,6 +48,7 @@ const METADATA: ContextMetadata = {
   description: 'Créé par les tests',
   collectionId: null,
   tags: ['testing', 'tag-inedit'],
+  exposeAsPrompt: false,
   scope: { kind: 'team', team: 'allovoisins' },
 }
 

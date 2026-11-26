@@ -6,8 +6,7 @@
  */
 import { z } from 'zod'
 
-import { SESSION_LABEL_PATTERN, UI_SESSION_LABEL } from '../sessions/session.ts'
-import { REPO_PATTERN } from '../shared/repo.ts'
+import { UI_SESSION_LABEL } from '../sessions/session.ts'
 
 import {
   AUTHORED_ENTRY_KINDS,
@@ -27,7 +26,12 @@ import {
 } from '../workspaces/types.ts'
 import { AREA_MAX_LENGTH } from '../workspaces/claims.ts'
 import { orNull } from './context.ts'
-import { SessionRefSchema } from './sessions.ts'
+import {
+  RepoSchema,
+  SessionInputSchema,
+  SessionLabelSchema,
+  SessionRefSchema,
+} from './sessions.ts'
 
 const Timestamp = z.string().meta({ format: 'date-time' })
 
@@ -37,17 +41,6 @@ export const WorkspaceSlugSchema = z
   .max(WORKSPACE_SLUG_MAX_LENGTH)
   .regex(WORKSPACE_SLUG_PATTERN)
   .meta({ description: 'Minuscules, chiffres et tirets, ex. « migration-auth ».' })
-
-export const SessionLabelSchema = z
-  .string()
-  .regex(SESSION_LABEL_PATTERN)
-  .meta({ description: 'Label de la session Claude Code, ex. « web-1 » (unique par utilisateur).' })
-
-export const RepoSchema = z
-  .string()
-  .max(200)
-  .regex(REPO_PATTERN)
-  .meta({ description: '`owner/name`, ex. « allovoisins/front ».' })
 
 export const WorkspaceStatusSchema = z.enum(WORKSPACE_STATUSES).meta({ id: 'WorkspaceStatus' })
 export const WorkspaceDisplayStatusSchema = z.enum(WORKSPACE_DISPLAY_STATUSES).meta({
@@ -240,13 +233,6 @@ export const ClaimInputSchema = z
     ttlMinutes: z.number().int().min(1).max(CLAIM_TTL_MAX_MINUTES).optional(),
   })
   .meta({ id: 'ClaimInput' })
-
-export const SessionInputSchema = z
-  .object({
-    session: SessionLabelSchema,
-    repo: RepoSchema.nullable().default(null),
-  })
-  .meta({ id: 'SessionInput' })
 
 export const HeartbeatInputSchema = SessionInputSchema.extend({
   cursor: z.number().int().positive().optional().meta({

@@ -15,6 +15,9 @@ import type {
   Mission,
   MissionActor,
   MissionEvent,
+  MissionStatus,
+  MissionStatusCounts,
+  Priority,
   ReadyMission,
 } from '@context-hub/domain/missions/types.ts'
 import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
@@ -92,11 +95,59 @@ export interface SweepResult {
   readonly released: number
 }
 
+/** Filtres de la file : statuts voulus, et filtres communs aux compteurs (tags, repo, lot). */
+export interface MissionQuery {
+  readonly statuses: readonly MissionStatus[]
+  /** La mission doit porter TOUS ces tags. */
+  readonly tags: readonly string[]
+  readonly repo: string | null
+  readonly batchId: string | null
+}
+
+export interface MissionRows {
+  /** Missions des statuts voulus, par priorité puis ancienneté. */
+  readonly missions: readonly Mission[]
+  /** Compteurs par statut, avec les seuls filtres tags / repo / lot. */
+  readonly statusCounts: MissionStatusCounts
+}
+
+/** Champs modifiables (« Modifier »), déjà relus par `reviewMission`. */
+export interface MissionChanges {
+  readonly title: string
+  readonly summary: string
+  readonly prompt: string
+  readonly priority: Priority
+  readonly tags: readonly string[]
+  readonly suspicious: boolean
+}
+
+export interface UpdateWrite {
+  readonly viewer: Viewer
+  readonly slug: string
+  /** `updatedAt` lu par l'appelant : l'écriture est refusée s'il a changé depuis. */
+  readonly expectedUpdatedAt: string
+  readonly changes: MissionChanges
+  readonly at: Date
+}
+
+export type UpdateResult =
+  | { readonly kind: 'updated'; readonly mission: DraftMission | ReadyMission }
+  | { readonly kind: 'not-found' }
+  | { readonly kind: 'conflict'; readonly updatedAt: string }
+  /** Seules les missions à valider ou prêtes se modifient. */
+  | { readonly kind: 'not-editable'; readonly status: MissionStatus }
+
 export interface MissionStore {
   /** @returns false si le slug est déjà pris. */
   create(mission: DraftMission | ReadyMission, event: MissionEvent): Promise<boolean>
   /** Mission visible du viewer (portée), ou null. */
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null>
+  /** File filtrée, avec les compteurs par statut. */
+  list(viewer: Viewer, query: MissionQuery): Promise<MissionRows>
+  /** Modifie une mission à valider ou prête, si personne ne l'a modifiée depuis. */
+  update(write: UpdateWrite): Promise<UpdateResult>
+  /** Nom de l'utilisateur, ou null s'il n'existe pas. */
+  userName(userId: string): Promise<string | null>
   /** Journal du cycle de vie, dans l'ordre d'écriture. */
   events(missionId: string): Promise<readonly MissionEvent[]>
 

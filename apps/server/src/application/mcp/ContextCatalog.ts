@@ -1,10 +1,23 @@
 import { isValidSlug } from '@context-hub/domain/context/slug.ts'
+import { promptName } from '@context-hub/domain/context/uri.ts'
 import type { ContextVersion } from '@context-hub/domain/context/types.ts'
 
 import type { Clock } from '../ports/Clock.ts'
 import type { ContextStore, PublishedSearch, PublishedSummary } from '../ports/ContextStore.ts'
 import type { McpReadLog } from '../ports/McpReadLog.ts'
 import type { Viewer } from '../viewer.ts'
+
+export interface PromptEntry {
+  /** Nom du prompt MCP (unique dans la liste). */
+  readonly name: string
+  readonly summary: PublishedSummary
+}
+
+export interface PromptList {
+  readonly prompts: readonly PromptEntry[]
+  /** Slugs non exposés parce qu'un autre contexte donne déjà le même nom de prompt. */
+  readonly shadowed: readonly string[]
+}
 
 export interface PublishedRead {
   readonly summary: PublishedSummary
@@ -32,6 +45,29 @@ export class ContextCatalog {
 
   search(viewer: Viewer, search: PublishedSearch): Promise<readonly PublishedSummary[]> {
     return this.store.searchPublished(viewer, search)
+  }
+
+  /**
+   * Contextes publiés et visibles marqués `exposeAsPrompt` (valeur PUBLIÉE), par slug. Deux slugs qui
+   * donneraient le même nom : le premier seul est exposé.
+   */
+  async listPrompts(viewer: Viewer): Promise<PromptList> {
+    const byName = new Map<string, PromptEntry>()
+    const shadowed: string[] = []
+    for (const summary of await this.store.listPublished(viewer)) {
+      if (!summary.exposeAsPrompt) continue
+      const name = promptName(summary)
+      if (byName.has(name)) shadowed.push(summary.slug)
+      else byName.set(name, { name, summary })
+    }
+    return { prompts: [...byName.values()], shadowed }
+  }
+
+  /** Contenu publié d'un prompt, journalisé comme une lecture ; null s'il n'est pas exposé. */
+  async readPrompt(viewer: Viewer, name: string): Promise<PublishedRead | null> {
+    const { prompts } = await this.listPrompts(viewer)
+    const entry = prompts.find((prompt) => prompt.name === name)
+    return entry === undefined ? null : this.read(viewer, entry.summary.slug, null)
   }
 
   /** Version publiée courante (version null) ou figée ; null si introuvable ou non servie. */

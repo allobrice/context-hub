@@ -25,8 +25,6 @@ import {
   JoinResultSchema,
   PostEntryInputSchema,
   ReleaseInputSchema,
-  SessionInputSchema,
-  SessionLabelSchema,
   SyncInputSchema,
   SyncResultSchema,
   WorkspaceDetailSchema,
@@ -34,6 +32,7 @@ import {
   WorkspaceListSchema,
   WorkspaceSlugSchema,
 } from '@context-hub/domain/schemas/workspaces.ts'
+import { SessionInputSchema, SessionLabelSchema } from '@context-hub/domain/schemas/sessions.ts'
 
 import type { WorkspaceService } from '../../../application/workspaces/WorkspaceService.ts'
 import type { AppEnv } from '../env.ts'

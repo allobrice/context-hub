@@ -59,6 +59,8 @@ export const contexts = sqliteTable(
     scopeKind: text('scope_kind', { enum: SCOPE_KINDS }).notNull(),
     /** Propriétaire (personal), repo (project) ou équipe (team). */
     scopeValue: text('scope_value').notNull(),
+    /** Modèle réutilisable à publier comme prompt MCP (brouillon compris). */
+    exposeAsPrompt: integer('expose_as_prompt', { mode: 'boolean' }).notNull().default(false),
     status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
     /** Numéro de la version lue par les sessions MCP, null si jamais publié. */
     publishedVersion: integer('published_version'),
@@ -71,6 +73,10 @@ export const contexts = sqliteTable(
     publishedScopeValue: text('published_scope_value'),
     /** Tags publiés, en JSON (`string[]`). */
     publishedTags: text('published_tags').notNull().default('[]'),
+    /** Exposé comme prompt MCP : seule valeur lue par `prompts/list` (SPEC §8.5). */
+    publishedExposeAsPrompt: integer('published_expose_as_prompt', { mode: 'boolean' })
+      .notNull()
+      .default(false),
     authorId: text('author_id')
       .notNull()
       .references(() => users.id),
@@ -350,6 +356,8 @@ export const missions = sqliteTable(
     /** JSON `string[]`. */
     linkedContextIds: text('linked_context_ids').notNull().default('[]'),
     workspaceId: text('workspace_id').references(() => workspaces.id),
+    /** Instruction suspecte conservée (mission créée par un humain). */
+    suspicious: integer('suspicious', { mode: 'boolean' }).notNull().default(false),
     validationBy: text('validation_by').references(() => users.id),
     validationAt: text('validation_at'),
     claimUserId: text('claim_user_id').references(() => users.id),

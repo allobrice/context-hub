@@ -4,7 +4,7 @@
  * mission `ready` puis la prendre chacune : la seconde attend (`busy_timeout`), puis lit la mission
  * déjà `in_progress` et la `transition` du domaine la refuse.
  */
-import { and, asc, eq, exists, inArray, lte, sql, type SQL } from 'drizzle-orm'
+import { and, asc, count, eq, exists, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { toContextId } from '@context-hub/domain/context/types.ts'
@@ -23,6 +23,8 @@ import type {
   MissionCore,
   MissionEvent,
   MissionEventActor,
+  MissionStatus,
+  MissionStatusCounts,
   ReadyMission,
   Validation,
 } from '@context-hub/domain/missions/types.ts'
@@ -32,12 +34,16 @@ import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/ses
 import type {
   ApplyResult,
   ApplyWrite,
+  MissionQuery,
+  MissionRows,
   MissionStore,
   RenewResult,
   RenewWrite,
   SweepResult,
   TakeResult,
   TakeWrite,
+  UpdateResult,
+  UpdateWrite,
 } from '../../../application/ports/MissionStore.ts'
 import type { Viewer } from '../../../application/viewer.ts'
 import type { AppDatabase, SyncDb } from '../connection.ts'
@@ -46,7 +52,7 @@ import { deferred } from '../deferred.ts'
 import { missionEvents, missions, missionTags } from '../schema.ts'
 import { IMMEDIATE } from '../transactions.ts'
 import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
-import { userNamesIn } from './userRecords.ts'
+import { userNameIn, userNamesIn } from './userRecords.ts'
 
 type MissionRow = typeof missions.$inferSelect
 type EventRow = typeof missionEvents.$inferSelect
@@ -141,6 +147,7 @@ function coreOf(row: MissionRow, tags: readonly string[], names: Names): Mission
     freshness: freshnessOf(row, names),
     linkedContextIds: parseJson(row.linkedContextIds, StringListSchema).map(toContextId),
     workspaceId: row.workspaceId,
+    suspicious: row.suspicious,
     createdAt: row.createdAt,
     expiresAt: row.expiresAt,
     updatedAt: row.updatedAt,
@@ -208,23 +215,39 @@ function eventActorFromRow(row: EventRow, names: Names): MissionEventActor {
   )
 }
 
-function tagsIn(db: SyncDb, missionId: string): string[] {
-  return db
-    .select({ tag: missionTags.tag })
+/** Tags de plusieurs missions en une requête, dans l'ordre saisi. */
+function tagsIn(db: SyncDb, missionIds: readonly string[]): ReadonlyMap<string, string[]> {
+  const byMission = new Map<string, string[]>()
+  if (missionIds.length === 0) return byMission
+  const rows = db
+    .select({ missionId: missionTags.missionId, tag: missionTags.tag })
     .from(missionTags)
-    .where(eq(missionTags.missionId, missionId))
-    .orderBy(asc(missionTags.position))
+    .where(inArray(missionTags.missionId, [...missionIds]))
+    .orderBy(asc(missionTags.missionId), asc(missionTags.position))
     .all()
-    .map((row) => row.tag)
+  for (const { missionId, tag } of rows) {
+    byMission.set(missionId, [...(byMission.get(missionId) ?? []), tag])
+  }
+  return byMission
+}
+
+/** Lignes → missions : tags et noms chargés en une requête chacun pour tout le lot. */
+function loadAll(db: SyncDb, rows: readonly MissionRow[]): Mission[] {
+  const tags = tagsIn(
+    db,
+    rows.map((row) => row.id),
+  )
+  const names = userNamesIn(
+    db,
+    rows.flatMap((row) => [row.originUserId, row.freshnessUserId, row.claimUserId]),
+  )
+  return rows.map((row) => toMission(row, tags.get(row.id) ?? [], names))
 }
 
 function load(db: SyncDb, row: MissionRow): Mission {
-  const names = userNamesIn(db, [
-    row.originUserId,
-    row.freshnessUserId,
-    row.claimUserId,
-  ])
-  return toMission(row, tagsIn(db, row.id), names)
+  const [mission] = loadAll(db, [row])
+  if (mission === undefined) throw new Error(`Mission ${row.id} illisible`)
+  return mission
 }
 
 // ── Écriture : domaine → ligne ───────────────────────────────────────────────
@@ -277,9 +300,17 @@ function insertRow(mission: DraftMission | ReadyMission): typeof missions.$infer
     codeRefFiles: JSON.stringify(mission.codeRef.files),
     linkedContextIds: JSON.stringify(mission.linkedContextIds),
     workspaceId: mission.workspaceId,
+    suspicious: mission.suspicious,
     createdAt: mission.createdAt,
     claimTokenHash: null,
   }
+}
+
+function insertTags(db: SyncDb, missionId: string, tags: readonly string[]): void {
+  if (tags.length === 0) return
+  db.insert(missionTags)
+    .values(tags.map((tag, position) => ({ missionId, tag, position })))
+    .run()
 }
 
 function appendEvent(db: SyncDb, event: MissionEvent): void {
@@ -343,33 +374,62 @@ function findVisibleIn(db: SyncDb, viewer: Viewer, slug: string): MissionRow | u
     .get()
 }
 
-/** La prochaine mission prête : la plus prioritaire, puis la plus ancienne, qui porte tous les tags. */
+/** Ordre de la file : priorité (P1 d'abord), puis ancienneté. */
+const QUEUE_ORDER = [asc(missions.priority), asc(missions.createdAt), asc(missions.id)] as const
+
+/** Conditions communes de la file : visibilité, TOUS les tags, repo et lot s'ils sont donnés. */
+function queueConditions(
+  db: SyncDb,
+  viewer: Viewer,
+  filters: Omit<MissionQuery, 'statuses' | 'batchId'> & { readonly batchId?: string | null },
+): SQL[] {
+  const conditions = [visibleTo(viewer)]
+  for (const tag of filters.tags) {
+    conditions.push(
+      exists(
+        db
+          .select({ one: sql`1` })
+          .from(missionTags)
+          .where(and(eq(missionTags.missionId, missions.id), eq(missionTags.tag, tag))),
+      ),
+    )
+  }
+  if (filters.repo !== null) conditions.push(eq(missions.codeRefRepo, filters.repo))
+  if (filters.batchId != null) conditions.push(eq(missions.originBatchId, filters.batchId))
+  return conditions
+}
+
+/** La prochaine mission prête : la plus prioritaire, puis la plus ancienne, qui correspond. */
 function nextReadyIn(
   db: SyncDb,
   viewer: Viewer,
   filters: { readonly tags: readonly string[]; readonly repo: string | null },
 ): MissionRow | undefined {
-  const tagged = filters.tags.map((tag) =>
-    exists(
-      db
-        .select({ one: sql`1` })
-        .from(missionTags)
-        .where(and(eq(missionTags.missionId, missions.id), eq(missionTags.tag, tag))),
-    ),
-  )
   return db
     .select()
     .from(missions)
-    .where(
-      and(
-        eq(missions.status, 'ready'),
-        visibleTo(viewer),
-        filters.repo === null ? undefined : eq(missions.codeRefRepo, filters.repo),
-        ...tagged,
-      ),
-    )
-    .orderBy(asc(missions.priority), asc(missions.createdAt), asc(missions.id))
+    .where(and(eq(missions.status, 'ready'), ...queueConditions(db, viewer, filters)))
+    .orderBy(...QUEUE_ORDER)
     .get()
+}
+
+function statusCountsIn(db: SyncDb, conditions: readonly SQL[]): MissionStatusCounts {
+  const rows = db
+    .select({ status: missions.status, total: count() })
+    .from(missions)
+    .where(and(...conditions))
+    .groupBy(missions.status)
+    .all()
+  const counts: Record<MissionStatus, number> = {
+    draft: 0,
+    ready: 0,
+    in_progress: 0,
+    done: 0,
+    dropped: 0,
+    expired: 0,
+  }
+  for (const row of rows) counts[row.status] = row.total
+  return counts
 }
 
 /**
@@ -435,15 +495,61 @@ export class DrizzleMissionStore implements MissionStore {
           .get()
         if (taken !== undefined) return false
         tx.insert(missions).values(insertRow(mission)).run()
-        if (mission.tags.length > 0) {
-          tx.insert(missionTags)
-            .values(mission.tags.map((tag, position) => ({ missionId: mission.id, tag, position })))
-            .run()
-        }
+        insertTags(tx, mission.id, mission.tags)
         appendEvent(tx, event)
         return true
       }, IMMEDIATE),
     )
+  }
+
+  list(viewer: Viewer, query: MissionQuery): Promise<MissionRows> {
+    return deferred(() => {
+      const conditions = queueConditions(this.db, viewer, query)
+      const rows =
+        query.statuses.length === 0
+          ? []
+          : this.db
+              .select()
+              .from(missions)
+              .where(and(inArray(missions.status, [...query.statuses]), ...conditions))
+              .orderBy(...QUEUE_ORDER)
+              .all()
+      return { missions: loadAll(this.db, rows), statusCounts: statusCountsIn(this.db, conditions) }
+    })
+  }
+
+  update(write: UpdateWrite): Promise<UpdateResult> {
+    const { viewer, slug, expectedUpdatedAt, changes, at } = write
+    return deferred(() =>
+      this.db.transaction((tx): UpdateResult => {
+        const row = findVisibleIn(tx, viewer, slug)
+        if (row === undefined) return { kind: 'not-found' }
+        if (row.updatedAt !== expectedUpdatedAt) return { kind: 'conflict', updatedAt: row.updatedAt }
+        const mission = load(tx, row)
+        if (mission.status !== 'draft' && mission.status !== 'ready') {
+          return { kind: 'not-editable', status: mission.status }
+        }
+        const updatedAt = isoDate(at)
+        tx.update(missions)
+          .set({
+            title: changes.title,
+            summary: changes.summary,
+            prompt: changes.prompt,
+            priority: changes.priority,
+            suspicious: changes.suspicious,
+            updatedAt,
+          })
+          .where(eq(missions.id, row.id))
+          .run()
+        tx.delete(missionTags).where(eq(missionTags.missionId, row.id)).run()
+        insertTags(tx, row.id, changes.tags)
+        return { kind: 'updated', mission: { ...mission, ...changes, updatedAt } }
+      }, IMMEDIATE),
+    )
+  }
+
+  userName(userId: string): Promise<string | null> {
+    return deferred(() => userNameIn(this.db, userId))
   }
 
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null> {

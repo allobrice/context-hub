@@ -6,23 +6,19 @@
  * négations (routes Nuxt `pages/[id].vue`). La règle de chevauchement reste ainsi démontrable.
  */
 import { isLeaseExpired } from '../sessions/lease.ts'
+import {
+  hasControlCharacter,
+  hasDotSegment,
+  normalizeRepoPath,
+  REPO_PATH_MAX_LENGTH,
+} from '../shared/repo.ts'
 
 import type { Claim } from './types.ts'
 
-export const AREA_MAX_LENGTH = 300
-
-/** Caractères de contrôle (dont le retour à la ligne) : jamais dans un chemin. */
-function hasControlCharacter(value: string): boolean {
-  for (const char of value) if (char.charCodeAt(0) < 0x20 || char === '\u007f') return true
-  return false
-}
+export const AREA_MAX_LENGTH = REPO_PATH_MAX_LENGTH
 
 export type AreaViolation =
   'empty' | 'too-long' | 'absolute' | 'forbidden-character' | 'dot-segment'
-
-function hasDotSegment(path: string): boolean {
-  return path.split('/').some((segment) => segment === '..' || segment === '.')
-}
 
 /**
  * Normalise une zone : « ./ » de tête retiré, et un dossier terminé par « / » couvre tout son contenu
@@ -38,19 +34,6 @@ export function normalizeArea(raw: string): { area: string } | { violation: Area
   if (hasControlCharacter(area) || area.includes('//')) return { violation: 'forbidden-character' }
   if (hasDotSegment(area)) return { violation: 'dot-segment' }
   return { area }
-}
-
-/**
- * Chemin de fichier relatif à la racine du repo, normalisé (« ./ » de tête retiré) ; null s'il est
- * vide, absolu, remonte (`..`) ou contient un caractère de contrôle.
- */
-export function normalizeRepoPath(raw: string): string | null {
-  let path = raw.trim()
-  while (path.startsWith('./')) path = path.slice(2)
-  if (path === '' || path.length > AREA_MAX_LENGTH) return null
-  if (path.startsWith('/') || path.includes('\\') || path.includes('//')) return null
-  if (hasControlCharacter(path) || hasDotSegment(path)) return null
-  return path
 }
 
 /** Partie littérale d'une zone, avant le premier joker : tout fichier couvert commence par elle. */

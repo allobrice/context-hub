@@ -50,6 +50,11 @@ export interface Context {
   readonly updatedAt: string
   readonly author: string
   readonly mcpReads7d: number
+  /**
+   * Modèle réutilisable : publié comme prompt MCP (slash command `/mcp__context-hub__<nom>`), SPEC §8.5.
+   * Déclenché par un humain, jamais une mission. Ne vaut qu'une fois publié.
+   */
+  readonly exposeAsPrompt: boolean
 }
 
 export const DESCRIPTION_MAX_LENGTH = 160

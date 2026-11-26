@@ -50,6 +50,20 @@
       "when": 1795622599377,
       "tag": "0006_mission_events_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1795625214310,
+      "tag": "0007_mission_suspicious",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795679840525,
+      "tag": "0008_context_expose_as_prompt",
+      "breakpoints": true
     }
   ]
 }

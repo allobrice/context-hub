@@ -30,6 +30,7 @@ export function aContext(overrides: Partial<Context> = {}): Context {
     updatedAt: '2026-11-23T09:12:00Z',
     author: 'Brice',
     mcpReads7d: 0,
+    exposeAsPrompt: false,
     ...overrides,
   }
 }

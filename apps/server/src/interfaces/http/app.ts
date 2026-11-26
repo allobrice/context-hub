@@ -8,6 +8,7 @@ import type { ContextService } from '../../application/contexts/ContextService.t
 import type { Logger } from '../../application/ports/Logger.ts'
 import type { TaxonomyService } from '../../application/taxonomy/TaxonomyService.ts'
 import type { OverviewService } from '../../application/overview/OverviewService.ts'
+import type { MissionService } from '../../application/missions/MissionService.ts'
 import type { WorkspaceService } from '../../application/workspaces/WorkspaceService.ts'
 import type { AppEnv } from './env.ts'
 import { handleError, notFound, validationHook } from './errors.ts'
@@ -16,6 +17,7 @@ import { rejectCrossOriginMutations } from './middleware/rejectCrossOriginMutati
 import { requestLogging } from './middleware/requestLogging.ts'
 import { registerContextRoutes } from './routes/contexts.ts'
 import { registerTaxonomyRoutes } from './routes/taxonomy.ts'
+import { registerMissionRoutes } from './routes/missions.ts'
 import { registerWorkspaceRoutes } from './routes/workspaces.ts'
 import { HEALTH_PATH, registerOverviewRoutes } from './routes/overview.ts'
 
@@ -30,6 +32,7 @@ export interface HttpAppDependencies {
   readonly taxonomy: TaxonomyService
   readonly overview: OverviewService
   readonly workspaces: WorkspaceService
+  readonly missions: MissionService
   readonly logger: Logger
   /** Seule origine autorisée par CORS (le front). */
   readonly webOrigin: string
@@ -69,6 +72,7 @@ export function createHttpApp(deps: HttpAppDependencies): OpenAPIHono<AppEnv> {
   registerContextRoutes(app, deps.contexts)
   registerTaxonomyRoutes(app, deps.taxonomy)
   registerWorkspaceRoutes(app, deps.workspaces)
+  registerMissionRoutes(app, deps.missions)
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',

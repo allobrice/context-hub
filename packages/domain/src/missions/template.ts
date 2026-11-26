@@ -16,6 +16,8 @@ export const REQUIRED_PROMPT_SECTIONS = [
   'acceptance',
 ] as const satisfies readonly PromptSection[]
 
+export type RequiredPromptSection = (typeof REQUIRED_PROMPT_SECTIONS)[number]
+
 export const OPTIONAL_PROMPT_SECTIONS = [
   'constraints',
   'linkedContexts',
@@ -32,7 +34,7 @@ export const PROMPT_SECTION_TITLES: Readonly<Record<PromptSection, string>> = {
 }
 
 export type TemplateCheck =
-  { readonly ok: true } | { readonly ok: false; readonly missing: readonly PromptSection[] }
+  { readonly ok: true } | { readonly ok: false; readonly missing: readonly RequiredPromptSection[] }
 
 const TRAILING_PUNCTUATION = new Set([':', '.', '!', '?', ';', ' '])
 

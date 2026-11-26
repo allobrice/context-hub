@@ -137,6 +137,7 @@ export function hydrate(db: SyncDb, rows: readonly ContextRow[], now: Date): Con
       updatedAt: row.updatedAt,
       author: names.get(row.authorId) ?? row.authorId,
       mcpReads7d: readsById.get(row.id) ?? 0,
+      exposeAsPrompt: row.exposeAsPrompt,
     }
   })
 }
@@ -194,6 +195,7 @@ export function metadataColumns(metadata: ContextMetadata) {
     description: metadata.description,
     collectionId: metadata.collectionId,
     ...scopeColumns(metadata.scope),
+    exposeAsPrompt: metadata.exposeAsPrompt,
   }
 }
 
@@ -207,6 +209,7 @@ export function publishedMetadataColumns(metadata: ContextMetadata) {
     publishedScopeKind: scope.scopeKind,
     publishedScopeValue: scope.scopeValue,
     publishedTags: JSON.stringify([...metadata.tags]),
+    publishedExposeAsPrompt: metadata.exposeAsPrompt,
   }
 }
 

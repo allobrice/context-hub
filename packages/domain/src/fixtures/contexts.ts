@@ -36,6 +36,7 @@ interface Spec {
   readonly reads?: number
   readonly content?: string
   readonly note?: string
+  readonly exposeAsPrompt?: boolean
 }
 
 function defaultContent({ title, description, tags }: Spec): string {
@@ -79,6 +80,7 @@ function build(
     updatedAt: spec.updatedAt,
     author,
     mcpReads7d: spec.reads ?? 0,
+    exposeAsPrompt: spec.exposeAsPrompt ?? false,
   }
   return { context, history: extra.history ?? (isPublished ? [version] : []) }
 }
@@ -274,6 +276,7 @@ export const CONTEXT_FIXTURES: readonly ContextRecord[] = [
     tokens: 1500,
     updatedAt: '2026-11-12T16:00:00+01:00',
     reads: 17,
+    exposeAsPrompt: true,
   }),
   build({
     id: 'ctx-nitro-debug',

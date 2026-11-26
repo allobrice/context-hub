@@ -6,9 +6,9 @@ import {
   globToRegExp,
   isClaimExpired,
   normalizeArea,
-  normalizeRepoPath,
   staticPrefix,
 } from './claims.ts'
+import { normalizeRepoPath } from '../shared/repo.ts'
 
 const FRONT = 'allovoisins/front'
 const zone = (area: string, repo = FRONT) => ({ repo, area })

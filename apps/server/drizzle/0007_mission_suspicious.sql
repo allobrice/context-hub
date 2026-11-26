@@ -1,0 +1,1 @@
+ALTER TABLE `missions` ADD `suspicious` integer DEFAULT false NOT NULL;

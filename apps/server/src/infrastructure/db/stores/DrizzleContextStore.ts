@@ -103,6 +103,7 @@ function publishedRows(db: SyncDb, viewer: Viewer, where: SQL | undefined): Publ
       scopeKind: contexts.publishedScopeKind,
       scopeValue: contexts.publishedScopeValue,
       tags: contexts.publishedTags,
+      exposeAsPrompt: contexts.publishedExposeAsPrompt,
       version: contextVersions.number,
       tokenEstimate: contextVersions.tokenEstimate,
     })
@@ -130,14 +131,15 @@ function publishedRows(db: SyncDb, viewer: Viewer, where: SQL | undefined): Publ
               version: row.version,
               tokenEstimate: row.tokenEstimate,
               tags: parsePublishedTags(row.tags),
+              exposeAsPrompt: row.exposeAsPrompt,
             },
           ],
     )
 }
 
 function toSummary(row: PublishedRow): PublishedSummary {
-  const { id, slug, title, description, scope, version, tokenEstimate } = row
-  return { id, slug, title, description, scope, version, tokenEstimate }
+  const { id, slug, title, description, scope, version, tokenEstimate, exposeAsPrompt } = row
+  return { id, slug, title, description, scope, version, tokenEstimate, exposeAsPrompt }
 }
 
 /** Le contexte appartient-il au repo du projet appelant ? */

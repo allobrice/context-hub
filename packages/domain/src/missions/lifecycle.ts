@@ -39,6 +39,18 @@ export type MissionCommand =
   | { readonly type: 'reopen' }
 
 export type MissionCommandType = MissionCommand['type']
+export const MISSION_COMMAND_TYPES = [
+  'validate',
+  'reject',
+  'take',
+  'release',
+  'expireClaim',
+  'freshness',
+  'complete',
+  'drop',
+  'expire',
+  'reopen',
+] as const satisfies readonly MissionCommandType[]
 
 export interface TransitionRule {
   readonly from: readonly MissionStatus[]
@@ -73,10 +85,21 @@ export type TransitionRejection =
   | 'reason-required'
   | 'summary-required'
 
+export const TRANSITION_REJECTIONS = [
+  'invalid-status',
+  'actor-not-allowed',
+  'not-holder',
+  'claim-expired',
+  'not-due',
+  'reason-required',
+  'summary-required',
+] as const satisfies readonly TransitionRejection[]
+
 export interface TransitionError {
   readonly rejection: TransitionRejection
   readonly status: MissionStatus
-  readonly command: MissionCommandType | 'renew'
+  /** `renew` : prolongation (heartbeat) ; `edit` : « Modifier », hors du cycle de vie. */
+  readonly command: MissionCommandType | 'renew' | 'edit'
 }
 
 export type Transition =

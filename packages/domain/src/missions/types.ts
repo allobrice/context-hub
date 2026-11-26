@@ -8,6 +8,7 @@
  * qu'une fois terminée, la raison d'abandon qu'une fois abandonnée. Les champs restent présents (à
  * `null`) dans les autres statuts : la forme JSON est celle de la SPEC.
  */
+import { estimateTokens } from '../context/tokens.ts'
 import type { ContextId, Scope } from '../context/types.ts'
 import type { Lease } from '../sessions/lease.ts'
 import type { SessionRef } from '../sessions/session.ts'
@@ -95,6 +96,11 @@ export interface MissionCore {
   readonly freshness: Freshness | null
   readonly linkedContextIds: readonly ContextId[]
   readonly workspaceId: string | null
+  /**
+   * Instruction suspecte détectée par le scan d'une mission créée par un humain : conservée, mais
+   * signalée (« Origine et sécurité »). Une session qui en écrit une est refusée. Pas dans la SPEC.
+   */
+  readonly suspicious: boolean
   readonly createdAt: string
   /** Échéance de la mission tant qu'elle n'est pas prise (14 jours par défaut). */
   readonly expiresAt: string
@@ -219,3 +225,99 @@ export const MISSION_SUMMARY_MAX_LENGTH = 200
 export const MISSION_REASON_MAX_LENGTH = 1_000
 export const MISSION_MAX_TAGS = 10
 export const MISSION_MAX_FILES = 50
+
+// ── File et vues de l'API ────────────────────────────────────────────────────
+
+/** Filtres segmentés de la file (SPEC §8.4) : « À traiter » est aussi le compteur de la sidebar. */
+export type MissionQueueFilter = 'todo' | 'to_validate' | 'ready' | 'archived' | 'all'
+export const MISSION_QUEUE_FILTERS = [
+  'todo',
+  'to_validate',
+  'ready',
+  'archived',
+  'all',
+] as const satisfies readonly MissionQueueFilter[]
+
+export const MISSION_FILTER_STATUSES: Readonly<Record<MissionQueueFilter, readonly MissionStatus[]>> =
+  {
+    todo: ['draft', 'ready', 'in_progress'],
+    to_validate: ['draft'],
+    ready: ['ready'],
+    archived: ['done', 'dropped', 'expired'],
+    all: MISSION_STATUSES,
+  }
+
+export type MissionStatusCounts = Readonly<Record<MissionStatus, number>>
+export type MissionFilterCounts = Readonly<Record<MissionQueueFilter, number>>
+
+/** Une ligne de la file : tout sauf le prompt (MCP `mission_list` comme l'UI). */
+export type MissionSummary = Omit<Mission, 'prompt'>
+
+export interface MissionList {
+  readonly items: readonly MissionSummary[]
+  /** Compteurs des filtres segmentés, avec les filtres tags / repo / lot appliqués. */
+  readonly counts: MissionFilterCounts
+}
+
+/** Contexte lié, publié et visible de l'utilisateur. */
+export interface MissionLinkedContext {
+  readonly id: string
+  readonly slug: string
+  readonly title: string
+  readonly version: number
+}
+
+export interface MissionDetail {
+  readonly mission: Mission
+  /** Estimation (≈ tokens) du prompt. */
+  readonly promptTokens: number
+  readonly linkedContexts: readonly MissionLinkedContext[]
+  /** Journal du cycle de vie, du plus ancien au plus récent. */
+  readonly events: readonly MissionEvent[]
+}
+
+/** Bloc « Origine » de la file filtrée par lot. */
+export interface MissionBatch {
+  readonly batchId: string
+  readonly label: string
+  readonly session: SessionRef | null
+  readonly repo: string
+  readonly commit: string
+  /** Création de la première mission du lot. */
+  readonly createdAt: string
+  readonly counts: MissionStatusCounts
+  readonly total: number
+}
+
+/** Ligne de file : la mission sans son prompt (champ par champ, pour ne rien transporter de plus). */
+export function toMissionSummary(mission: Mission): MissionSummary {
+  return {
+    id: mission.id,
+    slug: mission.slug,
+    title: mission.title,
+    summary: mission.summary,
+    priority: mission.priority,
+    tags: mission.tags,
+    scope: mission.scope,
+    status: mission.status,
+    origin: mission.origin,
+    codeRef: mission.codeRef,
+    freshness: mission.freshness,
+    linkedContextIds: mission.linkedContextIds,
+    workspaceId: mission.workspaceId,
+    suspicious: mission.suspicious,
+    validation: mission.validation,
+    claim: mission.claim,
+    result: mission.result,
+    dropReason: mission.dropReason,
+    createdAt: mission.createdAt,
+    expiresAt: mission.expiresAt,
+    closedAt: mission.closedAt,
+    updatedAt: mission.updatedAt,
+  }
+}
+
+/** Estimation (≈ tokens) affichée avec le prompt rendu. */
+export function promptTokens(prompt: string): number {
+  return estimateTokens(prompt)
+}

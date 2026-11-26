@@ -63,6 +63,7 @@ function seedContext(db: SyncDb, record: ContextRecord, now: Date): void {
       description: context.description,
       collectionId: context.collectionId,
       ...scopeColumns(context.scope),
+      exposeAsPrompt: context.exposeAsPrompt,
       status: context.status,
       publishedVersion: context.publishedVersion?.number ?? null,
       // Démo : les métadonnées publiées sont celles des fixtures.

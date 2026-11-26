@@ -34,6 +34,8 @@ export interface ContextMetadata {
   readonly collectionId: string | null
   readonly tags: readonly string[]
   readonly scope: Scope
+  /** Publier comme prompt MCP (SPEC §8.5). */
+  readonly exposeAsPrompt: boolean
 }
 
 /** Révision écrite : brouillon ou nouvelle version publiée. */
@@ -103,6 +105,8 @@ export interface PublishedSummary {
   readonly scope: Scope
   readonly version: number
   readonly tokenEstimate: number
+  /** Exposé comme prompt MCP (valeur publiée). */
+  readonly exposeAsPrompt: boolean
 }
 
 export interface PublishedDetail {

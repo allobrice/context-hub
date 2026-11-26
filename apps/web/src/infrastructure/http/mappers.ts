@@ -38,8 +38,13 @@ export function toCollection({ system, ...rest }: Schemas['Collection']): Collec
 }
 
 /** Corps d'un brouillon : le contrat attend des tableaux modifiables. */
-export function toDraftBody(draft: ContextDraftInput): Schemas['ContextDraftInput'] {
-  return { ...draft, tags: [...draft.tags] }
+export function toDraftBody({
+  exposeAsPrompt,
+  ...draft
+}: ContextDraftInput): Schemas['ContextDraftInput'] {
+  const body = { ...draft, tags: [...draft.tags] }
+  // Absent : le serveur conserve le marquage courant (exactOptionalPropertyTypes : pas d'undefined).
+  return exposeAsPrompt === undefined ? body : { ...body, exposeAsPrompt }
 }
 
 export function toWorkspace(dto: Schemas['Workspace']): Workspace {

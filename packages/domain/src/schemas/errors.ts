@@ -10,6 +10,10 @@ import {
   WORKSPACE_RULE_VIOLATIONS,
 } from '../shared/errors.ts'
 import { orNull, ScanFindingSchema } from './context.ts'
+import { MISSION_RULE_VIOLATIONS } from '../missions/review.ts'
+import { REQUIRED_PROMPT_SECTIONS } from '../missions/template.ts'
+import { MISSION_COMMAND_TYPES, TRANSITION_REJECTIONS } from '../missions/lifecycle.ts'
+import { MissionStatusSchema } from './missions.ts'
 import { ClaimSchema } from './workspaces.ts'
 
 export const API_ERROR_CODES = [
@@ -24,6 +28,10 @@ export const API_ERROR_CODES = [
   'WORKSPACE_CLOSED',
   'CLAIM_CONFLICT',
   'WORKSPACE_RULE',
+  'MISSION_RULE',
+  'MISSION_TRANSITION',
+  'MISSION_CONFLICT',
+  'MISSION_RESERVATION',
   'VALIDATION_FAILED',
   'INTERNAL',
 ] as const
@@ -128,6 +136,51 @@ export const WorkspaceRuleErrorSchema = z
   })
   .meta({ id: 'WorkspaceRuleError' })
 
+export const MissionRuleErrorSchema = z
+  .object({
+    code: z.literal('MISSION_RULE'),
+    message,
+    details: z.object({
+      violations: z.array(z.enum(MISSION_RULE_VIOLATIONS)).readonly(),
+      missingSections: z.array(z.enum(REQUIRED_PROMPT_SECTIONS)).readonly(),
+    }),
+  })
+  .meta({
+    id: 'MissionRuleError',
+    description: 'Mission refusée : gabarit incomplet, secret, instruction suspecte, champ invalide.',
+  })
+
+export const MissionTransitionErrorSchema = z
+  .object({
+    code: z.literal('MISSION_TRANSITION'),
+    message,
+    details: z.object({
+      rejection: z.enum(TRANSITION_REJECTIONS),
+      status: MissionStatusSchema,
+      command: z.enum([...MISSION_COMMAND_TYPES, 'renew', 'edit']),
+    }),
+  })
+  .meta({ id: 'MissionTransitionError', description: 'Commande refusée par le cycle de vie.' })
+
+export const MissionConflictErrorSchema = z
+  .object({
+    code: z.literal('MISSION_CONFLICT'),
+    message,
+    details: z.object({ updatedAt: z.string() }),
+  })
+  .meta({ id: 'MissionConflictError', description: 'Mission modifiée entre-temps : recharger.' })
+
+export const MissionReservationErrorSchema = z
+  .object({
+    code: z.literal('MISSION_RESERVATION'),
+    message,
+    details: z.object({ slug: z.string() }),
+  })
+  .meta({
+    id: 'MissionReservationError',
+    description: 'Jeton de réservation absent ou invalide pour la session détentrice.',
+  })
+
 export const ValidationErrorSchema = z
   .object({
     code: z.literal('VALIDATION_FAILED'),
@@ -155,6 +208,10 @@ export const ApiErrorSchema = z
     WorkspaceClosedErrorSchema,
     ClaimConflictErrorSchema,
     WorkspaceRuleErrorSchema,
+    MissionRuleErrorSchema,
+    MissionTransitionErrorSchema,
+    MissionConflictErrorSchema,
+    MissionReservationErrorSchema,
     ValidationErrorSchema,
     InternalErrorSchema,
   ])

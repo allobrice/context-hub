@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { REDACTED_SECRET, redactEntry } from './redaction.ts'
+import { REDACTED_SECRET } from '../context/scan.ts'
+import { redactEntry } from './redaction.ts'
 
 describe('redactEntry', () => {
   it('remplace les secrets et les compte, sans rien garder de la valeur', () => {

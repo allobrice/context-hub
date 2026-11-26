@@ -81,7 +81,11 @@ export class LegacySessions {
 
   /** Pousse `notifications/resources/list_changed` à toutes les sessions ouvertes. */
   notifyResourcesChanged(): void {
-    for (const session of this.sessions.values()) session.server.sendResourceListChanged()
+    for (const session of this.sessions.values()) {
+      session.server.sendResourceListChanged()
+      // Les prompts sont les contextes publiés marqués « exposeAsPrompt » : même déclencheur.
+      session.server.sendPromptListChanged()
+    }
   }
 
   /**
