@@ -628,7 +628,8 @@
                     "slug-frozen",
                     "repo-required",
                     "personal-scope-forbidden",
-                    "secret-in-metadata"
+                    "secret-in-metadata",
+                    "suspicious-prompt"
                   ]
                 }
               },

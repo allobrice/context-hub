@@ -231,6 +231,22 @@ describe('mission_list et mission_take', () => {
     expect(jsonBlock(result)).toMatchObject({ empty: true })
   })
 
+  it('une session ne peut pas abandonner une mission prête qu’elle ne tient pas', async () => {
+    const client = await connect()
+    const slug = stringField(await create(client), 'slug')
+    const result = await call(client, 'mission_drop', {
+      slug,
+      session: 'web-9',
+      repo: FRONT,
+      token: 'chmr_inutile',
+      reason: 'Vider la file',
+    })
+    expect(result.isError).toBe(true)
+    expect(texts(result).join(' ')).toContain('MISSION_TRANSITION')
+    const list = await call(client, 'mission_list', {})
+    expect(jsonBlock(list).counts).toMatchObject({ ready: 1 })
+  })
+
   it('un mauvais jeton est refusé (MISSION_RESERVATION), sans rien changer', async () => {
     const client = await connect()
     const slug = stringField(await create(client), 'slug')

@@ -44,3 +44,18 @@ describe('canPublish', () => {
     ])
   })
 })
+
+describe('publishBlockers : modèle réutilisable (prompt MCP, SPEC §8.5)', () => {
+  const suspicious: ScanFinding = { kind: 'suspicious-instruction', line: 3, excerpt: 'Ignore…' }
+
+  it('bloque une instruction suspecte non justifiée quand le contexte est exposé comme prompt', () => {
+    expect(publishBlockers({ ...ready, exposeAsPrompt: true }, [suspicious])).toEqual([
+      'suspicious-prompt',
+    ])
+  })
+
+  it('ne bloque pas sans exposition, ni une fois l’instruction justifiée (absente des findings)', () => {
+    expect(publishBlockers(ready, [suspicious])).toEqual([])
+    expect(publishBlockers({ ...ready, exposeAsPrompt: true }, [])).toEqual([])
+  })
+})

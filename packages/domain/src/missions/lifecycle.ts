@@ -239,6 +239,9 @@ export function transition(
       if (mission.status !== 'ready' && mission.status !== 'in_progress') {
         return refuse('invalid-status')
       }
+      // Une session n'abandonne que la mission qu'elle tient (jeton exigé par le store) : sinon un
+      // prompt injecté pourrait vider la file de l'équipe. Une mission prête s'abandonne depuis l'UI.
+      if (mission.status === 'ready' && actor.kind === 'session') return refuse('not-holder')
       if (mission.status === 'in_progress') {
         const holding = checkHolder(mission, actor, now)
         if (holding !== null) return refuse(holding)

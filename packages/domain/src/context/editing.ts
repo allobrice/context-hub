@@ -98,7 +98,12 @@ export function reviewPublication(
 ): PublishReview {
   const findings = remainingFindings(scanned, falsePositives)
   const blockers = publishBlockers(
-    { title: input.title, description: input.description, versionNote: input.versionNote },
+    {
+      title: input.title,
+      description: input.description,
+      versionNote: input.versionNote,
+      exposeAsPrompt: input.exposeAsPrompt,
+    },
     findings,
   )
   const metadata: DraftRejection[] = hasSecret(scanContent(metadataText(input)))

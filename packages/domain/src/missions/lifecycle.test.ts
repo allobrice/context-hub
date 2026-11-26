@@ -570,7 +570,6 @@ describe('drop', () => {
   it.each([
     ['la session détentrice', inProgress(), sessionActor(HOLDER), HOLDER],
     ['un humain non détenteur', inProgress(OTHER_USER), HUMAN, { userId: 'u-lead' }],
-    ['n’importe quelle session (ready)', readyMission(), sessionActor(OTHER_USER), OTHER_USER],
     ['un humain (ready)', readyMission(), HUMAN, { userId: 'u-lead' }],
   ])('→ dropped par %s, raison trimée', (_, mission, actor, eventActor) => {
     const next = expectUpdated(transition(mission, DROP, actor, NOW))
@@ -585,8 +584,13 @@ describe('drop', () => {
     expect(next.event).toEqual(eventOf('dropped', eventActor, 'Plus pertinent'))
   })
 
+  it('une session ne peut pas abandonner une mission prête qu’elle ne tient pas (not-holder)', () => {
+    expect(rejectionOf(transition(readyMission(), DROP, sessionActor(OTHER_USER), NOW))).toBe(
+      'not-holder',
+    )
+  })
+
   it.each([
-    ['ready', readyMission(), sessionActor(OTHER_USER)],
     ['ready', readyMission(), HUMAN],
     ['in_progress', inProgress(), sessionActor(HOLDER)],
     ['in_progress', inProgress(), HUMAN],

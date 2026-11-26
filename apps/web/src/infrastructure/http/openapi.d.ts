@@ -4005,7 +4005,7 @@ export interface components {
             code: "DRAFT_REJECTED";
             message: string;
             details: {
-                reasons: ("secret-detected" | "title-empty" | "version-note-empty" | "description-too-long" | "slug-invalid" | "slug-taken" | "slug-frozen" | "repo-required" | "personal-scope-forbidden" | "secret-in-metadata")[];
+                reasons: ("secret-detected" | "title-empty" | "version-note-empty" | "description-too-long" | "slug-invalid" | "slug-taken" | "slug-frozen" | "repo-required" | "personal-scope-forbidden" | "secret-in-metadata" | "suspicious-prompt")[];
                 findings: components["schemas"]["ScanFinding"][];
             };
         };

@@ -76,6 +76,8 @@ export type DraftRejection =
   | 'personal-scope-forbidden'
   /** Secret détecté dans le titre, la description, la note de version ou les tags. */
   | 'secret-in-metadata'
+  /** Instruction suspecte non justifiée dans un contexte publié comme prompt MCP (SPEC §8.5). */
+  | 'suspicious-prompt'
 
 export const DRAFT_REJECTIONS = [
   'secret-detected',
@@ -88,6 +90,7 @@ export const DRAFT_REJECTIONS = [
   'repo-required',
   'personal-scope-forbidden',
   'secret-in-metadata',
+  'suspicious-prompt',
 ] as const satisfies readonly DraftRejection[]
 
 export class DraftRejectedError extends DomainError {
