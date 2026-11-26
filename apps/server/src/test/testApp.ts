@@ -51,6 +51,7 @@ export interface TestApp {
   readonly mcp: ReturnType<typeof composeServer>['mcp']
   /** Cas d'usage des workspaces (fermeture automatique, appelée par le job de `main.ts`). */
   readonly workspaces: ReturnType<typeof composeServer>['workspaces']
+  readonly missions: ReturnType<typeof composeServer>['missions']
   close(): Promise<void>
 }
 
@@ -65,6 +66,8 @@ function sequentialId(): ContextId {
 export interface TestAppOptions {
   /** Horloge injectée (ex. `ManualClock`) ; défaut : figée sur `DEMO_NOW`. */
   readonly clock?: Clock
+  /** Missions de démo (défaut : oui) ; `false` pour partir d'une file vide. */
+  readonly demoMissions?: boolean
 }
 
 let workspaceSequence = 0
@@ -75,8 +78,31 @@ function sequentialWorkspaceId(prefix: 'ws' | 'claim'): string {
   return `${prefix}-test-${workspaceSequence}`
 }
 
-export async function createTestApp({ clock }: TestAppOptions = {}): Promise<TestApp> {
-  const database = createTestDatabase(clock ? { clock } : {})
+let missionSequence = 0
+
+/** Identifiants de mission prévisibles. */
+function sequentialMissionId(): string {
+  missionSequence += 1
+  return `mission-test-${missionSequence}`
+}
+
+/**
+ * Jetons de réservation prévisibles : `chmr_test-1`, `chmr_test-2`… dans l'ordre des prises. Le
+ * compteur est propre à chaque application de test (`createTestApp`).
+ */
+function reservationTokens(): () => string {
+  let count = 0
+  return () => {
+    count += 1
+    return `chmr_test-${String(count)}`
+  }
+}
+
+export async function createTestApp({
+  clock,
+  demoMissions = true,
+}: TestAppOptions = {}): Promise<TestApp> {
+  const database = createTestDatabase({ demoMissions, ...(clock ? { clock } : {}) })
   await database.users.createToken({
     userId: toUserId('camille'),
     tokenHash: hashApiToken(CAMILLE_TOKEN),
@@ -84,7 +110,7 @@ export async function createTestApp({ clock }: TestAppOptions = {}): Promise<Tes
     at: database.clock.now(),
   })
   const { logger, logs } = captureLogger()
-  const { app, mcp, workspaces } = composeServer(database.db, {
+  const { app, mcp, workspaces, missions } = composeServer(database.db, {
     clock: database.clock,
     logger,
     webOrigin: WEB_ORIGIN,
@@ -92,6 +118,8 @@ export async function createTestApp({ clock }: TestAppOptions = {}): Promise<Tes
     allowedHosts: ['localhost', '127.0.0.1'],
     newContextId: sequentialId,
     newWorkspaceId: sequentialWorkspaceId,
+    newMissionId: sequentialMissionId,
+    newReservationToken: reservationTokens(),
   })
   return {
     database,
@@ -117,6 +145,7 @@ export async function createTestApp({ clock }: TestAppOptions = {}): Promise<Tes
     },
     mcp,
     workspaces,
+    missions,
     close: async () => {
       await mcp.close()
       database.close()

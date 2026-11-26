@@ -18,5 +18,7 @@ export const WorkspaceOverviewSchema = z
     mcpServer: z.object({ status: z.enum(['online', 'offline']), transport: z.string() }),
     /** Workspaces ouverts (Inactifs compris) dont l'utilisateur est membre. */
     openWorkspaceCount: z.number().int().nonnegative(),
+    /** Missions à traiter (à valider, prêtes, en cours) visibles de l'utilisateur. */
+    missionTodoCount: z.number().int().nonnegative(),
   })
   .meta({ id: 'WorkspaceOverview' })

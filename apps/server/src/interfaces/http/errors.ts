@@ -22,6 +22,15 @@ import {
   WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
 
+import {
+  MissionBatchNotFoundError,
+  MissionConflictError,
+  MissionNotFoundError,
+  MissionReservationError,
+  MissionRuleError,
+  MissionTransitionError,
+} from '@context-hub/domain/missions/errors.ts'
+
 import { NoDraftError } from '../../application/errors.ts'
 import type { Logger } from '../../application/ports/Logger.ts'
 import type { AppEnv } from './env.ts'
@@ -94,6 +103,8 @@ export function knownErrorResponse(error: unknown, requestId: string): ErrorResp
   }
   const workspace = workspaceErrorResponse(error, requestId)
   if (workspace) return workspace
+  const mission = missionErrorResponse(error, requestId)
+  if (mission) return mission
   // JSON malformé, corps trop gros… levés par Hono avant la validation Zod.
   if (error instanceof HTTPException && error.status < 500) {
     return {
@@ -145,6 +156,66 @@ function workspaceErrorResponse(error: unknown, requestId: string): ErrorRespons
         code: 'WORKSPACE_RULE',
         message: error.message,
         details: { violation: error.violation },
+      },
+    }
+  }
+  return null
+}
+
+/**
+ * Erreurs des Missions : 404, 403 (jeton de réservation), 409 (transition refusée, modification
+ * concurrente), 422 (règle : gabarit, scan, champ).
+ */
+function missionErrorResponse(error: unknown, requestId: string): ErrorResponse | null {
+  if (error instanceof MissionNotFoundError) {
+    return {
+      status: 404,
+      body: {
+        code: 'NOT_FOUND',
+        message: error.message,
+        details: { reference: error.reference, requestId },
+      },
+    }
+  }
+  if (error instanceof MissionBatchNotFoundError) {
+    return {
+      status: 404,
+      body: {
+        code: 'NOT_FOUND',
+        message: error.message,
+        details: { reference: error.batchId, requestId },
+      },
+    }
+  }
+  if (error instanceof MissionReservationError) {
+    return {
+      status: 403,
+      body: { code: 'MISSION_RESERVATION', message: error.message, details: { slug: error.slug } },
+    }
+  }
+  if (error instanceof MissionTransitionError) {
+    return {
+      status: 409,
+      body: { code: 'MISSION_TRANSITION', message: error.message, details: error.refusal },
+    }
+  }
+  if (error instanceof MissionConflictError) {
+    return {
+      status: 409,
+      body: {
+        code: 'MISSION_CONFLICT',
+        message: error.message,
+        details: { updatedAt: error.updatedAt },
+      },
+    }
+  }
+  if (error instanceof MissionRuleError) {
+    return {
+      status: 422,
+      body: {
+        code: 'MISSION_RULE',
+        message: error.message,
+        details: { violations: error.violations, missingSections: error.missingSections },
       },
     }
   }

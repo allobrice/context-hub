@@ -24,8 +24,10 @@ import {
   users,
 } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
-import { publishedMetadataColumns, reindex, scopeColumns } from '../stores/contextRecords.ts'
+import { publishedMetadataColumns, reindex } from '../stores/contextRecords.ts'
+import { scopeColumns } from '../stores/scopeRecords.ts'
 import { issueApiToken } from './issueApiToken.ts'
+import { seedMissions } from './seedMissions.ts'
 import { seedWorkspaces } from './seedWorkspaces.ts'
 
 /** Utilisateur de dev : seul porteur d'un jeton, propriétaire des contextes `personal` de démo. */
@@ -62,6 +64,7 @@ function seedContext(db: SyncDb, record: ContextRecord, now: Date): void {
       description: context.description,
       collectionId: context.collectionId,
       ...scopeColumns(context.scope),
+      exposeAsPrompt: context.exposeAsPrompt,
       status: context.status,
       publishedVersion: context.publishedVersion?.number ?? null,
       // Démo : les métadonnées publiées sont celles des fixtures.
@@ -130,6 +133,8 @@ export interface SeedOptions {
   readonly searchIndex: ContextSearchIndex
   /** Jeton imposé (tests) ; sinon un jeton aléatoire est généré. */
   readonly token?: string
+  /** Missions de démo (défaut : oui). Les tests des missions partent d'une file vide. */
+  readonly missions?: boolean
 }
 
 export interface SeedResult {
@@ -138,7 +143,10 @@ export interface SeedResult {
 }
 
 /** Remplit une base vide avec les données de démo et un jeton pour l'utilisateur de dev. */
-export function seedDemoData(db: SyncDb, { now, searchIndex, token }: SeedOptions): SeedResult {
+export function seedDemoData(
+  db: SyncDb,
+  { now, searchIndex, token, missions = true }: SeedOptions,
+): SeedResult {
   const issued = token ?? generateApiToken()
   db.transaction((tx) => {
     tx.insert(users)
@@ -166,6 +174,7 @@ export function seedDemoData(db: SyncDb, { now, searchIndex, token }: SeedOption
     for (const record of CONTEXT_FIXTURES) seedContext(tx, record, now)
     for (const record of CONTEXT_FIXTURES) reindex(tx, searchIndex, record.context.id)
     seedWorkspaces(tx, now)
+    if (missions) seedMissions(tx, now)
     insertDevToken(tx, issued, now)
   })
   return { token: issued }

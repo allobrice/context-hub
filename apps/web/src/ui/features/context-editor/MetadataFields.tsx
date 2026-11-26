@@ -52,6 +52,7 @@ export function MetadataFields({
     repo: useId(),
     tags: useId(),
     scopeHelp: useId(),
+    promptHelp: useId(),
   }
   const { values } = state
   const descriptionLength = values.description.length
@@ -210,6 +211,26 @@ export function MetadataFields({
           }}
         />
       </Field>
+
+      <div className={styles.full}>
+        <label className={styles.checkbox}>
+          <input
+            type="checkbox"
+            checked={values.exposeAsPrompt === true}
+            aria-describedby={ids.promptHelp}
+            onChange={(event) => {
+              dispatch({ type: 'expose-as-prompt', value: event.target.checked })
+            }}
+          />
+          Publier comme modèle réutilisable (prompt MCP)
+        </label>
+        <span id={ids.promptHelp} className={styles.help}>
+          Une fois publié, le contexte apparaît dans Claude Code comme la commande
+          /mcp__context-hub__
+          {values.slug.replaceAll('/', '-') || '<slug>'}, déclenchée par un humain (jamais par
+          l’agent).
+        </span>
+      </div>
     </section>
   )
 }

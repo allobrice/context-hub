@@ -12,6 +12,8 @@ const REJECTION_LABELS: Readonly<Record<DraftRejection, string>> = {
   'repo-required': 'repo requis pour la portée Projet',
   'personal-scope-forbidden': 'seul l’auteur peut rendre ce contexte personnel',
   'secret-in-metadata': 'secret potentiel dans le titre, la description, la note ou les tags',
+  'suspicious-prompt':
+    'instruction suspecte dans un modèle réutilisable (prompt MCP) : la justifier comme faux positif ou décocher la case',
 }
 
 export const SLUG_REJECTIONS: ReadonlySet<DraftRejection> = new Set([

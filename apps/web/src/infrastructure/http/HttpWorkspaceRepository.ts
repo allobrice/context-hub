@@ -5,8 +5,8 @@ import type {
   WorkspaceRepository,
 } from '../../application/ports/WorkspaceRepository.ts'
 import { ContextNotFoundError, WorkspaceNotFoundError } from '@context-hub/domain/shared/errors.ts'
+import { UI_SESSION_LABEL } from '@context-hub/domain/sessions/session.ts'
 import {
-  UI_SESSION_LABEL,
   type AuthoredEntryKind,
   type EntryPage,
   type WorkspaceDetail,

@@ -57,6 +57,19 @@ export const appRoutes: RouteObject[] = [
         }),
       },
       {
+        path: 'missions',
+        lazy: async () => ({
+          Component: (await import('../features/missions/list/MissionsPage.tsx')).MissionsPage,
+        }),
+      },
+      {
+        path: 'missions/:slug',
+        lazy: async () => ({
+          Component: (await import('../features/missions/detail/MissionDetailPage.tsx'))
+            .MissionDetailPage,
+        }),
+      },
+      {
         path: 'mcp',
         lazy: async () => ({ Component: (await import('../features/mcp/McpPage.tsx')).McpPage }),
       },

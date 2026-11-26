@@ -7,13 +7,19 @@
  */
 import { isAbsolute, relative, resolve } from 'node:path'
 
-import { isRecord, workspacePath } from './api.mjs'
+import { apiFailure, isRecord, workspacePath } from './api.mjs'
 import { defaultLabel, parseCommand, slugify } from './commands.mjs'
 import { localRepoName, parseRemote } from './git.mjs'
+import {
+  listMissions,
+  missionCreateIdentity,
+  missionHeartbeat,
+  missionReminder,
+  takeMission,
+} from './missions.mjs'
 import { deleteState, readState, writeState } from './state.mjs'
+import { clockTime, MAX_CONTEXT_CHARS } from './text.mjs'
 
-/** Plafond de `additionalContext` (10 000 caractères côté Claude Code), avec une marge. */
-const MAX_CONTEXT_CHARS = 9_500
 const TIMEOUT_MS = { join: 4_000, sync: 3_000, checkWrite: 1_500, status: 3_000 }
 /** Écritures non vérifiées mémorisées au plus (les plus récentes). */
 const MAX_UNVERIFIED = 20
@@ -90,21 +96,11 @@ export function identityLine(state) {
  * @param {string} slug
  */
 function failure(result, slug) {
-  if (result.kind === 'unreachable') {
-    return `Serveur Context Hub injoignable (${result.reason}). Vérifier CONTEXT_HUB_URL et CONTEXT_HUB_TOKEN.`
-  }
-  switch (result.code) {
-    case 'NOT_FOUND':
-      return `Workspace « ${slug} » introuvable.`
-    case 'WORKSPACE_FORBIDDEN':
-      return `Accès refusé au workspace « ${slug} » : il faut y être invité par un membre.`
-    case 'WORKSPACE_CLOSED':
-      return `Le workspace « ${slug} » est fermé (lecture seule).`
-    case 'UNAUTHORIZED':
-      return 'Jeton Context Hub refusé : vérifier CONTEXT_HUB_TOKEN.'
-    default:
-      return `Erreur Context Hub (${result.status} ${result.code ?? ''}) : ${result.message}`
-  }
+  return apiFailure(result, {
+    NOT_FOUND: `Workspace « ${slug} » introuvable.`,
+    WORKSPACE_FORBIDDEN: `Accès refusé au workspace « ${slug} » : il faut y être invité par un membre.`,
+    WORKSPACE_CLOSED: `Le workspace « ${slug} » est fermé (lecture seule).`,
+  })
 }
 
 /**
@@ -184,6 +180,25 @@ async function join(input, deps, { slug, label }) {
  * @returns {Promise<HookOutput | null>}
  */
 export async function onSessionStart(input, deps) {
+  const workspace = await workspaceResume(input, deps)
+  const mission = missionReminder(input, deps)
+  const texts = [workspace?.text, mission ?? undefined].filter((text) => text !== undefined)
+  if (texts.length === 0) {
+    return workspace?.systemMessage === undefined
+      ? null
+      : { systemMessage: workspace.systemMessage }
+  }
+  return context('SessionStart', texts.join('\n\n'), workspace?.systemMessage)
+}
+
+/**
+ * Session rattachée à un workspace (reprise, compaction, `/clear`) : rejoint à nouveau et renvoie le
+ * résumé ; null sans workspace.
+ * @param {HookInput} input
+ * @param {Deps} deps
+ * @returns {Promise<{ text?: string, systemMessage?: string } | null>}
+ */
+async function workspaceResume(input, deps) {
   const state = readState(deps.config.dataDir, input.session_id)
   if (state === null) return null
   const result = await deps.api.post(
@@ -195,14 +210,11 @@ export async function onSessionStart(input, deps) {
     const joined = joinResult(result.body)
     if (joined === null) return null
     writeState(deps.config.dataDir, input.session_id, { ...state, cursor: joined.cursor })
-    return context('SessionStart', `${identityLine(state)}\n\n${joined.digest}`)
+    return { text: `${identityLine(state)}\n\n${joined.digest}` }
   }
   if (isGone(result)) {
     deleteState(deps.config.dataDir, input.session_id)
-    return context(
-      'SessionStart',
-      `${failure(result, state.workspace)} Session détachée du workspace.`,
-    )
+    return { text: `${failure(result, state.workspace)} Session détachée du workspace.` }
   }
   return { systemMessage: `context-hub : ${failure(result, state.workspace)}` }
 }
@@ -219,6 +231,27 @@ export async function onSessionStart(input, deps) {
 export async function onUserPromptSubmit(input, deps) {
   const command = parseCommand(input.prompt ?? '')
   if (command !== null) return runCommand(command, input, deps)
+  const parts = (
+    await Promise.all([missionHeartbeat(input, deps), workspaceSync(input, deps)])
+  ).filter((part) => part !== null)
+  if (parts.length === 0) return null
+  const warnings = parts.flatMap((part) =>
+    part.systemMessage === undefined ? [] : [part.systemMessage],
+  )
+  return context(
+    'UserPromptSubmit',
+    parts.map((part) => part.text).join('\n\n'),
+    warnings.length === 0 ? undefined : warnings.join(' '),
+  )
+}
+
+/**
+ * Delta du workspace rejoint par cette session (et identité), ou null sans workspace.
+ * @param {HookInput} input
+ * @param {Deps} deps
+ * @returns {Promise<{ text: string, systemMessage?: string } | null>}
+ */
+async function workspaceSync(input, deps) {
   const state = readState(deps.config.dataDir, input.session_id)
   if (state === null) return null
   const result = await deps.api.post(
@@ -237,23 +270,19 @@ export async function onUserPromptSubmit(input, deps) {
     const parts = [identityLine(state)]
     if (unverified.length > 0) parts.push(unverifiedNotice(state, unverified))
     if (typeof count === 'number' && count > 0 && typeof text === 'string') parts.push(text)
-    return context('UserPromptSubmit', parts.join('\n\n'))
+    return { text: parts.join('\n\n') }
   }
   if (isGone(result)) {
     deleteState(deps.config.dataDir, input.session_id)
-    return context(
-      'UserPromptSubmit',
-      `${failure(result, state.workspace)} Session détachée du workspace.`,
-    )
+    return { text: `${failure(result, state.workspace)} Session détachée du workspace.` }
   }
-  return context(
-    'UserPromptSubmit',
-    identityLine(state),
-    `context-hub : nouvelles entrées non synchronisées. ${failure(
+  return {
+    text: identityLine(state),
+    systemMessage: `context-hub : nouvelles entrées non synchronisées. ${failure(
       result.kind === 'ok' ? { kind: 'unreachable', reason: 'réponse inattendue' } : result,
       state.workspace,
     )}`,
-  )
+  }
 }
 
 /**
@@ -303,6 +332,18 @@ async function runCommand(command, input, deps) {
       return report(await status(input, deps))
     case 'leave':
       return report(await leave(input, deps))
+    case 'take':
+      return report(
+        await takeMission(input, deps, { slug: command.slug }, locateRepo(input.cwd, deps)),
+      )
+    case 'next':
+      return report(
+        await takeMission(input, deps, { tags: command.tags }, locateRepo(input.cwd, deps)),
+      )
+    case 'missions':
+      return report(await listMissions(deps, locateRepo(input.cwd, deps).repo))
+    case 'mission-create':
+      return report(missionCreateIdentity(input, deps, locateRepo(input.cwd, deps).repo))
   }
 }
 
@@ -382,17 +423,6 @@ function targetPath(toolInput) {
 }
 
 /** @param {string} iso */
-function clockTime(iso) {
-  const date = new Date(iso)
-  return Number.isNaN(date.getTime())
-    ? iso
-    : date.toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short',
-      })
-}
-
 /**
  * @param {string} reason
  * @returns {HookOutput}
@@ -435,7 +465,7 @@ export async function onPreToolUse(input, deps) {
     return deny(
       `Écriture bloquée par Context Hub : ${path} est dans la zone ${String(held.area)} (${String(held.repo)}) ` +
         `réservée par la session ${String(holder.sessionLabel)} (${String(holder.userName)}) jusqu’à ` +
-        `${clockTime(String(held.expiresAt))}. Ne contourne pas ce blocage (ni par un autre outil, ni par Bash) : ` +
+        `${clockTime(String(held.expiresAt), { zone: true })}. Ne contourne pas ce blocage (ni par un autre outil, ni par Bash) : ` +
         `poste une question à ${String(holder.sessionLabel)} avec workspace_post(slug="${state.workspace}", ` +
         `session="${state.label}", kind="question", …), ou travaille sur une autre zone en attendant sa libération.`,
     )

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { containsSecret, REDACTED_SECRET, redactEntry } from './redaction.ts'
+import { REDACTED_SECRET } from '../context/scan.ts'
+import { redactEntry } from './redaction.ts'
 
 describe('redactEntry', () => {
   it('remplace les secrets et les compte, sans rien garder de la valeur', () => {
@@ -42,12 +43,5 @@ describe('redactEntry', () => {
   it('est idempotent', () => {
     const once = redactEntry('token sk_live_51HxAbCdEfGh123')
     expect(redactEntry(once.body)).toEqual({ ...once, redactions: 0 })
-  })
-})
-
-describe('containsSecret', () => {
-  it('détecte un secret dans un texte libre', () => {
-    expect(containsSecret('Objectif : AKIAABCDEFGHIJKLMNOP')).toBe(true)
-    expect(containsSecret('Objectif : migrer l’auth')).toBe(false)
   })
 })

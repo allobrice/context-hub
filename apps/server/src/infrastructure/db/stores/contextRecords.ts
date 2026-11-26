@@ -2,14 +2,9 @@
  * Lecture et écriture des agrégats « contexte » partagées par les stores : visibilité, hydratation
  * (tags, versions, brouillon, lectures MCP), tags d'un contexte et réindexation plein texte.
  */
-import { and, asc, count, desc, eq, gte, inArray, isNotNull, sql, type SQL } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, type SQL } from 'drizzle-orm'
 
-import type {
-  Context,
-  ContextVersion,
-  Scope,
-  ScopeKind,
-} from '@context-hub/domain/context/types.ts'
+import type { Context, ContextVersion } from '@context-hub/domain/context/types.ts'
 import { toContextId } from '@context-hub/domain/context/types.ts'
 import { titleSortKey } from '@context-hub/domain/library/criteria.ts'
 
@@ -17,16 +12,10 @@ import type { ContextMetadata } from '../../../application/ports/ContextStore.ts
 import type { Viewer } from '../../../application/viewer.ts'
 import type { SyncDb } from '../connection.ts'
 import { isoDate } from '../dates.ts'
-import {
-  contextDrafts,
-  contexts,
-  contextTags,
-  contextVersions,
-  mcpReads,
-  tags,
-  users,
-} from '../schema.ts'
+import { contextDrafts, contexts, contextTags, contextVersions, mcpReads, tags } from '../schema.ts'
 import type { ContextSearchIndex } from '../search/ContextSearchIndex.ts'
+import { scopeColumns, scopeOf, visibleIn } from './scopeRecords.ts'
+import { userNamesIn } from './userRecords.ts'
 
 export type ContextRow = typeof contexts.$inferSelect
 type VersionRow = typeof contextVersions.$inferSelect
@@ -36,29 +25,7 @@ const MCP_READS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 
 /** Portées : `personal` réservée à son propriétaire ; `team` et `project` visibles de tous. */
 export function visibleTo(viewer: Viewer): SQL {
-  return sql`(${contexts.scopeKind} <> 'personal' or ${contexts.scopeValue} = ${viewer.userId})`
-}
-
-export function scopeOf(kind: ScopeKind, value: string): Scope {
-  switch (kind) {
-    case 'personal':
-      return { kind, owner: value }
-    case 'project':
-      return { kind, repo: value }
-    case 'team':
-      return { kind, team: value }
-  }
-}
-
-export function scopeColumns(scope: Scope): { scopeKind: ScopeKind; scopeValue: string } {
-  switch (scope.kind) {
-    case 'personal':
-      return { scopeKind: scope.kind, scopeValue: scope.owner }
-    case 'project':
-      return { scopeKind: scope.kind, scopeValue: scope.repo }
-    case 'team':
-      return { scopeKind: scope.kind, scopeValue: scope.team }
-  }
+  return visibleIn({ kind: contexts.scopeKind, value: contexts.scopeValue }, viewer)
 }
 
 function groupBy<T, K>(items: readonly T[], keyOf: (item: T) => K): Map<K, T[]> {
@@ -70,17 +37,6 @@ function groupBy<T, K>(items: readonly T[], keyOf: (item: T) => K): Map<K, T[]> 
     else groups.set(key, [item])
   }
   return groups
-}
-
-/** Nom affiché des auteurs (users.name), par identifiant. */
-function authorNames(db: SyncDb, ids: readonly string[]): Map<string, string> {
-  if (ids.length === 0) return new Map()
-  const rows = db
-    .select({ id: users.id, name: users.name })
-    .from(users)
-    .where(inArray(users.id, [...new Set(ids)]))
-    .all()
-  return new Map(rows.map((row) => [row.id, row.name]))
 }
 
 function toVersion(row: VersionRow, names: ReadonlyMap<string, string>): ContextVersion {
@@ -147,7 +103,7 @@ export function hydrate(db: SyncDb, rows: readonly ContextRow[], now: Date): Con
     .groupBy(mcpReads.contextId)
     .all()
 
-  const names = authorNames(db, [
+  const names = userNamesIn(db, [
     ...rows.map((row) => row.authorId),
     ...published.map((row) => row.authorId),
     ...drafts.map((row) => row.authorId),
@@ -174,6 +130,7 @@ export function hydrate(db: SyncDb, rows: readonly ContextRow[], now: Date): Con
       updatedAt: row.updatedAt,
       author: names.get(row.authorId) ?? row.authorId,
       mcpReads7d: readsById.get(row.id) ?? 0,
+      exposeAsPrompt: row.exposeAsPrompt,
     }
   })
 }
@@ -186,7 +143,7 @@ export function history(db: SyncDb, contextId: string): ContextVersion[] {
     .where(eq(contextVersions.contextId, contextId))
     .orderBy(desc(contextVersions.number))
     .all()
-  const names = authorNames(
+  const names = userNamesIn(
     db,
     rows.map((row) => row.authorId),
   )
@@ -201,7 +158,7 @@ export function versionOf(db: SyncDb, contextId: string, number: number): Contex
     .where(and(eq(contextVersions.contextId, contextId), eq(contextVersions.number, number)))
     .get()
   if (!row) return null
-  return toVersion(row, authorNames(db, [row.authorId]))
+  return toVersion(row, userNamesIn(db, [row.authorId]))
 }
 
 /** Déclare les tags au registre (dernier usage = `at`) et réécrit ceux du contexte, dans l'ordre. */
@@ -231,6 +188,7 @@ export function metadataColumns(metadata: ContextMetadata) {
     description: metadata.description,
     collectionId: metadata.collectionId,
     ...scopeColumns(metadata.scope),
+    exposeAsPrompt: metadata.exposeAsPrompt,
   }
 }
 
@@ -244,6 +202,7 @@ export function publishedMetadataColumns(metadata: ContextMetadata) {
     publishedScopeKind: scope.scopeKind,
     publishedScopeValue: scope.scopeValue,
     publishedTags: JSON.stringify([...metadata.tags]),
+    publishedExposeAsPrompt: metadata.exposeAsPrompt,
   }
 }
 
@@ -287,7 +246,10 @@ export function rewritePublishedTags(
 
 /** Portées appliquées aux métadonnées publiées : ce que voient les sessions MCP. */
 export function publishedVisibleTo(viewer: Viewer): SQL {
-  return sql`(${contexts.publishedScopeKind} <> 'personal' or ${contexts.publishedScopeValue} = ${viewer.userId})`
+  return visibleIn(
+    { kind: contexts.publishedScopeKind, value: contexts.publishedScopeValue },
+    viewer,
+  )
 }
 
 function contentOf(db: SyncDb, contextId: string, number: number | null): string | null {

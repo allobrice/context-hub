@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { editorReducer, isDirty, newEditorState, type EditorContext } from './editorForm.ts'
+import { aContext } from '@context-hub/domain/test-utils/fixtures.ts'
+
+import {
+  editorReducer,
+  isDirty,
+  newEditorState,
+  stateFromDetail,
+  type EditorContext,
+} from './editorForm.ts'
 
 const context: EditorContext = {
   slugEditable: true,
@@ -78,5 +86,24 @@ describe('editorReducer — enregistrement et conflit', () => {
     const state = reduce(newEditorState('Brice'), { type: 'rebase', content: 'v5', baseVersion: 5 })
     expect(state.values.content).toBe('v5')
     expect(state.baseVersion).toBe(5)
+  })
+})
+
+describe('editorReducer — modèle réutilisable (prompt MCP, SPEC §8.5)', () => {
+  it('un nouveau contexte n’est pas exposé ; la case le marque et rend le brouillon modifié', () => {
+    const initial = newEditorState('Brice', 'Checklist de revue')
+    expect(initial.values.exposeAsPrompt).toBe(false)
+    const exposed = reduce(initial, { type: 'expose-as-prompt', value: true })
+    expect(exposed.values.exposeAsPrompt).toBe(true)
+    expect(isDirty(exposed)).toBe(true)
+  })
+
+  it('un contexte existant reprend son marquage', () => {
+    const state = stateFromDetail({
+      context: aContext({ exposeAsPrompt: true }),
+      history: [],
+      collectionName: null,
+    })
+    expect(state.values.exposeAsPrompt).toBe(true)
   })
 })

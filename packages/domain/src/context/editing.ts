@@ -15,6 +15,11 @@ export interface ContextDraftInput {
   readonly scope: Scope
   readonly content: string
   readonly versionNote: string
+  /**
+   * Publier comme prompt MCP (SPEC §8.5). Absent : la valeur courante est conservée (un client qui ne
+   * connaît pas ce champ ne l'efface pas en enregistrant).
+   */
+  readonly exposeAsPrompt?: boolean | undefined
 }
 
 /** Finding écarté par l'auteur, avec sa justification (conservée pour la relecture côté serveur). */
@@ -93,7 +98,12 @@ export function reviewPublication(
 ): PublishReview {
   const findings = remainingFindings(scanned, falsePositives)
   const blockers = publishBlockers(
-    { title: input.title, description: input.description, versionNote: input.versionNote },
+    {
+      title: input.title,
+      description: input.description,
+      versionNote: input.versionNote,
+      exposeAsPrompt: input.exposeAsPrompt,
+    },
     findings,
   )
   const metadata: DraftRejection[] = hasSecret(scanContent(metadataText(input)))

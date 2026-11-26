@@ -2,9 +2,7 @@
  * Scan d'une entrée de journal (SPEC §7.2) : les secrets sont REMPLACÉS (jamais stockés), une
  * instruction suspecte est conservée mais signalée.
  */
-import { redactSecrets, scanContent } from '../context/scan.ts'
-
-export const REDACTED_SECRET = '[secret masqué]'
+import { REDACTED_SECRET, redactSecrets, scanContent } from '../context/scan.ts'
 
 export interface RedactedEntry {
   readonly body: string
@@ -30,9 +28,4 @@ export function redactEntry(body: string, files: readonly string[] = []): Redact
       (finding) => finding.kind === 'suspicious-instruction',
     ),
   }
-}
-
-/** Un texte libre (titre, objectif) contient-il un secret ? Il est alors refusé, pas masqué. */
-export function containsSecret(text: string): boolean {
-  return scanContent(text).some((finding) => finding.kind === 'secret')
 }

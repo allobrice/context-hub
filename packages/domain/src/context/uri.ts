@@ -22,3 +22,11 @@ export function pinnedUri(context: WithSlug, versionNumber: number): string {
 export function mention(context: WithSlug): string {
   return `@${MCP_SERVER_NAME}:${resourceUri(context)}`
 }
+
+/**
+ * Nom d'un contexte exposé comme prompt MCP (SPEC §8.5) : le slug, « / » remplacés par « - ». Claude
+ * Code l'affiche comme slash command `/mcp__context-hub__<nom>`.
+ */
+export function promptName(context: WithSlug): string {
+  return context.slug.replaceAll('/', '-')
+}

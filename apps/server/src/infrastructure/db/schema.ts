@@ -3,10 +3,17 @@
  *
  * Portable vers Postgres : uniquement des colonnes `text` / `integer`, dates en ISO 8601 UTC
  * (`Date#toISOString()`, triables lexicographiquement), JSON sérialisé en `text`, aucune fonction SQL
- * propre à SQLite. Le seul SQL spécifique (FTS5, trigger d'immuabilité) vit dans la migration custom
- * `drizzle/0001_*.sql` et dans `search/Fts5SearchIndex.ts`.
+ * propre à SQLite. Le seul SQL spécifique (FTS5, triggers d'immuabilité) vit dans les migrations custom
+ * `drizzle/0001_*.sql` et `drizzle/0006_*.sql`, et dans `search/Fts5SearchIndex.ts`.
  */
 import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+
+import { SCOPE_KINDS } from '@context-hub/domain/context/types.ts'
+import {
+  MISSION_EVENT_TYPES,
+  MISSION_STATUSES,
+  PRIORITIES,
+} from '@context-hub/domain/missions/types.ts'
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -49,9 +56,11 @@ export const contexts = sqliteTable(
     description: text('description').notNull(),
     /** null = « Sans collection ». */
     collectionId: text('collection_id').references(() => collections.id),
-    scopeKind: text('scope_kind', { enum: ['personal', 'project', 'team'] }).notNull(),
+    scopeKind: text('scope_kind', { enum: SCOPE_KINDS }).notNull(),
     /** Propriétaire (personal), repo (project) ou équipe (team). */
     scopeValue: text('scope_value').notNull(),
+    /** Modèle réutilisable à publier comme prompt MCP (brouillon compris). */
+    exposeAsPrompt: integer('expose_as_prompt', { mode: 'boolean' }).notNull().default(false),
     status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
     /** Numéro de la version lue par les sessions MCP, null si jamais publié. */
     publishedVersion: integer('published_version'),
@@ -60,10 +69,14 @@ export const contexts = sqliteTable(
     publishedTitle: text('published_title'),
     publishedDescription: text('published_description'),
     publishedCollectionId: text('published_collection_id').references(() => collections.id),
-    publishedScopeKind: text('published_scope_kind', { enum: ['personal', 'project', 'team'] }),
+    publishedScopeKind: text('published_scope_kind', { enum: SCOPE_KINDS }),
     publishedScopeValue: text('published_scope_value'),
     /** Tags publiés, en JSON (`string[]`). */
     publishedTags: text('published_tags').notNull().default('[]'),
+    /** Exposé comme prompt MCP : seule valeur lue par `prompts/list` (SPEC §8.5). */
+    publishedExposeAsPrompt: integer('published_expose_as_prompt', { mode: 'boolean' })
+      .notNull()
+      .default(false),
     authorId: text('author_id')
       .notNull()
       .references(() => users.id),
@@ -301,4 +314,117 @@ export const workspaceParticipants = sqliteTable(
     cursor: integer('cursor').notNull().default(1),
   },
   (table) => [primaryKey({ columns: [table.workspaceId, table.userId, table.sessionLabel] })],
+)
+
+// ── Missions (SPEC §8) ────────────────────────────────────────────────────────
+
+/**
+ * Missions. Les références de session (origine, fraîcheur, prise) sont stockées à plat (utilisateur,
+ * label, repo) ; le nom de l'utilisateur est joint à la lecture. Les listes et le résultat sont du JSON.
+ * Seul le hash du jeton de réservation est stocké.
+ */
+export const missions = sqliteTable(
+  'missions',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    summary: text('summary').notNull(),
+    prompt: text('prompt').notNull(),
+    priority: text('priority', { enum: PRIORITIES }).notNull(),
+    status: text('status', { enum: MISSION_STATUSES }).notNull(),
+    scopeKind: text('scope_kind', { enum: SCOPE_KINDS }).notNull(),
+    scopeValue: text('scope_value').notNull(),
+    originLabel: text('origin_label').notNull(),
+    originBatchId: text('origin_batch_id'),
+    originUserId: text('origin_user_id').references(() => users.id),
+    originSessionLabel: text('origin_session_label'),
+    originRepo: text('origin_repo'),
+    createdBy: text('created_by')
+      .notNull()
+      .references(() => users.id),
+    codeRefRepo: text('code_ref_repo').notNull(),
+    codeRefCommit: text('code_ref_commit').notNull(),
+    /** JSON `string[]`. */
+    codeRefFiles: text('code_ref_files').notNull().default('[]'),
+    freshnessCheckedAt: text('freshness_checked_at'),
+    /** JSON `string[]`. */
+    freshnessChangedFiles: text('freshness_changed_files'),
+    freshnessUserId: text('freshness_user_id').references(() => users.id),
+    freshnessSessionLabel: text('freshness_session_label'),
+    freshnessRepo: text('freshness_repo'),
+    /** JSON `string[]`. */
+    linkedContextIds: text('linked_context_ids').notNull().default('[]'),
+    workspaceId: text('workspace_id').references(() => workspaces.id),
+    /** Instruction suspecte conservée (mission créée par un humain). */
+    suspicious: integer('suspicious', { mode: 'boolean' }).notNull().default(false),
+    validationBy: text('validation_by').references(() => users.id),
+    validationAt: text('validation_at'),
+    claimUserId: text('claim_user_id').references(() => users.id),
+    claimSessionLabel: text('claim_session_label'),
+    claimRepo: text('claim_repo'),
+    claimAcquiredAt: text('claim_acquired_at'),
+    claimExpiresAt: text('claim_expires_at'),
+    /** sha-256 du jeton de réservation renvoyé par `take` (jamais le jeton). */
+    claimTokenHash: text('claim_token_hash'),
+    /** JSON `MissionResult`. */
+    result: text('result'),
+    dropReason: text('drop_reason'),
+    createdAt: text('created_at').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    closedAt: text('closed_at'),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    /** File : prêtes, par priorité puis ancienneté. */
+    index('missions_queue_idx').on(table.status, table.priority, table.createdAt),
+    index('missions_expires_idx').on(table.status, table.expiresAt),
+    index('missions_claim_expires_idx').on(table.claimExpiresAt),
+    index('missions_holder_idx').on(table.claimUserId, table.claimSessionLabel),
+    index('missions_batch_idx').on(table.originBatchId),
+    index('missions_repo_idx').on(table.codeRefRepo),
+  ],
+)
+
+/** Tags d'une mission : texte libre validé, sans lien avec le registre de la bibliothèque. */
+export const missionTags = sqliteTable(
+  'mission_tags',
+  {
+    missionId: text('mission_id')
+      .notNull()
+      .references(() => missions.id, { onDelete: 'cascade' }),
+    tag: text('tag').notNull(),
+    /** Ordre des tags, tel que saisi. */
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.missionId, table.tag] }),
+    index('mission_tags_tag_idx').on(table.tag, table.missionId),
+  ],
+)
+
+/**
+ * Journal du cycle de vie, APPEND-ONLY (triggers en défense en profondeur, migration 0006). Sans clé
+ * étrangère : l'événement de rejet survit à la suppression de la mission, d'où la copie du slug et
+ * du titre. `id` ordonne deux événements de la même milliseconde.
+ */
+export const missionEvents = sqliteTable(
+  'mission_events',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    missionId: text('mission_id').notNull(),
+    missionSlug: text('mission_slug').notNull(),
+    missionTitle: text('mission_title').notNull(),
+    at: text('at').notNull(),
+    type: text('type', { enum: MISSION_EVENT_TYPES }).notNull(),
+    /** Session ou humain ; null pour le job. */
+    actorUserId: text('actor_user_id'),
+    /** Label de session ; null pour un humain ou le job. */
+    actorSessionLabel: text('actor_session_label'),
+    actorRepo: text('actor_repo'),
+    /** `job` pour le job de maintenance. */
+    actorSystem: text('actor_system', { enum: ['job'] }),
+    detail: text('detail'),
+  },
+  (table) => [index('mission_events_mission_idx').on(table.missionId, table.id)],
 )

@@ -76,6 +76,16 @@ export function hasSecret(findings: readonly ScanFinding[]): boolean {
   return findings.some((finding) => finding.kind === 'secret')
 }
 
+/** Un texte libre (titre, objectif, résumé…) contient-il un secret ? Il est alors refusé, pas masqué. */
+export function containsSecret(text: string): boolean {
+  return hasSecret(scanContent(text))
+}
+
+/** Un texte contient-il une instruction suspecte (injection, exfiltration) ? */
+export function hasSuspiciousInstruction(text: string): boolean {
+  return scanContent(text).some((finding) => finding.kind === 'suspicious-instruction')
+}
+
 const MASK_CHAR = '•'
 const MASK_VISIBLE_START = 4
 const MASK_VISIBLE_END = 3
@@ -108,6 +118,9 @@ export function maskSecretsIn(text: string): string {
 /** Bloc de clé privée complet (en-tête, corps base64, pied ou fin du texte). */
 const PRIVATE_KEY_BLOCK =
   /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g
+
+/** Remplace un secret dans un texte conservé (journal, résultat de mission) : rien n'est stocké. */
+export const REDACTED_SECRET = '[secret masqué]'
 
 /**
  * REMPLACE chaque secret reconnu par `replacement` (contrairement à `maskSecretsIn`, rien de la valeur

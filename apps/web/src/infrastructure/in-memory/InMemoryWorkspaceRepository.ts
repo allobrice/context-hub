@@ -11,20 +11,24 @@ import {
   WorkspaceNotFoundError,
   WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
-import { deriveWorkspaceStatus, isSessionActive } from '@context-hub/domain/workspaces/activity.ts'
+import { containsSecret } from '@context-hub/domain/context/scan.ts'
+import {
+  isSessionActive,
+  UI_SESSION_LABEL,
+  type SessionRef,
+} from '@context-hub/domain/sessions/session.ts'
+import { deriveWorkspaceStatus } from '@context-hub/domain/workspaces/activity.ts'
 import { isClaimExpired } from '@context-hub/domain/workspaces/claims.ts'
-import { containsSecret, redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
+import { redactEntry } from '@context-hub/domain/workspaces/redaction.ts'
 import {
   ENTRY_KINDS,
   ENTRY_MAX_LENGTH,
-  UI_SESSION_LABEL,
   WORKSPACE_SLUG_PATTERN,
   type AuthoredEntryKind,
   type EntryCounts,
   type EntryKind,
   type EntryPage,
   type LinkedContext,
-  type SessionRef,
   type SystemSource,
   type WorkspaceDetail,
   type WorkspaceEntry,

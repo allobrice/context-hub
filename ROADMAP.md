@@ -23,6 +23,15 @@ Volontairement exclus de la v1 (mission « serveur + MCP + branchement de l'UI �
 - **`notifications/resources/updated` pour les clients 2026-07-28** : le bus du SDK (`handler.notify.resourceUpdated`) diffuse à tout flux abonné à l'URI sans contrôle d'appartenance ; seules les sessions 2025 membres et abonnées sont notifiées.
 - **Plusieurs instances** : la déduplication des entrées de blocage (`check-write`) vit en mémoire du processus, comme les bus d'évènements.
 
+## Missions : hors périmètre (phase 10)
+
+- **Dépendances entre missions** (une mission débloquée par la fin d'une autre).
+- **Assignation à une personne** : une mission est prise par la première session qui la demande.
+- **Pont vers Jira** (création ou synchronisation de tickets).
+- **Notifications externes** (Slack…) à la création, à la validation ou à la fin d'une mission.
+- **Rattachement à un workspace** : `workspaceId` existe dans le modèle (SPEC §8.1) mais reste `null` en v1 (ni l'API ni le MCP ne le renseignent).
+- **Plusieurs instances** : le balayage de l'échu est fait dans la transaction de chaque `take` et par la maintenance horaire du processus ; avec Postgres, `next` passera par `SELECT … FOR UPDATE SKIP LOCKED`.
+
 ## Risques résiduels acceptés en v1 (audit phase 6, P3)
 
 - Le slug est unique pour tout l'espace : `slug-taken` révèle qu'un slug existe, même dans un contexte personnel d'autrui. Les noms de tags du registre et l'aperçu de fusion portent aussi sur tous les contextes ; renommer ou supprimer un tag modifie les contextes personnels d'autrui (la taxonomie est commune).

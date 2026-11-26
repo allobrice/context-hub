@@ -181,6 +181,7 @@ export class InMemoryContextRepository implements ContextRepository {
       updatedAt: now,
       author: CURRENT_USER,
       mcpReads7d: 0,
+      exposeAsPrompt: false,
     }
     const context: Context = {
       ...base,
@@ -190,6 +191,8 @@ export class InMemoryContextRepository implements ContextRepository {
       collectionId: input.collectionId,
       tags: input.tags,
       scope: input.scope,
+      // Absent de l'entrée : le marquage courant est conservé (même règle que le serveur).
+      exposeAsPrompt: input.exposeAsPrompt ?? base.exposeAsPrompt,
       updatedAt: now,
       ...(publish
         ? { status: 'published', publishedVersion: version, draft: null }

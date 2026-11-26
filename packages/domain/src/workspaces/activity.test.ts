@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { deriveWorkspaceStatus, isSessionActive, shouldAutoClose } from './activity.ts'
+import { deriveWorkspaceStatus, shouldAutoClose } from './activity.ts'
 
 const NOW = new Date('2026-11-23T10:00:00.000Z')
 const minutesAgo = (minutes: number) => new Date(NOW.getTime() - minutes * 60_000).toISOString()
 const daysAgo = (days: number) => minutesAgo(days * 24 * 60)
-
-describe('isSessionActive', () => {
-  it('active sous 5 minutes, inactive à 5 minutes', () => {
-    expect(isSessionActive(minutesAgo(0), NOW)).toBe(true)
-    expect(isSessionActive(minutesAgo(4.99), NOW)).toBe(true)
-    expect(isSessionActive(minutesAgo(5), NOW)).toBe(false)
-  })
-})
 
 describe('deriveWorkspaceStatus', () => {
   it.each([

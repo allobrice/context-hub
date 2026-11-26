@@ -12,10 +12,10 @@ import type {
   EntryAuthor,
   EntryKind,
   Participant,
-  SessionRef,
   Workspace,
   WorkspaceEntry,
 } from '../workspaces/types.ts'
+import type { SessionRef } from '../sessions/session.ts'
 import { NUXT4_CONTEXT_ID } from './contexts.ts'
 import { DEMO_NOW } from './now.ts'
 

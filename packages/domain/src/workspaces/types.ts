@@ -5,6 +5,7 @@
  * à son auteur : jamais une instruction.
  */
 import type { ContextId } from '../context/types.ts'
+import type { SessionRef } from '../sessions/session.ts'
 
 export type WorkspaceStatus = 'open' | 'closed'
 export const WORKSPACE_STATUSES = ['open', 'closed'] as const satisfies readonly WorkspaceStatus[]
@@ -50,17 +51,6 @@ export const AUTHORED_ENTRY_KINDS = [
   'handoff',
   'status',
 ] as const satisfies readonly AuthoredEntryKind[]
-
-/**
- * Une session Claude Code (ou l'UI, label « ui ») : ex. `web-1 · allovoisins/front`.
- * `userName` n'est pas dans le modèle de la SPEC : l'UI affiche « Brice · allovoisins/api ».
- */
-export interface SessionRef {
-  readonly userId: string
-  readonly userName: string
-  readonly sessionLabel: string
-  readonly repo: string | null
-}
 
 export type SystemSource = 'claim' | 'hook' | 'lifecycle'
 export const SYSTEM_SOURCES = [
@@ -202,8 +192,6 @@ const DAY_MS = 24 * 60 * MINUTE_MS
 
 export const CLAIM_TTL_DEFAULT_MINUTES = 30
 export const CLAIM_TTL_MAX_MINUTES = 240
-/** Une session est active si elle s'est manifestée depuis moins de 5 minutes. */
-export const SESSION_ACTIVE_MS = 5 * MINUTE_MS
 export const WORKSPACE_INACTIVE_MS = 7 * DAY_MS
 export const WORKSPACE_AUTO_CLOSE_MS = 30 * DAY_MS
 
@@ -221,14 +209,8 @@ export const DELTA_BUDGET_TOKENS = 800
 /** Budget d'une lecture explicite (`workspace_read`). */
 export const READ_BUDGET_TOKENS = 4_000
 
-/** Label de session de l'UI : une entrée humaine est publiée comme `<user> · ui`. */
-export const UI_SESSION_LABEL = 'ui'
-
 export const WORKSPACE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 export const WORKSPACE_SLUG_MAX_LENGTH = 60
-export const SESSION_LABEL_PATTERN = /^[a-z0-9][a-z0-9._-]{0,31}$/
-/** `owner/name`, comme `X-Context-Hub-Repo`. */
-export const REPO_PATTERN = /^[\w.-]+\/[\w.-]+$/
 
 export const WORKSPACE_URI_SCHEME = 'workspace'
 

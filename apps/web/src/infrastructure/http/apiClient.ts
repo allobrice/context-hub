@@ -16,6 +16,12 @@ import {
   WorkspaceForbiddenError,
   WorkspaceRuleError,
 } from '@context-hub/domain/shared/errors.ts'
+import {
+  MissionConflictError,
+  MissionReservationError,
+  MissionRuleError,
+  MissionTransitionError,
+} from '@context-hub/domain/missions/errors.ts'
 import { toClaim } from './mappers.ts'
 import type { components, paths } from './openapi.d.ts'
 
@@ -36,6 +42,10 @@ export type ApiErrorBody =
   | Schemas['WorkspaceClosedError']
   | Schemas['ClaimConflictError']
   | Schemas['WorkspaceRuleError']
+  | Schemas['MissionRuleError']
+  | Schemas['MissionTransitionError']
+  | Schemas['MissionConflictError']
+  | Schemas['MissionReservationError']
   | Schemas['ValidationError']
   | Schemas['InternalError']
 
@@ -55,6 +65,10 @@ const API_ERROR_CODES: ReadonlySet<string> = new Set<ApiErrorBody['code']>([
   'WORKSPACE_CLOSED',
   'CLAIM_CONFLICT',
   'WORKSPACE_RULE',
+  'MISSION_RULE',
+  'MISSION_TRANSITION',
+  'MISSION_CONFLICT',
+  'MISSION_RESERVATION',
   'VALIDATION_FAILED',
   'INTERNAL',
 ])
@@ -106,6 +120,15 @@ export function toError(body: ApiErrorBody, response: Response): Error {
       return new ClaimConflictError(toClaim(body.details.claim))
     case 'WORKSPACE_RULE':
       return new WorkspaceRuleError(body.details.violation)
+    case 'MISSION_RULE':
+      return new MissionRuleError(body.details.violations, body.details.missingSections)
+    case 'MISSION_TRANSITION':
+      return new MissionTransitionError(body.details)
+    // Le slug n'est pas dans ces deux réponses : l'adapter des missions le complète (`missionCall`).
+    case 'MISSION_CONFLICT':
+      return new MissionConflictError('', body.details.updatedAt)
+    case 'MISSION_RESERVATION':
+      return new MissionReservationError(body.details.slug)
     case 'FORBIDDEN_ORIGIN':
     case 'NO_DRAFT':
     case 'VALIDATION_FAILED':

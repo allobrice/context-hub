@@ -57,6 +57,7 @@ export const ContextSchema = z
     updatedAt: Timestamp,
     author: z.string(),
     mcpReads7d: z.number().int().nonnegative(),
+    exposeAsPrompt: z.boolean(),
   })
   .meta({ id: 'Context' })
 
@@ -102,5 +103,9 @@ export const ContextDraftInputSchema = z
     scope: ScopeSchema,
     content: z.string().max(500_000),
     versionNote: z.string(),
+    exposeAsPrompt: z.boolean().optional().meta({
+      description:
+        'Publier comme prompt MCP (modèle réutilisable, SPEC §8.5). Absent : valeur courante conservée.',
+    }),
   })
   .meta({ id: 'ContextDraftInput' })

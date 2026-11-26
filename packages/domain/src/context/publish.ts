@@ -6,10 +6,17 @@ export interface PublishCandidate {
   readonly title: string
   readonly description: string
   readonly versionNote: string
+  /** Publié comme prompt MCP (SPEC §8.5) : servi comme message de l'utilisateur. */
+  readonly exposeAsPrompt?: boolean | undefined
 }
 
 export type PublishBlocker =
-  'secret-detected' | 'title-empty' | 'version-note-empty' | 'description-too-long'
+  | 'secret-detected'
+  | 'title-empty'
+  | 'version-note-empty'
+  | 'description-too-long'
+  /** Instruction suspecte non justifiée dans un contexte publié comme prompt MCP. */
+  | 'suspicious-prompt'
 
 /**
  * Raisons qui empêchent la publication, dans l'ordre où l'UI doit les exposer.
@@ -24,6 +31,14 @@ export function publishBlockers(
   if (candidate.title.trim() === '') blockers.push('title-empty')
   if (candidate.versionNote.trim() === '') blockers.push('version-note-empty')
   if (candidate.description.length > DESCRIPTION_MAX_LENGTH) blockers.push('description-too-long')
+  // Un prompt MCP est servi comme message de l'utilisateur : une instruction suspecte ne passe
+  // qu'une fois justifiée comme faux positif (elle est alors absente de `findings`).
+  if (
+    candidate.exposeAsPrompt === true &&
+    findings.some((finding) => finding.kind === 'suspicious-instruction')
+  ) {
+    blockers.push('suspicious-prompt')
+  }
   return blockers
 }
 

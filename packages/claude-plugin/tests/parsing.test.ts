@@ -93,3 +93,32 @@ describe('utilitaires', () => {
     })
   })
 })
+
+describe('parseCommand : missions', () => {
+  it.each([
+    ['/context-hub:next', { kind: 'next', tags: [] }],
+    ['/context-hub:next perf', { kind: 'next', tags: ['perf'] }],
+    ['/context-hub:next Perf a11y', { kind: 'next', tags: ['perf', 'a11y'] }],
+    ['/context-hub:take perf-lcp-carrousel', { kind: 'take', slug: 'perf-lcp-carrousel' }],
+    ['/context-hub:missions', { kind: 'missions' }],
+  ])('%s', (prompt, expected) => {
+    expect(parseCommand(prompt)).toEqual(expected)
+  })
+
+  it.each([
+    '/context-hub:take',
+    '/context-hub:take Perf_LCP',
+    '/context-hub:take a b',
+    '/context-hub:take $(whoami)',
+    '/context-hub:next perf;rm',
+    `/context-hub:next ${Array.from({ length: 11 }, (_, i) => `t${String(i)}`).join(' ')}`,
+  ])('refuse %s', (prompt) => {
+    expect(parseCommand(prompt)).toMatchObject({ kind: 'invalid' })
+  })
+
+  it('mission-create : reconnue (le hook ne fait que donner l’identité)', () => {
+    expect(parseCommand('/context-hub:mission-create depuis l’audit')).toEqual({
+      kind: 'mission-create',
+    })
+  })
+})
