@@ -157,7 +157,7 @@ export function lifecycleSteps(
     mission.status
   ]
   const state = (step: number): LifecycleStepState =>
-    step < index || mission.status === 'done' ? 'done' : step === index ? 'current' : 'upcoming'
+    step < index ? 'done' : step === index ? 'current' : 'upcoming'
   const author = mission.origin.session?.sessionLabel ?? mission.origin.createdBy
   const taken = lastEvent(events, 'taken')
   const takenDetail =
@@ -189,7 +189,7 @@ export function lifecycleSteps(
     {
       label: 'Terminée',
       detail: mission.status === 'done' ? 'résultat enregistré' : 'puis archivée',
-      state: mission.status === 'done' ? 'done' : 'upcoming',
+      state: mission.status === 'done' ? 'current' : 'upcoming',
     },
   ]
 }
