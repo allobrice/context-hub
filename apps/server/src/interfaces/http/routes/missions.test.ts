@@ -11,6 +11,7 @@ import {
   MissionDetailSchema,
   MissionEventSchema,
   MissionListSchema,
+  TakeMissionResultSchema,
 } from '@context-hub/domain/schemas/missions.ts'
 import { promptTokens } from '@context-hub/domain/missions/types.ts'
 
@@ -531,6 +532,33 @@ describe('actions humaines', () => {
     })
     expect(foreign.status).toBe(403)
     expect((await error(foreign)).code).toBe('FORBIDDEN_ORIGIN')
+  })
+})
+
+describe('POST /api/missions/take (plugin)', () => {
+  it('200 : prend par slug, renvoie la mission en cours et le jeton de réservation', async () => {
+    const slug = await createReady()
+    const response = await post('/api/missions/take', { ...WEB_1, slug })
+    expect(response.status).toBe(200)
+    const { taken } = TakeMissionResultSchema.parse(await response.json())
+    expect(taken).toMatchObject({ token: FIRST_TOKEN, mission: { slug, status: 'in_progress' } })
+    expect(taken?.mission.prompt).toBe(PROMPT)
+  })
+
+  it('200 { taken: null } : next sans mission prête correspondante', async () => {
+    await createReady({ tags: ['a11y'] })
+    const response = await post('/api/missions/take', { ...WEB_1, next: { tags: ['perf'] } })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ taken: null })
+  })
+
+  it('409 MISSION_TRANSITION : mission déjà prise ; 404 : slug inconnu', async () => {
+    const slug = await createInProgress()
+    const again = await post('/api/missions/take', { session: 'web-2', repo: null, slug })
+    expect(again.status).toBe(409)
+    expect(await error(again)).toMatchObject({ code: 'MISSION_TRANSITION' })
+    const unknown = await post('/api/missions/take', { ...WEB_1, slug: 'inconnue' })
+    expect(unknown.status).toBe(404)
   })
 })
 

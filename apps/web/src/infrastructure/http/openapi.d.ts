@@ -3663,6 +3663,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/missions/take": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Plugin : prend une mission (slug ou prochaine prête) pour une session, renvoie le jeton de réservation */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TakeMissionInput"];
+                };
+            };
+            responses: {
+                /** @description Mission prise, ou null */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TakeMissionResult"];
+                    };
+                };
+                /** @description Requête invalide */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationError"];
+                    };
+                };
+                /** @description Jeton absent ou invalide */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnauthorizedError"];
+                    };
+                };
+                /** @description Jeton de réservation invalide, ou mutation depuis une origine étrangère */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionReservationError"] | components["schemas"]["ForbiddenOriginError"];
+                    };
+                };
+                /** @description Introuvable ou hors de portée */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotFoundError"];
+                    };
+                };
+                /** @description Commande refusée par le cycle de vie, ou mission modifiée entre-temps */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissionTransitionError"] | components["schemas"]["MissionConflictError"];
+                    };
+                };
+                /** @description Erreur interne (identifiant de requête pour le support) */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["InternalError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/missions/{slug}/heartbeat": {
         parameters: {
             query?: never;
@@ -4447,7 +4541,7 @@ export interface components {
             code: "MISSION_RULE";
             message: string;
             details: {
-                violations: ("title-empty" | "title-too-long" | "summary-empty" | "summary-too-long" | "prompt-too-long" | "template-incomplete" | "secret-detected" | "suspicious-instruction" | "tag-invalid" | "too-many-tags" | "repo-invalid" | "commit-invalid" | "path-invalid" | "too-many-files" | "slug-taken" | "unknown-context" | "team-required")[];
+                violations: ("title-empty" | "control-character" | "title-too-long" | "summary-empty" | "summary-too-long" | "prompt-too-long" | "template-incomplete" | "secret-detected" | "suspicious-instruction" | "tag-invalid" | "too-many-tags" | "repo-invalid" | "commit-invalid" | "path-invalid" | "too-many-files" | "slug-taken" | "unknown-context" | "team-required")[];
                 missingSections: ("objective" | "finding" | "files" | "todo" | "acceptance")[];
             };
         };
@@ -4546,6 +4640,36 @@ export interface components {
         };
         DropMissionInput: {
             reason: string;
+        };
+        TakeMissionResult: {
+            /** @description null : aucune mission prête (`next`). */
+            taken: {
+                mission: components["schemas"]["Mission"];
+                token: string;
+                promptTokens: number;
+                linkedContexts: components["schemas"]["MissionLinkedContext"][];
+            } | null;
+        };
+        TakeMissionInput: {
+            /** @description Label de la session Claude Code, ex. « web-1 » (unique par utilisateur). */
+            session: string;
+            /**
+             * @description `owner/name`, ex. « allovoisins/front ».
+             * @default null
+             */
+            repo: string | null;
+            /** @description Mission précise ; absente : `next`. */
+            slug?: string;
+            /** @description Prochaine mission prête portant tous ces tags (et ce repo). */
+            next?: {
+                /** @default [] */
+                tags: string[];
+                /**
+                 * @description `owner/name`, ex. « allovoisins/front ».
+                 * @default null
+                 */
+                repo: string | null;
+            };
         };
         MissionHeartbeatResult: {
             expiresAt: string;

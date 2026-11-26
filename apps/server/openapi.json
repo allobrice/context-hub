@@ -2772,6 +2772,7 @@
                   "type": "string",
                   "enum": [
                     "title-empty",
+                    "control-character",
                     "title-too-long",
                     "summary-empty",
                     "summary-too-long",
@@ -3211,6 +3212,100 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "TakeMissionResult": {
+        "type": "object",
+        "properties": {
+          "taken": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "mission": {
+                "$ref": "#/components/schemas/Mission"
+              },
+              "token": {
+                "type": "string"
+              },
+              "promptTokens": {
+                "type": "integer"
+              },
+              "linkedContexts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MissionLinkedContext"
+                }
+              }
+            },
+            "required": [
+              "mission",
+              "token",
+              "promptTokens",
+              "linkedContexts"
+            ],
+            "description": "null : aucune mission prête (`next`)."
+          }
+        },
+        "required": [
+          "taken"
+        ]
+      },
+      "TakeMissionInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "description": "Label de la session Claude Code, ex. « web-1 » (unique par utilisateur)."
+          },
+          "repo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200,
+            "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+            "default": null,
+            "description": "`owner/name`, ex. « allovoisins/front »."
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Mission précise ; absente : `next`."
+          },
+          "next": {
+            "type": "object",
+            "properties": {
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                },
+                "maxItems": 10,
+                "default": []
+              },
+              "repo": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 200,
+                "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+                "default": null,
+                "description": "`owner/name`, ex. « allovoisins/front »."
+              }
+            },
+            "description": "Prochaine mission prête portant tous ces tags (et ce repo)."
+          }
+        },
+        "required": [
+          "session"
         ]
       },
       "MissionHeartbeatResult": {
@@ -7395,6 +7490,110 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MissionDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Jeton absent ou invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Jeton de réservation invalide, ou mutation depuis une origine étrangère",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/MissionReservationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ForbiddenOriginError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable ou hors de portée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Commande refusée par le cycle de vie, ou mission modifiée entre-temps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/MissionTransitionError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MissionConflictError"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne (identifiant de requête pour le support)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/missions/take": {
+      "post": {
+        "tags": [
+          "Missions"
+        ],
+        "summary": "Plugin : prend une mission (slug ou prochaine prête) pour une session, renvoie le jeton de réservation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TakeMissionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mission prise, ou null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeMissionResult"
                 }
               }
             }

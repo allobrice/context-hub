@@ -6,16 +6,26 @@
 
 export const WORKSPACE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 export const SESSION_LABEL_PATTERN = /^[a-z0-9][a-z0-9._-]{0,31}$/
+export const MISSION_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+/** Comme `isValidTagName` du domaine : minuscules, chiffres, accents et tirets. */
+export const TAG_PATTERN = /^[\p{Ll}\p{N}][\p{Ll}\p{N}-]*$/u
+const MAX_NEXT_TAGS = 10
 
 /**
+ * `mission-create` : le hook ne fait que donner l'identité de la session ; le modèle (skill
+ * « créer des missions ») appelle `mission_create` lui-même.
  * @typedef {{ kind: 'join', slug: string, label: string | null }
  *   | { kind: 'new', title: string, label: string | null }
  *   | { kind: 'status' }
  *   | { kind: 'leave' }
+ *   | { kind: 'next', tags: string[] }
+ *   | { kind: 'take', slug: string }
+ *   | { kind: 'missions' }
+ *   | { kind: 'mission-create' }
  *   | { kind: 'invalid', command: string, message: string }} PluginCommand
  */
 
-const COMMAND = /^\s*\/context-hub:([a-z]+)(?:\s+([\s\S]*))?$/
+const COMMAND = /^\s*\/context-hub:([a-z]+(?:-[a-z]+)*)(?:\s+([\s\S]*))?$/
 
 /**
  * @param {string} raw
@@ -67,6 +77,31 @@ export function parseCommand(prompt) {
       return { kind: 'status' }
     case 'leave':
       return { kind: 'leave' }
+    case 'next': {
+      const tags = args === '' ? [] : args.split(/\s+/).map((tag) => tag.toLowerCase())
+      if (tags.length > MAX_NEXT_TAGS || !tags.every((tag) => TAG_PATTERN.test(tag))) {
+        return {
+          kind: 'invalid',
+          command: 'next',
+          message: 'Usage : /context-hub:next [tag…] (ex. perf ; minuscules, chiffres, tirets).',
+        }
+      }
+      return { kind: 'next', tags }
+    }
+    case 'take': {
+      if (!MISSION_SLUG_PATTERN.test(args) || args.length > 80) {
+        return {
+          kind: 'invalid',
+          command: 'take',
+          message: 'Usage : /context-hub:take <slug> (ex. perf-lcp-carrousel).',
+        }
+      }
+      return { kind: 'take', slug: args }
+    }
+    case 'missions':
+      return { kind: 'missions' }
+    case 'mission-create':
+      return { kind: 'mission-create' }
     default:
       return null
   }

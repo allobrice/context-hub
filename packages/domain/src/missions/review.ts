@@ -12,7 +12,7 @@ import {
   REDACTED_SECRET,
   redactSecrets,
 } from '../context/scan.ts'
-import { normalizeRepoPath, REPO_PATTERN } from '../shared/repo.ts'
+import { hasControlCharacter, normalizeRepoPath, REPO_PATTERN } from '../shared/repo.ts'
 import { isValidTagName } from '../taxonomy/tags.ts'
 import { validatePromptTemplate, type RequiredPromptSection } from './template.ts'
 import {
@@ -27,6 +27,7 @@ import {
 
 export type MissionRuleViolation =
   | 'title-empty'
+  | 'control-character'
   | 'title-too-long'
   | 'summary-empty'
   | 'summary-too-long'
@@ -46,6 +47,7 @@ export type MissionRuleViolation =
 
 export const MISSION_RULE_VIOLATIONS = [
   'title-empty',
+  'control-character',
   'title-too-long',
   'summary-empty',
   'summary-too-long',
@@ -93,6 +95,15 @@ export interface MissionReview {
 /** SHA abrégé ou complet. */
 const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/
 
+/**
+ * Caractères de shell interdits dans un chemin de mission : ces chemins sont repris dans des
+ * commandes (`git diff … -- <fichiers>`) par les sessions qui prennent la mission.
+ */
+const SHELL_METACHARACTERS = /[;|&$`'"<>(){}\\!*?]/
+
+/** Séparateurs de ligne Unicode : comme un retour à la ligne, ils cassent un texte « sur une ligne ». */
+const UNICODE_LINE_BREAK = /[\u2028\u2029]/
+
 export function reviewMission(content: MissionContent, author: ActorKind): MissionReview {
   const violations = new Set<MissionRuleViolation>()
   const title = content.title.trim()
@@ -101,6 +112,12 @@ export function reviewMission(content: MissionContent, author: ActorKind): Missi
   if (title.length > MISSION_TITLE_MAX_LENGTH) violations.add('title-too-long')
   if (summary === '') violations.add('summary-empty')
   if (summary.length > MISSION_SUMMARY_MAX_LENGTH) violations.add('summary-too-long')
+  // Titre, résumé, origine, équipe et tags sont affichés sur une ligne (file, compte rendu du hook) :
+  // un retour à la ligne y permettrait d'imiter un en-tête.
+  const singleLine = [title, summary, content.originLabel, content.team ?? '', ...content.tags]
+  if (singleLine.some((text) => hasControlCharacter(text) || UNICODE_LINE_BREAK.test(text))) {
+    violations.add('control-character')
+  }
 
   // Taille d'abord : le gabarit et le scan ne parcourent jamais un prompt hors limite.
   let missingSections: readonly RequiredPromptSection[] = []
@@ -121,7 +138,9 @@ export function reviewMission(content: MissionContent, author: ActorKind): Missi
   if (!COMMIT_PATTERN.test(content.codeRef.commit)) violations.add('commit-invalid')
   if (content.codeRef.files.length > MISSION_MAX_FILES) violations.add('too-many-files')
   const files = content.codeRef.files.map(normalizeRepoPath)
-  if (files.includes(null)) violations.add('path-invalid')
+  if (files.includes(null) || content.codeRef.files.some((file) => SHELL_METACHARACTERS.test(file))) {
+    violations.add('path-invalid')
+  }
 
   const texts = [
     title,

@@ -269,3 +269,34 @@ export const MissionResultInputSchema = z
     acceptanceMet: z.boolean(),
   })
   .meta({ id: 'MissionResultInput' })
+
+export const TakeMissionInputSchema = z
+  .object({
+    session: SessionLabelSchema,
+    repo: RepoSchema.nullable().default(null),
+    slug: MissionSlugSchema.optional().meta({ description: 'Mission précise ; absente : `next`.' }),
+    next: z
+      .object({
+        tags: z.array(z.string().min(1).max(60)).max(MISSION_MAX_TAGS).default([]),
+        repo: RepoSchema.nullable().default(null),
+      })
+      .optional()
+      .meta({ description: 'Prochaine mission prête portant tous ces tags (et ce repo).' }),
+  })
+  .meta({ id: 'TakeMissionInput' })
+
+/** Mission prise : jeton de réservation (à présenter pour agir), estimation et contextes liés. */
+export const TakenMissionSchema = z
+  .object({
+    mission: MissionSchema,
+    token: z.string(),
+    promptTokens: z.number().int(),
+    linkedContexts: z.array(MissionLinkedContextSchema).readonly(),
+  })
+  .meta({ id: 'TakenMission' })
+
+export const TakeMissionResultSchema = z
+  .object({
+    taken: TakenMissionSchema.nullable().meta({ description: 'null : aucune mission prête (`next`).' }),
+  })
+  .meta({ id: 'TakeMissionResult' })

@@ -106,3 +106,20 @@ export function createApi(config, fetchImpl) {
     get: (path, timeoutMs) => call('GET', path, undefined, timeoutMs),
   }
 }
+
+/**
+ * Message lisible d'un échec d'API. `specific` : messages propres à l'appelant, par code d'erreur ;
+ * les cas communs (serveur injoignable, jeton refusé, autre erreur) sont traités ici.
+ * @param {Exclude<ApiResult, { kind: 'ok' }>} result
+ * @param {Readonly<Record<string, string>>} [specific]
+ * @returns {string}
+ */
+export function apiFailure(result, specific = {}) {
+  if (result.kind === 'unreachable') {
+    return `Serveur Context Hub injoignable (${result.reason}). Vérifier CONTEXT_HUB_URL et CONTEXT_HUB_TOKEN.`
+  }
+  const known = result.code === null ? undefined : specific[result.code]
+  if (known !== undefined) return known
+  if (result.code === 'UNAUTHORIZED') return 'Jeton Context Hub refusé : vérifier CONTEXT_HUB_TOKEN.'
+  return `Erreur Context Hub (${result.status} ${result.code ?? ''}) : ${result.message}`
+}

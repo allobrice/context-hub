@@ -1,6 +1,6 @@
 /**
- * API REST des Missions (SPEC §8) : file, détail, création et actions humaines (UI), et heartbeat
- * du plugin Claude Code. Les sessions prennent et terminent les missions par MCP. Mêmes cas d'usage
+ * API REST des Missions (SPEC §8) : file, détail, création et actions humaines (UI), et prise et
+ * heartbeat du plugin Claude Code (le hook garde le jeton de réservation dans l'état de la session). Les sessions prennent et terminent les missions par MCP. Mêmes cas d'usage
  * que le MCP (`MissionService`).
  */
 import { createRoute, type OpenAPIHono } from '@hono/zod-openapi'
@@ -25,6 +25,8 @@ import {
   MissionSessionInputSchema,
   MissionSlugSchema,
   RejectMissionInputSchema,
+  TakeMissionInputSchema,
+  TakeMissionResultSchema,
   UpdateMissionInputSchema,
 } from '@context-hub/domain/schemas/missions.ts'
 import { RepoSchema } from '@context-hub/domain/schemas/sessions.ts'
@@ -163,6 +165,16 @@ const rejectRoute = createRoute({
   responses: { ...actionResponses, 200: json(MissionEventSchema, 'Événement de rejet') },
 })
 
+const takeRoute = createRoute({
+  method: 'post',
+  path: '/api/missions/take',
+  tags: [TAG],
+  summary:
+    'Plugin : prend une mission (slug ou prochaine prête) pour une session, renvoie le jeton de réservation',
+  request: body(TakeMissionInputSchema),
+  responses: { ...actionResponses, 200: json(TakeMissionResultSchema, 'Mission prise, ou null') },
+})
+
 const heartbeatRoute = createRoute({
   method: 'post',
   path: '/api/missions/{slug}/heartbeat',
@@ -234,6 +246,15 @@ export function registerMissionRoutes(app: OpenAPIHono<AppEnv>, missions: Missio
   app.openapi(reopenRoute, async (c) =>
     c.json(await missions.reopen(c.var.viewer, c.req.valid('param').slug), 200),
   )
+
+  app.openapi(takeRoute, async (c) => {
+    const { session, repo, slug, next } = c.req.valid('json')
+    const target =
+      slug === undefined
+        ? { next: { tags: next?.tags ?? [], repo: next?.repo ?? null } }
+        : { slug }
+    return c.json({ taken: await missions.take(c.var.viewer, target, { session, repo }) }, 200)
+  })
 
   app.openapi(heartbeatRoute, async (c) =>
     c.json(
