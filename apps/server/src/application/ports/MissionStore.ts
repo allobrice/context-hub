@@ -18,6 +18,7 @@ import type {
   InProgressMission,
   Mission,
   MissionActor,
+  MissionBatch,
   MissionEvent,
   MissionStatus,
   MissionStatusCounts,
@@ -111,6 +112,9 @@ export interface MissionQuery {
   readonly archiveLimit: number | null
 }
 
+/** Bloc « Origine » d'un lot : sa plus ancienne mission visible et les compteurs du lot. */
+export type MissionBatchOrigin = Omit<MissionBatch, 'batchId' | 'total'>
+
 export interface MissionRows {
   /** Résumés (sans le prompt) des statuts voulus, par priorité puis ancienneté. */
   readonly missions: readonly MissionSummary[]
@@ -151,6 +155,8 @@ export interface MissionStore {
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null>
   /** File filtrée, avec les compteurs par statut. */
   list(viewer: Viewer, query: MissionQuery): Promise<MissionRows>
+  /** Origine d'un lot sans en charger les missions ; null si aucune n'est visible. */
+  batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null>
   /** Modifie une mission à valider ou prête, si personne ne l'a modifiée depuis. */
   update(write: UpdateWrite): Promise<UpdateResult>
   /** Nom de l'utilisateur, ou null s'il n'existe pas. */

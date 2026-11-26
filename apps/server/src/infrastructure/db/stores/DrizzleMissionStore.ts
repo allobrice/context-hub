@@ -52,6 +52,7 @@ import { isSameSession, type SessionRef } from '@context-hub/domain/sessions/ses
 import type {
   ApplyResult,
   ApplyWrite,
+  MissionBatchOrigin,
   MissionQuery,
   MissionRows,
   MissionStore,
@@ -67,7 +68,7 @@ import type { Viewer } from '../../../application/viewer.ts'
 import type { AppDatabase, SyncDb } from '../connection.ts'
 import { isoDate } from '../dates.ts'
 import { deferred } from '../deferred.ts'
-import { missionEvents, missions, missionTags } from '../schema.ts'
+import { missionEvents, missions, missionTags, users } from '../schema.ts'
 import { IMMEDIATE } from '../transactions.ts'
 import { appendEvent, insertTags, lifecycleColumns, missionRow } from './missionRecords.ts'
 import { scopeOf, visibleIn } from './scopeRecords.ts'
@@ -505,6 +506,41 @@ export class DrizzleMissionStore implements MissionStore {
         return true
       }, IMMEDIATE),
     )
+  }
+
+  batchOrigin(viewer: Viewer, batchId: string): Promise<MissionBatchOrigin | null> {
+    return deferred(() => {
+      const conditions = queueConditions(this.db, viewer, { tags: [], repo: null, batchId })
+      const first = this.db
+        .select({
+          label: missions.originLabel,
+          userId: missions.originUserId,
+          userName: users.name,
+          sessionLabel: missions.originSessionLabel,
+          sessionRepo: missions.originRepo,
+          repo: missions.codeRefRepo,
+          commit: missions.codeRefCommit,
+          createdAt: missions.createdAt,
+        })
+        .from(missions)
+        .leftJoin(users, eq(users.id, missions.originUserId))
+        .where(and(...conditions))
+        .orderBy(asc(missions.createdAt), asc(missions.id))
+        .limit(1)
+        .get()
+      if (first === undefined) return null
+      const names: Names = new Map(
+        first.userId !== null && first.userName !== null ? [[first.userId, first.userName]] : [],
+      )
+      return {
+        label: first.label,
+        session: sessionOf(names, first.userId, first.sessionLabel, first.sessionRepo),
+        repo: first.repo,
+        commit: first.commit,
+        createdAt: first.createdAt,
+        counts: statusCountsIn(this.db, conditions),
+      }
+    })
   }
 
   list(viewer: Viewer, query: MissionQuery): Promise<MissionRows> {

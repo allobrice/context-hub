@@ -45,7 +45,6 @@ import {
   type MissionQueueFilter,
   type MissionResult,
   type Priority,
-  type MissionSummary,
   promptTokens,
 } from '@context-hub/domain/missions/types.ts'
 import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
@@ -182,31 +181,12 @@ export class MissionService {
     return toFilterCounts(statusCounts).todo
   }
 
-  /** Bloc « Origine » d'un lot. @throws MissionNotFoundError */
+  /** Bloc « Origine » d'un lot. @throws MissionBatchNotFoundError */
   async batch(viewer: Viewer, batchId: string): Promise<MissionBatch> {
-    const { missions, statusCounts } = await this.store.list(viewer, {
-      statuses: MISSION_FILTER_STATUSES.all,
-      tags: [],
-      repo: null,
-      batchId,
-      archiveLimit: null,
-    })
-    const first = missions.reduce<MissionSummary | undefined>(
-      (oldest, mission) =>
-        oldest === undefined || mission.createdAt < oldest.createdAt ? mission : oldest,
-      undefined,
-    )
-    if (first === undefined) throw new MissionBatchNotFoundError(batchId)
-    return {
-      batchId,
-      label: first.origin.label,
-      session: first.origin.session,
-      repo: first.codeRef.repo,
-      commit: first.codeRef.commit,
-      createdAt: first.createdAt,
-      counts: statusCounts,
-      total: missions.length,
-    }
+    const origin = await this.store.batchOrigin(viewer, batchId)
+    if (origin === null) throw new MissionBatchNotFoundError(batchId)
+    const total = Object.values(origin.counts).reduce((sum, count) => sum + count, 0)
+    return { batchId, ...origin, total }
   }
 
   /** @throws MissionNotFoundError */

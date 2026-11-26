@@ -476,3 +476,53 @@ describe('DrizzleMissionStore : list', () => {
     expect(unbounded.missions).toHaveLength(5)
   })
 })
+
+describe('DrizzleMissionStore : batchOrigin', () => {
+  it('origine de la plus ancienne mission visible, compteurs du lot, en deux requêtes', async () => {
+    await seed('recente')
+    await seed(
+      'ancienne',
+      { origin: { ...newMission('x').origin, label: 'Audit perf · premier passage' } },
+      later(-10),
+    )
+    await seed(
+      'autre-lot',
+      { origin: { ...newMission('x').origin, batchId: 'batch-autre' } },
+      later(-20),
+    )
+    await seed('privee-camille', { scope: { kind: 'personal', owner: 'camille' } }, later(-30))
+    await store.apply({
+      viewer: BRICE,
+      slug: 'recente',
+      command: { type: 'drop', reason: 'Doublon' },
+      actor: { kind: 'human', userId: 'brice' },
+      tokenHash: null,
+      at: later(1),
+    })
+
+    const prepare = vi.spyOn(Database.prototype, 'prepare')
+    const origin = await store.batchOrigin(BRICE, 'batch-perf')
+    const queries = prepare.mock.calls.length
+    prepare.mockRestore()
+
+    expect(origin).toEqual({
+      label: 'Audit perf · premier passage',
+      session: sessionRef('audit-1'),
+      repo: 'allovoisins/front',
+      commit: 'abc1234',
+      createdAt: later(-10).toISOString(),
+      counts: { draft: 0, ready: 1, in_progress: 0, done: 0, dropped: 1, expired: 0 },
+    })
+    expect(queries).toBe(2)
+  })
+
+  it('lot inconnu, ou sans mission visible : null', async () => {
+    await seed('privee-camille', {
+      scope: { kind: 'personal', owner: 'camille' },
+      origin: { ...newMission('x').origin, batchId: 'batch-camille' },
+    })
+    expect(await store.batchOrigin(BRICE, 'batch-camille')).toBeNull()
+    expect(await store.batchOrigin(CAMILLE, 'batch-camille')).not.toBeNull()
+    expect(await store.batchOrigin(BRICE, 'inconnu')).toBeNull()
+  })
+})
