@@ -2,6 +2,7 @@
  * Libellés du détail d'une mission (SPEC §8.4, maquettes 34–39) : historique, code d'origine,
  * fraîcheur, auteurs. Fonctions pures ; les textes d'une session (raisons, détails) restent du texte.
  */
+import { freshnessChangedCount, isClaimExpiry } from '@context-hub/domain/missions/eventDetails.ts'
 import type {
   Deliverable,
   Mission,
@@ -83,14 +84,9 @@ export function deliverableLabel(deliverable: Deliverable): string {
   }
 }
 
-/** Nombre de fichiers modifiés rapporté par un événement `freshness` (« 2 fichier(s) modifié(s) »). */
-export function freshnessCount(detail: string | null): number | null {
-  const match = /^(\d+)\b/.exec(detail ?? '')
-  return match?.[1] === undefined ? null : Number(match[1])
-}
-
-function freshnessSuffix(detail: string | null): string {
-  const count = freshnessCount(detail)
+/** Suffixe d'un contrôle de fraîcheur, d'après le nombre relu par le domaine. */
+function freshnessSuffix(event: MissionEvent): string {
+  const count = freshnessChangedCount(event)
   if (count === null) return 'code contrôlé'
   return count === 0 ? 'code vérifié à jour' : plural(count, 'fichier modifié', 'fichiers modifiés')
 }
@@ -120,9 +116,9 @@ function eventLabel(
     case 'taken':
       return `Prise par ${who}`
     case 'freshness':
-      return `Code contrôlé par ${who} · ${freshnessSuffix(event.detail)}`
+      return `Code contrôlé par ${who} · ${freshnessSuffix(event)}`
     case 'released':
-      return event.detail === 'réservation expirée'
+      return isClaimExpiry(event)
         ? 'Réservation expirée : mission de nouveau prête'
         : `Libérée par ${who}`
     case 'completed': {
@@ -162,7 +158,7 @@ export function historyItems(mission: Mission, events: readonly MissionEvent[]):
     const label = eventLabel(event, mission, events, index === lastCompletion)
     items.push({
       key: `${String(index)}-${event.type}`,
-      label: mergeFreshness ? `${label} · ${freshnessSuffix(next.detail)}` : label,
+      label: mergeFreshness ? `${label} · ${freshnessSuffix(next)}` : label,
       at: event.at,
     })
     if (mergeFreshness) index += 1

@@ -62,7 +62,14 @@ function ResultPanel({ detail }: { detail: MissionDetail }) {
   const headingId = useId()
   const { mission } = detail
   return (
-    <section aria-labelledby={headingId} className={cx(styles.panel, styles.resultPanel)}>
+    <section
+      aria-labelledby={headingId}
+      className={cx(
+        styles.panel,
+        styles.resultPanel,
+        mission.status === 'done' && styles.resultDone,
+      )}
+    >
       <h2 id={headingId} className={styles.sectionTitle}>
         Résultat
       </h2>

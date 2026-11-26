@@ -102,8 +102,9 @@ function HoldPanel({ mission, onRelease }: { mission: InProgressMission; onRelea
       </div>
       <span className={styles.holdText}>
         Réservée depuis {elapsedLabel(acquiredAt, now)}, dernière activité{' '}
-        {formatRelativeDate(lastActivity, now)}. La réservation expire dans {minutesLeft} min sans
-        activité : la mission redevient alors prête.
+        {formatRelativeDate(lastActivity, now)}. La réservation est relâchée automatiquement après{' '}
+        {MISSION_RESERVATION_MINUTES} min sans activité (dans {minutesLeft} min) : la mission
+        redevient alors prête.
       </span>
       <Button size="sm" className={styles.alignStart} onClick={onRelease}>
         Libérer la mission

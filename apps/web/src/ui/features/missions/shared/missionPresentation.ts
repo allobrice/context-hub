@@ -170,12 +170,17 @@ export function lifecycleSteps(
     step < index ? 'done' : step === index ? 'current' : 'upcoming'
   const author = mission.origin.session?.sessionLabel ?? mission.origin.createdBy
   const taken = lastEvent(events, 'taken')
+  // Mission terminée : durée de traitement (prise → fin), indépendante de l'horloge (maquette 38).
+  const finishedAt = lastEvent(events, 'completed')?.at ?? mission.closedAt
   const takenDetail =
     mission.status === 'in_progress'
       ? `${mission.claim.session.sessionLabel} · ${elapsedLabel(mission.claim.acquiredAt, now)}`
       : taken === undefined
         ? 'prise par 1 session'
-        : `${actorLabel(taken) ?? 'session'} · ${elapsedLabel(taken.at, now)}`
+        : `${actorLabel(taken) ?? 'session'} · ${elapsedLabel(
+            taken.at,
+            finishedAt === null ? now : new Date(finishedAt),
+          )}`
   return [
     { label: 'À valider', detail: `écrite par ${author}`, state: state(0) },
     {
