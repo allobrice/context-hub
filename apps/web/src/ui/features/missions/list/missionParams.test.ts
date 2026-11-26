@@ -34,6 +34,31 @@ describe('parseMissionParams', () => {
   })
 })
 
+describe('parseMissionParams : alias status de SPEC §1', () => {
+  const filterOf = (search: string) => parseMissionParams(new URLSearchParams(search)).filter
+
+  it('active → todo, draft → to_validate, ready / archived / all inchangés', () => {
+    expect(filterOf('status=active')).toBe('todo')
+    expect(filterOf('status=draft')).toBe('to_validate')
+    expect(filterOf('status=ready')).toBe('ready')
+    expect(filterOf('status=archived')).toBe('archived')
+    expect(filterOf('status=all')).toBe('all')
+  })
+
+  it('filter reste prioritaire ; alias inconnu ignoré', () => {
+    expect(filterOf('filter=ready&status=draft')).toBe('ready')
+    expect(filterOf('filter=inconnu&status=draft')).toBe('to_validate')
+    expect(filterOf('status=constructor')).toBe('todo')
+    expect(filterOf('status=inconnu')).toBe('todo')
+  })
+
+  it('n’est jamais réécrit : remplacé par filter à la première modification', () => {
+    const base = new URLSearchParams('status=draft&mock=demo')
+    const written = writeMissionParams({ ...parseMissionParams(base), filter: 'ready' }, base)
+    expect(written.toString()).toBe('mock=demo&filter=ready')
+  })
+})
+
 describe('writeMissionParams', () => {
   it('omet les valeurs par défaut', () => {
     expect(writeMissionParams(DEFAULT_MISSION_QUERY).toString()).toBe('')

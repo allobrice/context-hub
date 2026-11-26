@@ -87,6 +87,12 @@ describe('Missions : file (maquette 31)', () => {
     expect(within(table).getAllByRole('rowgroup').at(-1)).toHaveAttribute('aria-busy', 'false')
   })
 
+  it('lien selon SPEC §1 : ?status=draft ouvre le filtre « À valider »', async () => {
+    renderApp('/missions?status=draft')
+    expect(await rows()).toHaveLength(1)
+    expect(radio(/^À valider/)).toHaveAttribute('aria-checked', 'true')
+  })
+
   it('change de filtre dans l’URL en conservant les paramètres inconnus', async () => {
     const { location } = renderApp('/missions?mock=demo')
     await rows()
