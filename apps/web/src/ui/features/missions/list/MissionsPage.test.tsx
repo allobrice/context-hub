@@ -195,6 +195,16 @@ describe('Missions : états (maquettes 32, chargement, erreur)', () => {
     )
   })
 
+  it('chargement : emplacement des compteurs déjà rendu, vide et masqué (pas de décalage)', async () => {
+    renderApp('/missions', { mode: 'loading' })
+    await screen.findByLabelText('Chargement des missions')
+    for (const option of screen.getAllByRole('radio')) {
+      const slot = option.querySelector('[aria-hidden="true"]')
+      expect(slot).not.toBeNull()
+      expect(slot).toBeEmptyDOMElement()
+    }
+  })
+
   it('erreur : message et Réessayer', async () => {
     renderApp('/missions', { mode: 'error' })
     expect(await screen.findByText('Impossible de charger les missions')).toBeInTheDocument()

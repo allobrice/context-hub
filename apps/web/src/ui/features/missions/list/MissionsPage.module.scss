@@ -5,6 +5,8 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
 
 // ── En-tête ────────────────────────────────────────────────────────────────
 
+// Comme la Bibliothèque : en-tête sur une ligne, sous-titre tronqué. Sinon il passe à la ligne avec
+// la police de secours puis remonte quand la police web arrive (CLS 0,01 à 0,38 mesuré, audit F-P3-1).
 .header {
   display: flex;
   flex-wrap: nowrap;
@@ -16,6 +18,7 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
 
 .heading {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
@@ -28,6 +31,8 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
 }
 
 .subtitle {
+  @include truncate;
+
   color: var(--fg-3);
   font-size: var(--text-sm);
 }
@@ -203,6 +208,7 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
 .segmentCount {
   @include mono(var(--text-xs));
 
+  min-width: 2ch;
   color: var(--fg-3);
 }
 
@@ -245,10 +251,15 @@ $columns: 44px minmax(0, 3fr) 150px 170px 190px 130px;
   color: inherit;
 }
 
+// Prend la place restante sans jamais imposer une ligne de plus à la barre (tronqué au besoin).
 .sortHint {
-  margin-left: auto;
+  @include truncate;
+
+  flex: 1 1 0;
+  min-width: 0;
   color: var(--fg-3);
   font-size: var(--text-sm);
+  text-align: right;
 }
 
 // ── Tableau ────────────────────────────────────────────────────────────────
