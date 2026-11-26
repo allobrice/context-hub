@@ -8,6 +8,7 @@ import { and, asc, count, eq, exists, inArray, lte, sql, type SQL } from 'drizzl
 import { z } from 'zod'
 
 import { toContextId } from '@context-hub/domain/context/types.ts'
+import { emptyStatusCounts } from '@context-hub/domain/missions/counts.ts'
 import {
   renewClaim,
   transition,
@@ -24,7 +25,6 @@ import {
   type MissionCore,
   type MissionEvent,
   type MissionEventActor,
-  type MissionStatus,
   type MissionStatusCounts,
   type ReadyMission,
   type Validation,
@@ -311,14 +311,7 @@ function statusCountsIn(db: SyncDb, conditions: readonly SQL[]): MissionStatusCo
     .where(and(...conditions))
     .groupBy(missions.status)
     .all()
-  const counts: Record<MissionStatus, number> = {
-    draft: 0,
-    ready: 0,
-    in_progress: 0,
-    done: 0,
-    dropped: 0,
-    expired: 0,
-  }
+  const counts = emptyStatusCounts()
   for (const row of rows) counts[row.status] = row.total
   return counts
 }

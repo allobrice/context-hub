@@ -1,20 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import { reviewMission } from '../missions/review.ts'
-import { MISSION_FILTER_STATUSES, MISSION_QUEUE_FILTERS } from '../missions/types.ts'
+import { countStatuses, toFilterCounts } from '../missions/counts.ts'
 import { MissionSchema } from '../schemas/missions.ts'
 import { AUDIT_BATCH_ID, MISSION_FIXTURES } from './missions.ts'
 
 describe('fixtures des missions (maquette 31)', () => {
   it('compteurs de la file : 4 à traiter, 1 à valider, 2 prêtes, 2 archivées, 6 en tout', () => {
-    const counts = Object.fromEntries(
-      MISSION_QUEUE_FILTERS.map((filter) => [
-        filter,
-        MISSION_FIXTURES.filter(({ mission }) =>
-          MISSION_FILTER_STATUSES[filter].includes(mission.status),
-        ).length,
-      ]),
-    )
+    const counts = toFilterCounts(countStatuses(MISSION_FIXTURES.map(({ mission }) => mission)))
     expect(counts).toEqual({ todo: 4, to_validate: 1, ready: 2, archived: 2, all: 6 })
   })
 

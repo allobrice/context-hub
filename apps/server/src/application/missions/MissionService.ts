@@ -9,7 +9,7 @@
 import { randomInt } from 'node:crypto'
 
 import { slugify } from '@context-hub/domain/context/slug.ts'
-import { toContextId, type Scope } from '@context-hub/domain/context/types.ts'
+import type { ContextId, Scope } from '@context-hub/domain/context/types.ts'
 import {
   MissionBatchNotFoundError,
   MissionConflictError,
@@ -30,6 +30,7 @@ import {
   reviewMission,
   type MissionContent,
 } from '@context-hub/domain/missions/review.ts'
+import { toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import {
   MISSION_FILTER_STATUSES,
   type InProgressMission,
@@ -37,17 +38,16 @@ import {
   type MissionBatch,
   type MissionDetail,
   type MissionEvent,
-  type MissionFilterCounts,
   type MissionActor,
   type MissionLinkedContext,
   type MissionList,
   type MissionQueueFilter,
   type MissionResult,
-  type MissionStatusCounts,
   type Priority,
   promptTokens,
   toMissionSummary,
 } from '@context-hub/domain/missions/types.ts'
+import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
 import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
 
 import type { Clock } from '../ports/Clock.ts'
@@ -165,7 +165,7 @@ export class MissionService {
       repo: query.repo,
       batchId: query.batchId,
     })
-    return { items: missions.map(toMissionSummary), counts: filterCounts(statusCounts) }
+    return { items: missions.map(toMissionSummary), counts: toFilterCounts(statusCounts) }
   }
 
   /** Compteur « À traiter » de la sidebar, sans charger les missions. */
@@ -176,7 +176,7 @@ export class MissionService {
       repo: null,
       batchId: null,
     })
-    return filterCounts(statusCounts).todo
+    return toFilterCounts(statusCounts).todo
   }
 
   /** Bloc « Origine » d'un lot. @throws MissionNotFoundError */
@@ -440,7 +440,7 @@ export class MissionService {
           },
           codeRef: { ...input.codeRef, files: review.files },
           freshness: null,
-          linkedContextIds: linkedContextIds.map(toContextId),
+          linkedContextIds,
           workspaceId: null,
           suspicious: review.suspicious,
         },
@@ -526,32 +526,18 @@ export class MissionService {
     }
   }
 
-  /** Contextes liés publiés et visibles, dans l'ordre demandé. @throws MissionRuleError */
-  private async checkLinkedContexts(viewer: Viewer, ids: readonly string[]): Promise<string[]> {
-    if (ids.length === 0) return []
-    const published = new Set<string>(
-      (await this.contextStore.listPublished(viewer)).map(({ id }) => id),
-    )
-    const unique = [...new Set(ids)]
-    if (!unique.every((id) => published.has(id))) throw new MissionRuleError(['unknown-context'])
-    return unique
+  /** Contextes liés publiés et visibles, sans doublon. @throws MissionRuleError */
+  private async checkLinkedContexts(viewer: Viewer, ids: readonly string[]): Promise<ContextId[]> {
+    const checked = await checkLinkedContexts(this.contextStore, viewer, ids)
+    if (checked === null) throw new MissionRuleError(['unknown-context'])
+    return checked
   }
 
-  /** Contextes liés encore publiés et visibles (un contexte archivé disparaît du détail). */
-  private async linkedContexts(
+  private linkedContexts(
     viewer: Viewer,
     mission: Pick<Mission, 'linkedContextIds'>,
   ): Promise<MissionLinkedContext[]> {
-    if (mission.linkedContextIds.length === 0) return []
-    const published = new Map(
-      (await this.contextStore.listPublished(viewer)).map((summary) => [summary.id, summary]),
-    )
-    return mission.linkedContextIds.flatMap((id) => {
-      const summary = published.get(id)
-      return summary
-        ? [{ id, slug: summary.slug, title: summary.title, version: summary.version }]
-        : []
-    })
+    return resolveLinkedContexts(this.contextStore, viewer, mission.linkedContextIds)
   }
 }
 
@@ -568,18 +554,6 @@ function scopeOf(viewer: Viewer, input: MissionScopeInput): Scope {
       return { kind: 'team', team: input.team }
     case 'project':
       return { kind: 'project', repo: input.repo }
-  }
-}
-
-function filterCounts(counts: MissionStatusCounts): MissionFilterCounts {
-  const total = (filter: MissionQueueFilter) =>
-    MISSION_FILTER_STATUSES[filter].reduce((sum, status) => sum + counts[status], 0)
-  return {
-    todo: total('todo'),
-    to_validate: total('to_validate'),
-    ready: total('ready'),
-    archived: total('archived'),
-    all: total('all'),
   }
 }
 

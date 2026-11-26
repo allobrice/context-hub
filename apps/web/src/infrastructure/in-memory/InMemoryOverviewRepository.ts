@@ -1,4 +1,4 @@
-import { MISSION_FILTER_STATUSES } from '@context-hub/domain/missions/types.ts'
+import { countStatuses, toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import type {
   WorkspaceOverview,
   OverviewRepository,
@@ -59,9 +59,13 @@ export class InMemoryOverviewRepository implements OverviewRepository {
         missionTodoCount:
           this.simulation.mode() === 'missions-empty'
             ? 0
-            : visibleState(this.state, this.simulation.mode()).missions.filter(({ mission }) =>
-                MISSION_FILTER_STATUSES.todo.includes(mission.status),
-              ).length,
+            : toFilterCounts(
+                countStatuses(
+                  visibleState(this.state, this.simulation.mode()).missions.map(
+                    ({ mission }) => mission,
+                  ),
+                ),
+              ).todo,
       }
     })
   }

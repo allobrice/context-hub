@@ -8,6 +8,7 @@
  */
 import { containsSecret } from '@context-hub/domain/context/scan.ts'
 import { slugify } from '@context-hub/domain/context/slug.ts'
+import type { ContextId } from '@context-hub/domain/context/types.ts'
 import { resourceUri } from '@context-hub/domain/context/uri.ts'
 import {
   ClaimConflictError,
@@ -52,8 +53,9 @@ import {
 } from '@context-hub/domain/workspaces/types.ts'
 
 import type { ContextService } from '../contexts/ContextService.ts'
+import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
 import type { Clock } from '../ports/Clock.ts'
-import type { ContextDetail, ContextStore, PublishedSummary } from '../ports/ContextStore.ts'
+import type { ContextDetail, ContextStore } from '../ports/ContextStore.ts'
 import type { WorkspaceEvents } from '../ports/WorkspaceEvents.ts'
 import type {
   NewEntry,
@@ -239,7 +241,7 @@ export class WorkspaceService {
     if (containsSecret(title) || containsSecret(goal)) {
       throw new WorkspaceRuleError('secret-in-metadata')
     }
-    const linkedContextIds = await this.visibleLinkedContexts(viewer, input.linkedContextIds)
+    const linkedContextIds = await this.checkLinkedContexts(viewer, input.linkedContextIds)
     const now = this.clock.now()
     const at = now.toISOString()
     const name = await this.nameOf(viewer)
@@ -250,7 +252,7 @@ export class WorkspaceService {
       goal,
       status: 'open',
       repos: [...new Set(input.repos)],
-      linkedContextIds: linkedContextIds.map((context) => context.id),
+      linkedContextIds,
       createdBy: viewer.userId,
       createdAt: at,
       lastActivityAt: at,
@@ -732,36 +734,15 @@ export class WorkspaceService {
     return (await this.store.userName(viewer.userId)) ?? viewer.userId
   }
 
-  /** Contextes publiés visibles du `viewer`, par identifiant. */
-  private async publishedById(viewer: Viewer): Promise<Map<string, PublishedSummary>> {
-    const summaries = await this.contextStore.listPublished(viewer)
-    return new Map(summaries.map((summary) => [summary.id, summary]))
+  /** Contextes liés publiés et visibles, sans doublon. @throws WorkspaceRuleError */
+  private async checkLinkedContexts(viewer: Viewer, ids: readonly string[]): Promise<ContextId[]> {
+    const checked = await checkLinkedContexts(this.contextStore, viewer, ids)
+    if (checked === null) throw new WorkspaceRuleError('unknown-context')
+    return checked
   }
 
-  /** Contextes liés publiés et visibles, dans l'ordre demandé. @throws WorkspaceRuleError */
-  private async visibleLinkedContexts(
-    viewer: Viewer,
-    ids: readonly string[],
-  ): Promise<PublishedSummary[]> {
-    if (ids.length === 0) return []
-    const published = await this.publishedById(viewer)
-    return [...new Set(ids)].map((id) => {
-      const summary = published.get(id)
-      if (!summary) throw new WorkspaceRuleError('unknown-context')
-      return summary
-    })
-  }
-
-  /** Contextes liés encore publiés et visibles (un contexte archivé disparaît du détail). */
-  private async linkedContexts(viewer: Viewer, workspace: Workspace): Promise<LinkedContext[]> {
-    if (workspace.linkedContextIds.length === 0) return []
-    const published = await this.publishedById(viewer)
-    return workspace.linkedContextIds.flatMap((id) => {
-      const summary = published.get(id)
-      return summary
-        ? [{ id, slug: summary.slug, title: summary.title, version: summary.version }]
-        : []
-    })
+  private linkedContexts(viewer: Viewer, workspace: Workspace): Promise<LinkedContext[]> {
+    return resolveLinkedContexts(this.contextStore, viewer, workspace.linkedContextIds)
   }
 
   private async detail(viewer: Viewer, record: WorkspaceRecord): Promise<WorkspaceDetail> {
