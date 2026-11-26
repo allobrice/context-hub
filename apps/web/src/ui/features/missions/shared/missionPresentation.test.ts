@@ -88,9 +88,9 @@ describe('frise du cycle de vie (maquettes 34–38)', () => {
     ])
   })
 
-  it('terminée : toutes les étapes cochées, résultat enregistré', () => {
+  it('terminée : étapes passées cochées, « Terminée » en accent', () => {
     const { mission } = fixture('perf-images-avif')
-    expect(steps(mission).map(([, state]) => state)).toEqual(['done', 'done', 'done', 'done'])
+    expect(steps(mission).map(([, state]) => state)).toEqual(['done', 'done', 'done', 'current'])
     expect(steps(mission).at(-1)?.[2]).toBe('résultat enregistré')
   })
 })

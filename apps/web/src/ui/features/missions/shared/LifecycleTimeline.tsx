@@ -31,7 +31,7 @@ export function LifecycleTimeline({ steps }: { steps: readonly LifecycleStep[] }
                   {step.state === 'done'
                     ? ' (passée)'
                     : step.state === 'current'
-                      ? ' (en cours)'
+                      ? ' (étape actuelle)'
                       : ''}
                 </span>
               </span>

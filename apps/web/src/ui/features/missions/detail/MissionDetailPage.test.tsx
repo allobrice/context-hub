@@ -64,7 +64,7 @@ describe('Mission : détail prête (maquette 35)', () => {
       'Prêteperflcpnuxtallovoisins/front·Portée équipe·expire dans 13 j',
     )
     expect(headerButtons()).toEqual(['Abandonner…', 'Modifier'])
-    expect(currentStep()).toHaveTextContent('Prête (en cours)validée par Brice')
+    expect(currentStep()).toHaveTextContent('Prête (étape actuelle)validée par Brice')
 
     const prompt = screen.getByRole('article', { name: 'Prompt de la mission' })
     expect(prompt).toHaveTextContent(/≈ \d+ tokens · autonome/)
@@ -150,7 +150,7 @@ describe('Mission : à valider (maquette 34)', () => {
     expect(screen.getByText('Validation requise.').parentElement).toHaveTextContent(
       'Cette mission a été écrite par une session et sera exécutée par d’autres, en portée équipe.',
     )
-    expect(currentStep()).toHaveTextContent('À valider (en cours)écrite par perf-1')
+    expect(currentStep()).toHaveTextContent('À valider (étape actuelle)écrite par perf-1')
     expect(region('Origine et sécurité')).toHaveTextContent('En attente (portée équipe)')
     expect(
       screen.queryByRole('region', { name: 'Prendre depuis Claude Code' }),
@@ -166,7 +166,7 @@ describe('Mission : à valider (maquette 34)', () => {
     })
     expect(screen.queryByText('Validation requise.')).not.toBeInTheDocument()
     expect(history()[0]).toBe('Validée par Brice')
-    expect(currentStep()).toHaveTextContent('Prête (en cours)validée par Brice')
+    expect(currentStep()).toHaveTextContent('Prête (étape actuelle)validée par Brice')
     expect(region('Prendre depuis Claude Code')).toBeInTheDocument()
   })
 
@@ -202,7 +202,7 @@ describe('Mission : en cours (maquette 37)', () => {
     await title('Précharger TT Chocolates et passer en font-display: swap')
     expect(meta()).toHaveTextContent(/^En cours/)
     expect(headerButtons()).toEqual(['Libérer'])
-    expect(currentStep()).toHaveTextContent('En cours (en cours)web-2 · 18 min')
+    expect(currentStep()).toHaveTextContent('En cours (étape actuelle)web-2 · 18 min')
 
     const hold = region('Prise en charge')
     expect(hold).toHaveTextContent('web-2Camille · allovoisins/front')
@@ -266,7 +266,7 @@ describe('Mission : terminée (maquette 38)', () => {
     expect(meta()).toHaveTextContent(/^Terminée/)
     expect(meta()).toHaveTextContent('archivée le 23 nov.')
     expect(headerButtons()).toEqual(['Rouvrir'])
-    expect(currentStep()).toBeUndefined()
+    expect(currentStep()).toHaveTextContent('Terminée (étape actuelle)résultat enregistré')
 
     const result = region('Résultat')
     expect(result).toHaveTextContent('Visuels servis en AVIF par @nuxt/image')
