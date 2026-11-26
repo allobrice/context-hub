@@ -5,6 +5,7 @@
 import type { ContextDraftInput } from '@context-hub/domain/context/editing.ts'
 import { toContextId, type Context } from '@context-hub/domain/context/types.ts'
 import {
+  missionFromFields,
   toMissionSummary,
   type Mission,
   type MissionDetail,
@@ -74,60 +75,13 @@ export function toClaim(dto: Schemas['Claim']): Claim {
 
 // ── Missions ────────────────────────────────────────────────────────────────
 
-/** Champ obligatoire pour ce statut : son absence est une réponse incohérente du serveur. */
-function required<T>(value: T | null, field: string, slug: string): T {
-  if (value === null) throw new Error(`Mission ${slug} incohérente : ${field} manquant`)
-  return value
-}
-
-/**
- * Forme plate du contrat → union discriminée du domaine : les champs propres à un statut sont
- * vérifiés (réservation en cours, résultat terminé, raison abandonnée, date de clôture).
- */
+/** Forme plate du contrat → union discriminée du domaine (`missionFromFields`). */
 export function toMission(dto: Schemas['Mission']): Mission {
-  const { claim, result, dropReason, closedAt, validation, ...rest } = dto
-  const core = { ...rest, linkedContextIds: dto.linkedContextIds.map(toContextId) }
-  const open = { claim: null, result: null, dropReason: null, closedAt: null } as const
-  switch (dto.status) {
-    case 'draft':
-      return { ...core, ...open, status: 'draft', validation: null }
-    case 'ready':
-      return { ...core, ...open, status: 'ready', validation }
-    case 'in_progress':
-      return {
-        ...core,
-        ...open,
-        status: 'in_progress',
-        validation,
-        claim: required(claim, 'claim', dto.slug),
-      }
-    case 'done':
-      return {
-        ...core,
-        ...open,
-        status: 'done',
-        validation,
-        result: required(result, 'result', dto.slug),
-        closedAt: required(closedAt, 'closedAt', dto.slug),
-      }
-    case 'dropped':
-      return {
-        ...core,
-        ...open,
-        status: 'dropped',
-        validation,
-        dropReason: required(dropReason, 'dropReason', dto.slug),
-        closedAt: required(closedAt, 'closedAt', dto.slug),
-      }
-    case 'expired':
-      return {
-        ...core,
-        ...open,
-        status: 'expired',
-        validation,
-        closedAt: required(closedAt, 'closedAt', dto.slug),
-      }
-  }
+  const { status, validation, claim, result, dropReason, closedAt, ...core } = dto
+  return missionFromFields(
+    { ...core, linkedContextIds: core.linkedContextIds.map(toContextId) },
+    { status, validation, claim, result, dropReason, closedAt },
+  )
 }
 
 export function toMissionDetail(dto: Schemas['MissionDetail']): MissionDetail {
