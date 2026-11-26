@@ -126,7 +126,7 @@ export function toError(body: ApiErrorBody, response: Response): Error {
       return new MissionTransitionError(body.details)
     // Le slug n'est pas dans ces deux réponses : l'adapter des missions le complète (`missionCall`).
     case 'MISSION_CONFLICT':
-      return new MissionConflictError('', body.details.updatedAt)
+      return new MissionConflictError(body.details.slug, body.details.updatedAt)
     case 'MISSION_RESERVATION':
       return new MissionReservationError(body.details.slug)
     case 'FORBIDDEN_ORIGIN':

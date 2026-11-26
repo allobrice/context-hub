@@ -421,7 +421,7 @@ describe('PATCH /api/missions/{slug}', () => {
     expect(stale.status).toBe(409)
     expect(await error(stale)).toMatchObject({
       code: 'MISSION_CONFLICT',
-      details: { updatedAt: updated.mission.updatedAt },
+      details: { slug, updatedAt: updated.mission.updatedAt },
     })
   })
 

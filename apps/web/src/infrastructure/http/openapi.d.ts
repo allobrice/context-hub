@@ -4629,6 +4629,7 @@ export interface components {
             code: "MISSION_CONFLICT";
             message: string;
             details: {
+                slug: string;
                 updatedAt: string;
             };
         };

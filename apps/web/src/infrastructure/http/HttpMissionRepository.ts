@@ -1,6 +1,5 @@
 import {
   MissionBatchNotFoundError,
-  MissionConflictError,
   MissionNotFoundError,
 } from '@context-hub/domain/missions/errors.ts'
 import type {
@@ -19,16 +18,12 @@ import type {
 import { unwrap, type ApiClient } from './apiClient.ts'
 import { toMissionDetail, toMissionList } from './mappers.ts'
 
-/**
- * Le 404 de l'API est générique (`NOT_FOUND`) : pour une mission, c'est un MissionNotFoundError ; un
- * conflit de modification porte le slug de la mission.
- */
+/** Le 404 de l'API est générique (`NOT_FOUND`) : pour une mission, c'est un MissionNotFoundError. */
 async function missionCall<T>(slug: string, call: () => Promise<T>): Promise<T> {
   try {
     return await call()
   } catch (error) {
     if (error instanceof ContextNotFoundError) throw new MissionNotFoundError(slug)
-    if (error instanceof MissionConflictError) throw new MissionConflictError(slug, error.updatedAt)
     throw error
   }
 }

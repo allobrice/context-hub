@@ -205,7 +205,7 @@ function missionErrorResponse(error: unknown, requestId: string): ErrorResponse 
       body: {
         code: 'MISSION_CONFLICT',
         message: error.message,
-        details: { updatedAt: error.updatedAt },
+        details: { slug: error.slug, updatedAt: error.updatedAt },
       },
     }
   }

@@ -3208,11 +3208,15 @@
           "details": {
             "type": "object",
             "properties": {
+              "slug": {
+                "type": "string"
+              },
               "updatedAt": {
                 "type": "string"
               }
             },
             "required": [
+              "slug",
               "updatedAt"
             ]
           }

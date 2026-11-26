@@ -167,7 +167,7 @@ export const MissionConflictErrorSchema = z
   .object({
     code: z.literal('MISSION_CONFLICT'),
     message,
-    details: z.object({ updatedAt: z.string() }),
+    details: z.object({ slug: z.string(), updatedAt: z.string() }),
   })
   .meta({ id: 'MissionConflictError', description: 'Mission modifiée entre-temps : recharger.' })
 
