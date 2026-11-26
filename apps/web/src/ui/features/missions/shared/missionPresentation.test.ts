@@ -93,4 +93,14 @@ describe('frise du cycle de vie (maquettes 34–38)', () => {
     expect(steps(mission).map(([, state]) => state)).toEqual(['done', 'done', 'done', 'current'])
     expect(steps(mission).at(-1)?.[2]).toBe('résultat enregistré')
   })
+
+  it('terminée : « En cours » montre la durée prise → fin, quelle que soit l’horloge', () => {
+    const { mission, events } = fixture('perf-images-avif')
+    const takenDetail = (now: Date) =>
+      lifecycleSteps(mission, events, now, () => 'Brice').find((step) => step.label === 'En cours')
+        ?.detail
+    // Prise il y a 5 h, terminée il y a 3 h : 2 h de traitement (et non 5 h jusqu'à maintenant).
+    expect(takenDetail(NOW)).toBe('web-2 · 2 h')
+    expect(takenDetail(new Date(NOW.getTime() + 30 * 24 * 60 * 60 * 1000))).toBe('web-2 · 2 h')
+  })
 })
