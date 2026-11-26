@@ -7,6 +7,7 @@ import {
   MissionRuleError,
   MissionTransitionError,
 } from '@context-hub/domain/missions/errors.ts'
+import { countStatuses, toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import {
   createMission,
   transition,
@@ -21,8 +22,6 @@ import {
   type MissionDetail,
   type MissionLinkedContext,
   type MissionList,
-  type MissionStatus,
-  type MissionStatusCounts,
   promptTokens,
 } from '@context-hub/domain/missions/types.ts'
 
@@ -55,19 +54,6 @@ function byQueueOrder(a: MissionRecord, b: MissionRecord): number {
   )
 }
 
-function statusCounts(records: readonly MissionRecord[]): MissionStatusCounts {
-  const counts: Record<MissionStatus, number> = {
-    draft: 0,
-    ready: 0,
-    in_progress: 0,
-    done: 0,
-    dropped: 0,
-    expired: 0,
-  }
-  for (const { mission } of records) counts[mission.status] += 1
-  return counts
-}
-
 function scopeOf(input: MissionScopeInput): Scope {
   switch (input.kind) {
     case 'personal':
@@ -97,21 +83,12 @@ export class InMemoryMissionRepository implements MissionRepository {
           (query.repo === null || mission.codeRef.repo === query.repo) &&
           (query.batchId === null || mission.origin.batchId === query.batchId),
       )
-      const counts = statusCounts(matching)
-      const total = (statuses: readonly MissionStatus[]) =>
-        statuses.reduce((sum, status) => sum + counts[status], 0)
       return {
         items: matching
           .filter(({ mission }) => MISSION_FILTER_STATUSES[query.filter].includes(mission.status))
           .sort(byQueueOrder)
           .map(({ mission }) => toMissionSummary(mission)),
-        counts: {
-          todo: total(MISSION_FILTER_STATUSES.todo),
-          to_validate: total(MISSION_FILTER_STATUSES.to_validate),
-          ready: total(MISSION_FILTER_STATUSES.ready),
-          archived: total(MISSION_FILTER_STATUSES.archived),
-          all: total(MISSION_FILTER_STATUSES.all),
-        },
+        counts: toFilterCounts(countStatuses(matching.map(({ mission }) => mission))),
       }
     })
   }
@@ -131,7 +108,7 @@ export class InMemoryMissionRepository implements MissionRepository {
         repo: mission.codeRef.repo,
         commit: mission.codeRef.commit,
         createdAt: mission.createdAt,
-        counts: statusCounts(records),
+        counts: countStatuses(records.map(({ mission }) => mission)),
         total: records.length,
       }
     })

@@ -30,6 +30,7 @@ import {
   reviewMission,
   type MissionContent,
 } from '@context-hub/domain/missions/review.ts'
+import { toFilterCounts } from '@context-hub/domain/missions/counts.ts'
 import {
   MISSION_FILTER_STATUSES,
   type InProgressMission,
@@ -37,13 +38,11 @@ import {
   type MissionBatch,
   type MissionDetail,
   type MissionEvent,
-  type MissionFilterCounts,
   type MissionActor,
   type MissionLinkedContext,
   type MissionList,
   type MissionQueueFilter,
   type MissionResult,
-  type MissionStatusCounts,
   type Priority,
   promptTokens,
   toMissionSummary,
@@ -165,7 +164,7 @@ export class MissionService {
       repo: query.repo,
       batchId: query.batchId,
     })
-    return { items: missions.map(toMissionSummary), counts: filterCounts(statusCounts) }
+    return { items: missions.map(toMissionSummary), counts: toFilterCounts(statusCounts) }
   }
 
   /** Compteur « À traiter » de la sidebar, sans charger les missions. */
@@ -176,7 +175,7 @@ export class MissionService {
       repo: null,
       batchId: null,
     })
-    return filterCounts(statusCounts).todo
+    return toFilterCounts(statusCounts).todo
   }
 
   /** Bloc « Origine » d'un lot. @throws MissionNotFoundError */
@@ -568,18 +567,6 @@ function scopeOf(viewer: Viewer, input: MissionScopeInput): Scope {
       return { kind: 'team', team: input.team }
     case 'project':
       return { kind: 'project', repo: input.repo }
-  }
-}
-
-function filterCounts(counts: MissionStatusCounts): MissionFilterCounts {
-  const total = (filter: MissionQueueFilter) =>
-    MISSION_FILTER_STATUSES[filter].reduce((sum, status) => sum + counts[status], 0)
-  return {
-    todo: total('todo'),
-    to_validate: total('to_validate'),
-    ready: total('ready'),
-    archived: total('archived'),
-    all: total('all'),
   }
 }
 
