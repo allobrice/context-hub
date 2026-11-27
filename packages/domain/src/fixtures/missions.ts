@@ -73,10 +73,6 @@ export const LCP_PROMPT = [
   '',
   '- LCP mobile ≤ 2,5 s sur 3 mesures. Pas de CLS ajouté (≤ 0,05).',
   '- Tests du composant verts. Aucun changement visuel au-dessus de la ligne de flottaison.',
-  '',
-  '## Contextes liés',
-  '',
-  '- Conventions Nuxt 4 — composables & auto-imports (v4)',
 ].join('\n')
 
 /** Prompt court mais complet (gabarit §8.3) pour les autres axes de l'audit. */

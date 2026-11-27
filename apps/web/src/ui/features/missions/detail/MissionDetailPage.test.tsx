@@ -74,6 +74,9 @@ describe('Mission : détail prête (maquette 35)', () => {
       'href',
       '/contexts/ctx-nuxt-conventions',
     )
+    // Une seule mention du contexte lié (maquettes 34–36, 39) : la ligne « Contexte lié : … ».
+    expect(prompt.textContent.match(/Conventions Nuxt 4 — composables/g)).toHaveLength(1)
+    expect(within(prompt).queryByRole('heading', { name: 'Contextes liés' })).toBeNull()
     expect(region('Résultat')).toHaveTextContent(
       'Pas encore de résultat. La session qui traitera la mission le renseignera à la fin',
     )

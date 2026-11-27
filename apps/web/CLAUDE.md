@@ -110,6 +110,7 @@ La Bibliothèque garde recherche, filtres, tri, page et vue dans l'URL (`library
 - CLS : un en-tête dont le contenu change au chargement ne doit pas passer à la ligne (`flex-wrap: nowrap` en desktop, contenus compressibles) ; `scrollbar-gutter: stable` sur `html`. Mesurer avec un `PerformanceObserver('layout-shift')` sur le build (`pnpm build && pnpm preview`), pas en dev.
 - Ne pas mémoïser sans mesure : une mémoïsation de la gouttière de l'Éditeur n'apportait rien (12,5 ms par frappe à 400 lignes avec ou sans) et a été retirée.
 - Le parser Markdown doit rester hors du bundle principal (chunk partagé Détail / Éditeur).
+- Détail d'une mission : `MissionMain` (prompt rendu par `MarkdownView`) est mémoïsé, sur mesure (audit phase 10 F-P3-4). Prompt de 8 000 caractères, build de production avec `react-dom/profiling`, React Profiler sur la page : ouvrir ou fermer un dialog coûtait 11 à 33 ms par rendu (1,5 à 6 ms avec un prompt court), puis 0,4 à 2,8 ms une fois mémoïsé. `detail` reste stable entre deux réponses (partage structurel de TanStack Query) : ne pas lui passer de props recréées à chaque rendu.
 
 ### Workspaces (phase 9, SPEC §7)
 
