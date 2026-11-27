@@ -11,6 +11,7 @@ import {
   MISSION_EVENT_TYPES,
   MISSION_MAX_FILES,
   MISSION_MAX_TAGS,
+  MISSION_ORIGIN_LABEL_MAX_LENGTH,
   MISSION_QUEUE_FILTERS,
   MISSION_REASON_MAX_LENGTH,
   MISSION_STATUSES,
@@ -186,6 +187,23 @@ export const MissionBatchSchema = z
 const text = (max: number) => z.string().max(max)
 const PROMPT_TRANSPORT_MAX = 20_000
 
+/**
+ * Bornes de TRANSPORT des champs d'une mission écrite (REST et MCP `mission_create`), déclarées une
+ * seule fois. Larges à dessein : `reviewMission` applique ensuite les règles fines (titre ≤ 120,
+ * prompt ≤ 8 000, 10 tags…) avec une erreur explicite (422 `MISSION_RULE`) plutôt qu'un 400.
+ */
+export const MissionInputFields = {
+  title: text(500),
+  summary: text(1_000),
+  prompt: text(PROMPT_TRANSPORT_MAX),
+  tags: z.array(text(60)).max(MISSION_MAX_TAGS * 2),
+  team: z.string().min(1).max(80),
+  originLabel: text(MISSION_ORIGIN_LABEL_MAX_LENGTH),
+  commit: z.string().min(1).max(40),
+  files: z.array(text(REPO_PATH_MAX_LENGTH)).max(MISSION_MAX_FILES * 2),
+  linkedContextIds: z.array(z.string().max(100)).max(10),
+} as const
+
 export const MissionSlugSchema = z
   .string()
   .min(1)
@@ -206,7 +224,7 @@ export const BatchIdSchema = z
 export const MissionScopeInputSchema = z
   .discriminatedUnion('kind', [
     z.object({ kind: z.literal('personal') }),
-    z.object({ kind: z.literal('team'), team: z.string().min(1).max(80) }),
+    z.object({ kind: z.literal('team'), team: MissionInputFields.team }),
     z.object({ kind: z.literal('project'), repo: RepoSchema }),
   ])
   .meta({ id: 'MissionScopeInput' })
@@ -214,44 +232,38 @@ export const MissionScopeInputSchema = z
 export const CodeRefInputSchema = z
   .object({
     repo: RepoSchema,
-    commit: z.string().min(1).max(40),
-    files: z
-      .array(text(REPO_PATH_MAX_LENGTH))
-      .max(MISSION_MAX_FILES * 2)
-      .default([]),
+    commit: MissionInputFields.commit,
+    files: MissionInputFields.files.default([]),
   })
   .meta({ id: 'CodeRefInput' })
 
 export const CreateMissionInputSchema = z
   .object({
-    title: text(500),
-    summary: text(1_000),
-    prompt: text(PROMPT_TRANSPORT_MAX).meta({
+    title: MissionInputFields.title,
+    summary: MissionInputFields.summary,
+    prompt: MissionInputFields.prompt.meta({
       description:
         'Markdown autonome : Objectif, Constat, Fichiers, À faire, Critères d’acceptation.',
     }),
     priority: PrioritySchema.default('P2'),
-    tags: z
-      .array(text(60))
-      .max(MISSION_MAX_TAGS * 2)
-      .default([]),
+    tags: MissionInputFields.tags.default([]),
     scope: MissionScopeInputSchema,
-    origin: z.object({ label: text(200), batchId: BatchIdSchema.nullable().default(null) }),
+    origin: z.object({
+      label: MissionInputFields.originLabel,
+      batchId: BatchIdSchema.nullable().default(null),
+    }),
     codeRef: CodeRefInputSchema,
-    linkedContextIds: z.array(z.string().max(100)).max(10).default([]),
+    linkedContextIds: MissionInputFields.linkedContextIds.default([]),
   })
   .meta({ id: 'CreateMissionInput' })
 
 export const UpdateMissionInputSchema = z
   .object({
-    title: text(500).optional(),
-    summary: text(1_000).optional(),
-    prompt: text(PROMPT_TRANSPORT_MAX).optional(),
+    title: MissionInputFields.title.optional(),
+    summary: MissionInputFields.summary.optional(),
+    prompt: MissionInputFields.prompt.optional(),
     priority: PrioritySchema.optional(),
-    tags: z
-      .array(text(60))
-      .max(MISSION_MAX_TAGS * 2)
-      .optional(),
+    tags: MissionInputFields.tags.optional(),
     expectedUpdatedAt: z.string().meta({
       description: '`updatedAt` lu : 409 MISSION_CONFLICT si la mission a changé depuis.',
     }),
