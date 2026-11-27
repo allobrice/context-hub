@@ -168,6 +168,8 @@ export interface MissionStore {
   update(write: UpdateWrite): Promise<UpdateResult>
   /** Nom de l'utilisateur, ou null s'il n'existe pas. */
   userName(userId: string): Promise<string | null>
+  /** Noms de plusieurs utilisateurs en une lecture ; les inconnus sont absents. */
+  userNames(userIds: readonly string[]): Promise<Readonly<Record<string, string>>>
   /** Journal du cycle de vie, dans l'ordre d'écriture. */
   events(missionId: string): Promise<readonly MissionEvent[]>
 

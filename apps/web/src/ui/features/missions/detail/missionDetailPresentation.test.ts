@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { MISSION_FIXTURES, type MissionFixture } from '@context-hub/domain/fixtures/missions.ts'
-import type { MissionEvent } from '@context-hub/domain/missions/types.ts'
+import type { Mission, MissionEvent } from '@context-hub/domain/missions/types.ts'
 
 import {
   codeFileStates,
@@ -19,9 +19,19 @@ function fixture(slug: string): MissionFixture {
   return found
 }
 
+const DEMO_NAMES: Readonly<Record<string, string>> = { brice: 'Brice', camille: 'Camille' }
+
+function withNames(
+  mission: Mission,
+  events: readonly MissionEvent[],
+  userNames: Readonly<Record<string, string>> = DEMO_NAMES,
+) {
+  return { mission, events, userNames }
+}
+
 function labels(slug: string): string[] {
   const { mission, events } = fixture(slug)
-  return historyItems(mission, events).map((item) => item.label)
+  return historyItems(withNames(mission, events)).map((item) => item.label)
 }
 
 describe('historyItems', () => {
@@ -36,7 +46,7 @@ describe('historyItems', () => {
       type: 'edited',
       detail: 'prompt, priorité',
     }
-    expect(historyItems(mission, [...events, edited])[0]?.label).toBe(
+    expect(historyItems(withNames(mission, [...events, edited]))[0]?.label).toBe(
       'Modifiée par Brice · prompt, priorité',
     )
   })
@@ -70,7 +80,9 @@ describe('historyItems', () => {
       type: 'reopened',
       detail: null,
     }
-    expect(historyItems(mission, [...events, reopened])[0]?.label).toBe('Rouverte par Brice')
+    expect(historyItems(withNames(mission, [...events, reopened]))[0]?.label).toBe(
+      'Rouverte par Brice',
+    )
   })
 
   it('un contrôle de fraîcheur isolé reste une ligne', () => {
@@ -84,7 +96,7 @@ describe('historyItems', () => {
       at: '2026-11-23T10:10:00.000Z',
       detail: '1 fichier(s) modifié(s)',
     }
-    expect(historyItems(mission, [created, taken, freshness, later])[0]?.label).toBe(
+    expect(historyItems(withNames(mission, [created, taken, freshness, later]))[0]?.label).toBe(
       'Code contrôlé par web-2 · 1 fichier modifié',
     )
   })
@@ -105,11 +117,20 @@ describe('libellés', () => {
     )
   })
 
-  it('userNameOf : nom d’une session connue, sinon identifiant capitalisé', () => {
-    const { mission, events } = fixture('perf-precharger-polices')
-    expect(userNameOf('camille', mission, events)).toBe('Camille')
-    expect(userNameOf('brice', mission, events)).toBe('Brice')
-    expect(userNameOf('lea', mission, events)).toBe('Lea')
+  it('userNameOf : nom renvoyé avec le détail, sinon identifiant tel quel (jamais deviné)', () => {
+    const names = { 'u-lead': 'Léa Martin' }
+    expect(userNameOf('u-lead', names)).toBe('Léa Martin')
+    expect(userNameOf('lea', names)).toBe('lea')
+  })
+
+  it('historique : le nom d’un humain dont le nom diffère de l’identifiant', () => {
+    const { mission, events } = fixture('perf-lcp-carrousel')
+    const validated = events.map((event) =>
+      event.type === 'validated' ? { ...event, actor: { userId: 'u-lead' } } : event,
+    )
+    expect(historyItems(withNames(mission, validated, { 'u-lead': 'Léa Martin' }))[0]?.label).toBe(
+      'Validée par Léa Martin',
+    )
   })
 })
 

@@ -4492,6 +4492,10 @@ export interface components {
             promptTokens: number;
             linkedContexts: components["schemas"]["MissionLinkedContext"][];
             events: components["schemas"]["MissionEvent"][];
+            /** @description Nom affiché par identifiant d’utilisateur cité (auteur, validation, acteurs). */
+            userNames: {
+                [key: string]: string;
+            };
         };
         Mission: {
             id: string;

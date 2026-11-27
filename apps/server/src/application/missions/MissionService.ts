@@ -45,6 +45,7 @@ import {
   type MissionQueueFilter,
   type MissionResult,
   type Priority,
+  missionUserIds,
   promptTokens,
 } from '@context-hub/domain/missions/types.ts'
 import { checkLinkedContexts, resolveLinkedContexts } from '../contexts/linkedContexts.ts'
@@ -461,7 +462,14 @@ export class MissionService {
       this.linkedContexts(viewer, mission),
       this.store.events(mission.id),
     ])
-    return { mission, promptTokens: promptTokens(mission.prompt), linkedContexts, events }
+    const userNames = await this.store.userNames(missionUserIds(mission, events))
+    return {
+      mission,
+      promptTokens: promptTokens(mission.prompt),
+      linkedContexts,
+      events,
+      userNames,
+    }
   }
 
   private async human(

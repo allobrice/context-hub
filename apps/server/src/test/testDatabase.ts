@@ -2,12 +2,15 @@
  * Support de test : base SQLite en mémoire, migrée et seedée avec les fixtures, horloge figée sur
  * le « maintenant » des maquettes. Seul `src/test/` assemble l'infrastructure pour les tests.
  */
+import { eq } from 'drizzle-orm'
+
 import { DEMO_NOW } from '@context-hub/domain/fixtures/now.ts'
 
 import type { Clock } from '../application/ports/Clock.ts'
 import { toUserId, type Viewer } from '../application/viewer.ts'
 import { MEMORY_DATABASE, openDatabase, type AppDatabase } from '../infrastructure/db/connection.ts'
 import { Fts5SearchIndex } from '../infrastructure/db/search/Fts5SearchIndex.ts'
+import { users } from '../infrastructure/db/schema.ts'
 import { seedDemoData } from '../infrastructure/db/seed/seedDemoData.ts'
 import { DrizzleContextStore } from '../infrastructure/db/stores/DrizzleContextStore.ts'
 import { DrizzleMcpReadLog } from '../infrastructure/db/stores/DrizzleMcpReadLog.ts'
@@ -60,4 +63,9 @@ export function createTestDatabase({
     mcpReads: new DrizzleMcpReadLog(db),
     close,
   }
+}
+
+/** Renomme un utilisateur seedé : pour tester un nom affiché différent de l'identifiant. */
+export function renameUser(database: TestDatabase, userId: string, name: string): void {
+  database.db.update(users).set({ name }).where(eq(users.id, userId)).run()
 }

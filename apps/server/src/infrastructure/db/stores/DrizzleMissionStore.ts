@@ -630,6 +630,10 @@ export class DrizzleMissionStore implements MissionStore {
     return deferred(() => userNameIn(this.db, userId))
   }
 
+  userNames(userIds: readonly string[]): Promise<Readonly<Record<string, string>>> {
+    return deferred(() => Object.fromEntries(userNamesIn(this.db, userIds)))
+  }
+
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null> {
     return deferred(() => {
       const row = findVisibleIn(this.db, viewer, slug)

@@ -409,6 +409,7 @@ export function describeServicesContract(
       it('validate puis drop (raison obligatoire) puis reopen', async () => {
         const validated = await services.missions.validate('perf-hydratation-footer')
         expect(validated.mission).toMatchObject({ status: 'ready', validation: { by: 'brice' } })
+        expect(validated.userNames).toMatchObject({ brice: 'Brice' })
         await expect(
           services.missions.drop('perf-hydratation-footer', '  '),
         ).rejects.toBeInstanceOf(MissionTransitionError)

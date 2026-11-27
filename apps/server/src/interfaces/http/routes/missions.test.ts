@@ -18,7 +18,7 @@ import { promptTokens } from '@context-hub/domain/missions/types.ts'
 import { ManualClock } from '../../../test/manualClock.ts'
 import { MISSION_NOW, PROMPT } from '../../../test/missionFixtures.ts'
 import { CAMILLE_TOKEN, createTestApp, WEB_ORIGIN, type TestApp } from '../../../test/testApp.ts'
-import { BRICE } from '../../../test/testDatabase.ts'
+import { BRICE, renameUser } from '../../../test/testDatabase.ts'
 
 type MissionInput = Parameters<TestApp['missions']['createByHuman']>[1]
 
@@ -557,6 +557,17 @@ describe('actions humaines', () => {
       expect(refused.status).toBe(409)
       expect((await error(refused)).code).toBe('MISSION_CONFLICT')
     }
+  })
+
+  it('userNames : nom réel des humains cités (validation, acteurs), pas leur identifiant', async () => {
+    renameUser(api.database, 'brice', 'Brice Le G.')
+    const slug = await createDraft()
+    const { mission, events, userNames } = await detail(
+      await post(`/api/missions/${slug}/validate`),
+    )
+    expect(mission.validation?.by).toBe('brice')
+    expect(events.at(-1)).toMatchObject({ type: 'validated', actor: { userId: 'brice' } })
+    expect(userNames).toMatchObject({ brice: 'Brice Le G.' })
   })
 
   it('reopen : terminée → prête, résultat effacé', async () => {

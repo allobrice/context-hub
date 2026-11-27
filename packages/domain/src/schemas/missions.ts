@@ -161,6 +161,9 @@ export const MissionDetailSchema = z
     promptTokens: z.number().int(),
     linkedContexts: z.array(MissionLinkedContextSchema).readonly(),
     events: z.array(MissionEventSchema).readonly(),
+    userNames: z.record(z.string(), z.string()).meta({
+      description: 'Nom affiché par identifiant d’utilisateur cité (auteur, validation, acteurs).',
+    }),
   })
   .meta({ id: 'MissionDetail' })
 

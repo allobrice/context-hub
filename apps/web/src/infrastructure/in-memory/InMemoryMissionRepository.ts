@@ -1,4 +1,5 @@
 import { slugify } from '@context-hub/domain/context/slug.ts'
+import { DEMO_USERS } from '@context-hub/domain/fixtures/workspaces.ts'
 import { toContextId, type Scope } from '@context-hub/domain/context/types.ts'
 import {
   MissionBatchNotFoundError,
@@ -23,9 +24,13 @@ import {
   type MissionDetail,
   type MissionLinkedContext,
   type MissionList,
+  missionUserIds,
   promptTokens,
   toMissionFacets,
+  type MissionEvent,
+  type MissionEventActor,
 } from '@context-hub/domain/missions/types.ts'
+import type { SessionRef } from '@context-hub/domain/sessions/session.ts'
 
 import type { Clock } from '../../application/ports/Clock.ts'
 import type {
@@ -42,6 +47,35 @@ import {
   simulateSecondary,
   type SimulationOptions,
 } from './simulation.ts'
+
+function isSessionActor(actor: MissionEventActor): actor is SessionRef {
+  return 'sessionLabel' in actor
+}
+
+/**
+ * Noms des utilisateurs cités, comme le serveur : utilisateurs de la démo, puis noms portés par les
+ * sessions du détail. Un identifiant inconnu reste absent.
+ */
+function userNamesOf(mission: Mission, events: readonly MissionEvent[]): Record<string, string> {
+  const known = new Map<string, string>(Object.values(DEMO_USERS).map(({ id, name }) => [id, name]))
+  const actors: (MissionEventActor | null | undefined)[] = [
+    mission.origin.session,
+    mission.claim?.session,
+    mission.freshness?.checkedBy,
+    ...events.map((event) => event.actor),
+  ]
+  for (const actor of actors) {
+    if (actor !== null && actor !== undefined && isSessionActor(actor)) {
+      known.set(actor.userId, actor.userName)
+    }
+  }
+  return Object.fromEntries(
+    missionUserIds(mission, events).flatMap((id) => {
+      const name = known.get(id)
+      return name === undefined ? [] : [[id, name]]
+    }),
+  )
+}
 
 /** Utilisateur de la démo (les actions humaines de l'UI lui sont attribuées). */
 const CURRENT_USER_ID = 'brice'
@@ -317,6 +351,7 @@ export class InMemoryMissionRepository implements MissionRepository {
       promptTokens: promptTokens(mission.prompt),
       linkedContexts: this.linkedContexts(mission),
       events: record.events,
+      userNames: userNamesOf(mission, record.events),
     }
   }
 

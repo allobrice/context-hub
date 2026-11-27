@@ -2536,13 +2536,21 @@
             "items": {
               "$ref": "#/components/schemas/MissionEvent"
             }
+          },
+          "userNames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Nom affiché par identifiant d’utilisateur cité (auteur, validation, acteurs)."
           }
         },
         "required": [
           "mission",
           "promptTokens",
           "linkedContexts",
-          "events"
+          "events",
+          "userNames"
         ]
       },
       "Mission": {

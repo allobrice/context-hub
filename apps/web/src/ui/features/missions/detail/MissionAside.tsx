@@ -170,9 +170,9 @@ function validationText(mission: Mission, name: (userId: string) => string) {
 
 function OriginPanel({ detail }: { detail: MissionDetail }) {
   const headingId = useId()
-  const { mission, events } = detail
+  const { mission } = detail
   const { origin } = mission
-  const name = (userId: string) => userNameOf(userId, mission, events)
+  const name = (userId: string) => userNameOf(userId, detail.userNames)
   const validation = validationText(mission, name)
   return (
     <section aria-labelledby={headingId} className={cx(styles.panel, styles.padded)}>
@@ -218,7 +218,7 @@ function HistoryPanel({ detail }: { detail: MissionDetail }) {
         Historique
       </h2>
       <ol className={styles.list} aria-label="Historique, du plus récent au plus ancien">
-        {historyItems(detail.mission, detail.events).map((item) => (
+        {historyItems(detail).map((item) => (
           <li key={item.key} className={styles.historyRow}>
             <span className={styles.grow}>{item.label}</span>
             <time dateTime={item.at} className={styles.historyDate}>
