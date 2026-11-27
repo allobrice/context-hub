@@ -24,6 +24,7 @@ import {
 } from '@context-hub/domain/missions/types.ts'
 import {
   BatchIdSchema,
+  MissionInputFields,
   MissionResultInputSchema,
   MissionSlugSchema,
 } from '@context-hub/domain/schemas/missions.ts'
@@ -81,18 +82,14 @@ const HolderShape = {
 const CreateInput = z.object({
   session: SessionParam,
   repo: RepoSchema.optional().describe('Repo de la session (`owner/name`).'),
-  title: z.string().min(1).max(200).describe('Un objectif vérifiable, en une ligne.'),
-  summary: z.string().min(1).max(500).describe('Une ligne affichée dans la file.'),
-  prompt: z
-    .string()
-    .min(1)
-    .max(20_000)
-    .describe(
-      `Markdown autonome (≤ 8 000 caractères), sections obligatoires en titres : ${REQUIRED_SECTIONS}. ` +
-        'Le Constat est chiffré, daté, avec le commit. Facultatives : Contraintes, Contextes liés.',
-    ),
+  title: MissionInputFields.title.describe('Un objectif vérifiable, en une ligne.'),
+  summary: MissionInputFields.summary.describe('Une ligne affichée dans la file.'),
+  prompt: MissionInputFields.prompt.describe(
+    `Markdown autonome (≤ 8 000 caractères), sections obligatoires en titres : ${REQUIRED_SECTIONS}. ` +
+      'Le Constat est chiffré, daté, avec le commit. Facultatives : Contraintes, Contextes liés.',
+  ),
   priority: z.enum(PRIORITIES).default('P2'),
-  tags: z.array(z.string().min(1).max(60)).max(10).default([]),
+  tags: MissionInputFields.tags.default([]),
   scope: z
     .enum(['personal', 'team', 'project'])
     .default('personal')
@@ -100,24 +97,19 @@ const CreateInput = z.object({
       'personal : prête tout de suite, visible de l’utilisateur seul. team / project : visible de ' +
         'l’équipe, validation humaine obligatoire avant qu’une session puisse la prendre.',
     ),
-  team: z
-    .string()
-    .min(1)
-    .max(80)
+  team: MissionInputFields.team
     .optional()
     .describe('Équipe (ex. « allovoisins ») : obligatoire pour la portée team.'),
-  originLabel: z
-    .string()
-    .min(1)
-    .max(200)
-    .describe('D’où vient la mission, ex. « Audit perf · page d’accueil Nuxt ».'),
+  originLabel: MissionInputFields.originLabel.describe(
+    'D’où vient la mission, ex. « Audit perf · page d’accueil Nuxt ».',
+  ),
   batchId: BatchIdSchema.optional().describe(
     'Lot : un même identifiant pour toutes les missions d’une même analyse.',
   ),
-  commit: z.string().min(7).max(40).describe('Commit analysé (`git rev-parse HEAD`).'),
+  commit: MissionInputFields.commit.describe('Commit analysé (`git rev-parse HEAD`).'),
   codeRepo: RepoSchema.optional().describe('Repo du code ; par défaut celui de la session.'),
-  files: z.array(z.string().min(1).max(300)).max(MISSION_MAX_FILES).default([]),
-  linkedContextIds: z.array(z.string().min(1).max(100)).max(10).default([]),
+  files: MissionInputFields.files.default([]),
+  linkedContextIds: MissionInputFields.linkedContextIds.default([]),
 })
 
 const ListInput = z.object({
