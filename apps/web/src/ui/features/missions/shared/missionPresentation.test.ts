@@ -34,6 +34,13 @@ describe('file (maquette 31)', () => {
     expect(statusSubline(summary(slug), NOW)).toBe(expected)
   })
 
+  it('réservation échue mais pas encore balayée : « réservation échue », pas « réservée »', () => {
+    const later = new Date(NOW.getTime() + 40 * 60 * 1000)
+    expect(statusSubline(summary('perf-precharger-polices'), later)).toBe(
+      'web-2 · réservation échue',
+    )
+  })
+
   it('échéance : « expire dans 13 j » tant qu’ouverte, date d’archivage ensuite', () => {
     expect(deadlineLabel(summary('perf-lcp-carrousel'), NOW)).toBe('expire dans 13 j')
     expect(deadlineLabel(summary('perf-images-avif'), NOW)).toMatch(/^archivée le 23 nov\.$/)

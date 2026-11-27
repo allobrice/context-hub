@@ -3,7 +3,7 @@
  * fraîcheur et l'achèvement passent par le MCP : les tests les déclenchent par le cas d'usage
  * (`api.missions`), puis vérifient l'effet à travers les routes.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiErrorSchema } from '@context-hub/domain/schemas/errors.ts'
 import {
@@ -684,5 +684,16 @@ describe('réservation expirée', () => {
       expect.objectContaining({ type: 'released', detail: 'réservation expirée' }),
       expect.objectContaining({ type: 'taken' }),
     ])
+  })
+
+  it('tâche `missions` de la maintenance : passe par MissionService.expireDue (horloge du service)', async () => {
+    const slug = await createInProgress()
+    const task = api.maintenance.find(({ name }) => name === 'missions')
+    const expireDue = vi.spyOn(api.missions, 'expireDue')
+    expect(await task?.run()).toEqual({ expired: 0, released: 0 })
+    clock.advanceMinutes(31)
+    expect(await task?.run()).toEqual({ expired: 0, released: 1 })
+    expect(expireDue).toHaveBeenCalledTimes(2)
+    expect((await getMission(slug)).mission).toMatchObject({ status: 'ready', claim: null })
   })
 })

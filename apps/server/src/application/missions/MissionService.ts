@@ -58,6 +58,7 @@ import type {
   ApplyResult,
   MissionStore,
   RenewResult,
+  SweepResult,
   TakeResult,
   TakeTarget,
   UpdateResult,
@@ -295,6 +296,16 @@ export class MissionService {
 
   reopen(viewer: Viewer, slug: string): Promise<MissionDetail> {
     return this.human(viewer, slug, { type: 'reopen' })
+  }
+
+  // ── Maintenance ────────────────────────────────────────────────────────────
+
+  /**
+   * Tâche `missions` de la maintenance : libère les réservations échues et expire les missions non
+   * prises arrivées à échéance, à l'heure de l'horloge du service.
+   */
+  expireDue(): Promise<SweepResult> {
+    return this.store.expireDue(this.clock.now())
   }
 
   // ── Sessions (MCP, plugin) ─────────────────────────────────────────────────

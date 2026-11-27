@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { LCP_PROMPT } from '@context-hub/domain/fixtures/missions.ts'
+import { DEMO_NOW } from '@context-hub/domain/fixtures/now.ts'
 import { MissionNotFoundError } from '@context-hub/domain/missions/errors.ts'
 
 import { createTestServices, renderApp } from '../../../../test/renderApp.tsx'
@@ -242,6 +243,19 @@ describe('Mission : à valider (maquette 34)', () => {
 })
 
 describe('Mission : en cours (maquette 37)', () => {
+  it('réservation échue (horloge après l’échéance) : annoncée comme telle, plus « dans 0 min »', async () => {
+    const services = createTestServices()
+    // Échéance de la fixture : dans 29 min ; 40 min plus tard, aucun balayage n'a encore eu lieu.
+    const later = new Date(Date.parse(DEMO_NOW) + 40 * 60 * 1000)
+    renderApp(IN_PROGRESS, { services: { ...services, clock: { now: () => later } } })
+    await title('Précharger TT Chocolates et passer en font-display: swap')
+    const hold = region('Prise en charge')
+    expect(hold).toHaveTextContent(
+      'Réservation échue (sera libérée à la prochaine prise) : la mission redeviendra prête.',
+    )
+    expect(hold).not.toHaveTextContent('dans 0 min')
+  })
+
   it('prise en charge, résultat attendu et historique fusionné', async () => {
     renderApp(IN_PROGRESS)
     await title('Précharger TT Chocolates et passer en font-display: swap')

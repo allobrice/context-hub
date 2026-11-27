@@ -6,6 +6,7 @@ import {
   type Mission,
   type MissionDetail,
 } from '@context-hub/domain/missions/types.ts'
+import { isLeaseExpired } from '@context-hub/domain/sessions/lease.ts'
 
 import { useServices } from '../../../app/providers/servicesContext.ts'
 import { Button } from '../../../components/Button/Button.tsx'
@@ -85,6 +86,9 @@ function HoldPanel({ mission, onRelease }: { mission: InProgressMission; onRelea
   const expiresMs = Date.parse(expiresAt)
   const lastActivity = new Date(expiresMs - MISSION_RESERVATION_MINUTES * MINUTE).toISOString()
   const minutesLeft = Math.max(0, Math.ceil((expiresMs - now.getTime()) / MINUTE))
+  // Échue mais pas encore balayée (prochaine prise ou maintenance horaire) : ne pas afficher
+  // « dans 0 min » comme si la session travaillait encore.
+  const expired = isLeaseExpired(mission.claim, now)
   return (
     <section
       aria-labelledby={headingId}
@@ -94,7 +98,7 @@ function HoldPanel({ mission, onRelease }: { mission: InProgressMission; onRelea
         Prise en charge
       </h2>
       <div className={styles.holder}>
-        <span className={cx(styles.dot, styles.ok)} aria-hidden="true" />
+        <span className={cx(styles.dot, expired ? styles.warn : styles.ok)} aria-hidden="true" />
         <span className={styles.holderSession}>{session.sessionLabel}</span>
         <span className={styles.small}>
           {session.repo === null ? session.userName : `${session.userName} · ${session.repo}`}
@@ -102,9 +106,15 @@ function HoldPanel({ mission, onRelease }: { mission: InProgressMission; onRelea
       </div>
       <span className={styles.holdText}>
         Réservée depuis {elapsedLabel(acquiredAt, now)}, dernière activité{' '}
-        {formatRelativeDate(lastActivity, now)}. La réservation est relâchée automatiquement après{' '}
-        {MISSION_RESERVATION_MINUTES} min sans activité (dans {minutesLeft} min) : la mission
-        redevient alors prête.
+        {formatRelativeDate(lastActivity, now)}.{' '}
+        {expired ? (
+          <>Réservation échue (sera libérée à la prochaine prise) : la mission redeviendra prête.</>
+        ) : (
+          <>
+            La réservation est relâchée automatiquement après {MISSION_RESERVATION_MINUTES} min sans
+            activité (dans {minutesLeft} min) : la mission redevient alors prête.
+          </>
+        )}
       </span>
       <Button size="sm" className={styles.alignStart} onClick={onRelease}>
         Libérer la mission
