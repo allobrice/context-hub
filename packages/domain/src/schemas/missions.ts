@@ -11,6 +11,7 @@ import {
   MISSION_EVENT_TYPES,
   MISSION_MAX_FILES,
   MISSION_MAX_TAGS,
+  MISSION_ORIGIN_LABEL_MAX_LENGTH,
   MISSION_QUEUE_FILTERS,
   MISSION_REASON_MAX_LENGTH,
   MISSION_STATUSES,
@@ -236,7 +237,10 @@ export const CreateMissionInputSchema = z
       .max(MISSION_MAX_TAGS * 2)
       .default([]),
     scope: MissionScopeInputSchema,
-    origin: z.object({ label: text(200), batchId: BatchIdSchema.nullable().default(null) }),
+    origin: z.object({
+      label: text(MISSION_ORIGIN_LABEL_MAX_LENGTH),
+      batchId: BatchIdSchema.nullable().default(null),
+    }),
     codeRef: CodeRefInputSchema,
     linkedContextIds: z.array(z.string().max(100)).max(10).default([]),
   })

@@ -8,12 +8,21 @@ import type { TransitionRejection } from '@context-hub/domain/missions/lifecycle
 import type { MissionRuleViolation } from '@context-hub/domain/missions/review.ts'
 import { PROMPT_SECTION_TITLES } from '@context-hub/domain/missions/template.ts'
 import {
+  MISSION_MAX_FILES,
+  MISSION_MAX_TAGS,
+  MISSION_PROMPT_MAX_LENGTH,
+  MISSION_SUMMARY_MAX_LENGTH,
+  MISSION_TITLE_MAX_LENGTH,
+} from '@context-hub/domain/missions/types.ts'
+import {
   isDomainError,
   TaxonomyRuleError,
   WorkspaceRuleError,
   type TaxonomyRuleViolation,
   type WorkspaceRuleViolation,
 } from '@context-hub/domain/shared/errors.ts'
+
+import { formatInteger } from './format.ts'
 
 const TAXONOMY_MESSAGES: Readonly<Record<TaxonomyRuleViolation, string>> = {
   'system-collection-immutable': '« Sans collection » ne peut être ni renommée ni supprimée.',
@@ -45,19 +54,19 @@ const WORKSPACE_MESSAGES: Readonly<Record<WorkspaceRuleViolation, string>> = {
 const MISSION_RULE_MESSAGES: Readonly<Record<MissionRuleViolation, string>> = {
   'title-empty': 'Le titre est obligatoire.',
   'control-character': 'Le titre, le résumé, l’origine et les tags tiennent sur une ligne.',
-  'title-too-long': 'Le titre dépasse 120 caractères.',
+  'title-too-long': `Le titre dépasse ${formatInteger(MISSION_TITLE_MAX_LENGTH)} caractères.`,
   'summary-empty': 'Le résumé est obligatoire.',
-  'summary-too-long': 'Le résumé dépasse 200 caractères.',
-  'prompt-too-long': 'Le prompt dépasse 8 000 caractères.',
+  'summary-too-long': `Le résumé dépasse ${formatInteger(MISSION_SUMMARY_MAX_LENGTH)} caractères.`,
+  'prompt-too-long': `Le prompt dépasse ${formatInteger(MISSION_PROMPT_MAX_LENGTH)} caractères.`,
   'template-incomplete': 'Le prompt ne suit pas le gabarit.',
   'secret-detected': 'Un secret a été détecté : retirez-le (une mission n’en contient jamais).',
   'suspicious-instruction': 'Le prompt contient une instruction suspecte.',
   'tag-invalid': 'Tag invalide : minuscules, chiffres et tirets uniquement.',
-  'too-many-tags': '10 tags au plus.',
+  'too-many-tags': `${formatInteger(MISSION_MAX_TAGS)} tags au plus.`,
   'repo-invalid': 'Repo invalide : format owner/name.',
   'commit-invalid': 'Commit invalide : SHA de 7 à 40 caractères.',
   'path-invalid': 'Chemin de fichier invalide (relatif au repo, sans caractère de shell).',
-  'too-many-files': '50 fichiers au plus.',
+  'too-many-files': `${formatInteger(MISSION_MAX_FILES)} fichiers au plus.`,
   'slug-taken': 'Impossible de trouver un slug libre pour ce titre.',
   'unknown-context': 'Un contexte lié n’existe plus ou n’est pas publié.',
   'team-required': 'L’équipe est obligatoire pour la portée équipe.',

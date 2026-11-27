@@ -6,7 +6,10 @@ import {
   validatePromptTemplate,
 } from '@context-hub/domain/missions/template.ts'
 import {
+  MISSION_ORIGIN_LABEL_MAX_LENGTH,
   MISSION_PROMPT_MAX_LENGTH,
+  MISSION_SUMMARY_MAX_LENGTH,
+  MISSION_TITLE_MAX_LENGTH,
   PRIORITIES,
   type Mission,
   type Priority,
@@ -151,7 +154,7 @@ export function MissionFormDialog({ open, mode, onCancel, onSaved }: MissionForm
           id={ids.title}
           value={title}
           required
-          maxLength={120}
+          maxLength={MISSION_TITLE_MAX_LENGTH}
           onChange={(event) => {
             setTitle(event.target.value)
           }}
@@ -162,7 +165,7 @@ export function MissionFormDialog({ open, mode, onCancel, onSaved }: MissionForm
           id={ids.summary}
           value={summary}
           required
-          maxLength={200}
+          maxLength={MISSION_SUMMARY_MAX_LENGTH}
           onChange={(event) => {
             setSummary(event.target.value)
           }}
@@ -255,7 +258,7 @@ export function MissionFormDialog({ open, mode, onCancel, onSaved }: MissionForm
             <TextInput
               id={ids.origin}
               value={originLabel}
-              maxLength={200}
+              maxLength={MISSION_ORIGIN_LABEL_MAX_LENGTH}
               onChange={(event) => {
                 setOriginLabel(event.target.value)
               }}

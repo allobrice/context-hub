@@ -306,6 +306,8 @@ export const MISSION_RESERVATION_MINUTES = 30
 export const MISSION_PROMPT_MAX_LENGTH = 8_000
 export const MISSION_TITLE_MAX_LENGTH = 120
 export const MISSION_SUMMARY_MAX_LENGTH = 200
+/** Libellé d'origine (« Audit perf · page d’accueil Nuxt ») : borne du transport. */
+export const MISSION_ORIGIN_LABEL_MAX_LENGTH = 200
 export const MISSION_REASON_MAX_LENGTH = 1_000
 export const MISSION_MAX_TAGS = 10
 export const MISSION_MAX_FILES = 50
