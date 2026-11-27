@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { memo, useId } from 'react'
 import { Link } from 'react-router'
 
 import { toContextId } from '@context-hub/domain/context/types.ts'
@@ -17,15 +17,20 @@ import { formatInteger } from '../../../lib/format.ts'
 import { actorName, deliverableLabel, formatDayAt } from './missionDetailPresentation.ts'
 import styles from './MissionDetail.module.scss'
 
-/** Colonne principale : le prompt rendu, puis le résultat (maquettes 34–38). */
-export function MissionMain({ detail }: { detail: MissionDetail }) {
+/**
+ * Colonne principale : le prompt rendu, puis le résultat (maquettes 34–38). Mémoïsée sur mesure : un
+ * prompt de 8 000 caractères re-parsé à chaque ouverture ou fermeture d'un dialog de la page coûtait
+ * 11 à 33 ms par rendu (build de production, React Profiler) ; `detail` reste stable entre deux
+ * réponses du serveur (partage structurel de TanStack Query).
+ */
+export const MissionMain = memo(function MissionMain({ detail }: { detail: MissionDetail }) {
   return (
     <div className={styles.main}>
       <PromptPanel detail={detail} />
       <ResultPanel detail={detail} />
     </div>
   )
-}
+})
 
 function PromptPanel({ detail }: { detail: MissionDetail }) {
   const headingId = useId()
