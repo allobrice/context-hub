@@ -127,7 +127,7 @@ function ActorLabel({ actor, detail }: { actor: MissionEventActor; detail: Missi
       </>
     )
   }
-  return <>{actorName(actor, detail.mission, detail.events)}</>
+  return <>{actorName(actor, detail.userNames)}</>
 }
 
 function DoneResult({ mission, detail }: { mission: DoneMission; detail: MissionDetail }) {

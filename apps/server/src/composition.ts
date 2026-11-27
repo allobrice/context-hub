@@ -121,7 +121,7 @@ export function composeServer(db: AppDatabase, options: CompositionOptions) {
     {
       name: 'missions',
       // Copie littérale : une interface n'est pas assignable à `LogFields` (signature d'index).
-      run: async () => ({ ...(await missionStore.expireDue(options.clock.now())) }),
+      run: async () => ({ ...(await missions.expireDue()) }),
     },
   ]
   return { app, mcp, workspaces, missions, maintenance }

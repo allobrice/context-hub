@@ -60,11 +60,15 @@ export interface MissionRepository {
   get(slug: string): Promise<MissionDetail>
   create(command: CreateMissionCommand): Promise<MissionDetail>
   update(slug: string, command: UpdateMissionCommand): Promise<MissionDetail>
-  validate(slug: string): Promise<MissionDetail>
+  /**
+   * `expectedUpdatedAt` (facultatif) : `updatedAt` de la mission affichée ; MissionConflictError si
+   * elle a changé depuis (ex. reprise par une autre session avant la confirmation).
+   */
+  validate(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail>
   /** Rejet d'une mission à valider : elle est supprimée. */
   reject(slug: string, reason: string | null): Promise<void>
   /** Libération forcée d'une mission en cours : elle redevient prête. */
-  release(slug: string): Promise<MissionDetail>
-  drop(slug: string, reason: string): Promise<MissionDetail>
+  release(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail>
+  drop(slug: string, reason: string, expectedUpdatedAt?: string): Promise<MissionDetail>
   reopen(slug: string): Promise<MissionDetail>
 }

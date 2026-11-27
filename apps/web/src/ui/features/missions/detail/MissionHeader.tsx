@@ -65,7 +65,7 @@ export function MissionHeader({ detail, action, dialogOpen, onRequest }: Mission
       )}
       <LifecycleTimeline
         steps={lifecycleSteps(mission, events, now, (userId) =>
-          userNameOf(userId, mission, events),
+          userNameOf(userId, detail.userNames),
         )}
       />
     </header>

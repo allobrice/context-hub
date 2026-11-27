@@ -6,6 +6,7 @@ import { freshnessChangedCount, isClaimExpiry } from '@context-hub/domain/missio
 import type {
   Deliverable,
   Mission,
+  MissionDetail,
   MissionEvent,
   MissionEventActor,
 } from '@context-hub/domain/missions/types.ts'
@@ -32,36 +33,20 @@ function isSessionActor(actor: MissionEventActor): actor is SessionRef {
   return 'sessionLabel' in actor
 }
 
-/** Sessions connues de la mission : leur `userName` donne le nom affiché d'un utilisateur. */
-function knownSessions(mission: Mission, events: readonly MissionEvent[]): SessionRef[] {
-  const sessions = [mission.origin.session, mission.claim?.session, mission.freshness?.checkedBy]
-  return [
-    ...sessions.filter((session) => session !== null && session !== undefined),
-    ...events.map((event) => event.actor).filter(isSessionActor),
-  ]
-}
+type UserNames = MissionDetail['userNames']
 
 /**
- * Nom affiché d'un utilisateur (« Brice ») : le détail ne transporte que son identifiant pour la
- * validation et les actions humaines ; on le retrouve dans une session connue, sinon on le capitalise.
+ * Nom affiché d'un utilisateur, d'après les noms renvoyés avec le détail (`userNames`) ; un
+ * identifiant inconnu s'affiche tel quel (jamais deviné).
  */
-export function userNameOf(
-  userId: string,
-  mission: Mission,
-  events: readonly MissionEvent[],
-): string {
-  const known = knownSessions(mission, events).find((session) => session.userId === userId)
-  return known?.userName ?? userId.charAt(0).toUpperCase() + userId.slice(1)
+export function userNameOf(userId: string, userNames: UserNames): string {
+  return userNames[userId] ?? userId
 }
 
 /** Auteur d'un événement : le label de la session, le nom de l'utilisateur, ou le système. */
-export function actorName(
-  actor: MissionEventActor,
-  mission: Mission,
-  events: readonly MissionEvent[],
-): string {
+export function actorName(actor: MissionEventActor, userNames: UserNames): string {
   if (isSessionActor(actor)) return actor.sessionLabel
-  if ('userId' in actor) return userNameOf(actor.userId, mission, events)
+  if ('userId' in actor) return userNameOf(actor.userId, userNames)
   return 'le système'
 }
 
@@ -100,10 +85,10 @@ export interface HistoryItem {
 function eventLabel(
   event: MissionEvent,
   mission: Mission,
-  events: readonly MissionEvent[],
+  userNames: UserNames,
   isLastCompletion: boolean,
 ): string {
-  const who = actorName(event.actor, mission, events)
+  const who = actorName(event.actor, userNames)
   switch (event.type) {
     case 'created': {
       const origin = originPhrase(mission.origin.label)
@@ -142,7 +127,11 @@ function eventLabel(
  * Historique, du plus récent au plus ancien (maquettes 34–38). Le contrôle de fraîcheur qui suit
  * une prise par la même session est fusionné avec elle : « Prise par web-2 · code vérifié à jour ».
  */
-export function historyItems(mission: Mission, events: readonly MissionEvent[]): HistoryItem[] {
+export function historyItems({
+  mission,
+  events,
+  userNames,
+}: Pick<MissionDetail, 'mission' | 'events' | 'userNames'>): HistoryItem[] {
   const lastCompletion = events.findLastIndex((event) => event.type === 'completed')
   const items: HistoryItem[] = []
   for (let index = 0; index < events.length; index += 1) {
@@ -155,7 +144,7 @@ export function historyItems(mission: Mission, events: readonly MissionEvent[]):
       isSessionActor(event.actor) &&
       isSessionActor(next.actor) &&
       isSameSession(event.actor, next.actor)
-    const label = eventLabel(event, mission, events, index === lastCompletion)
+    const label = eventLabel(event, mission, userNames, index === lastCompletion)
     items.push({
       key: `${String(index)}-${event.type}`,
       label: mergeFreshness ? `${label} · ${freshnessSuffix(next)}` : label,

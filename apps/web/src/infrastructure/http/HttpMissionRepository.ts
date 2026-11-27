@@ -1,6 +1,5 @@
 import {
   MissionBatchNotFoundError,
-  MissionConflictError,
   MissionNotFoundError,
 } from '@context-hub/domain/missions/errors.ts'
 import type {
@@ -19,16 +18,12 @@ import type {
 import { unwrap, type ApiClient } from './apiClient.ts'
 import { toMissionDetail, toMissionList } from './mappers.ts'
 
-/**
- * Le 404 de l'API est générique (`NOT_FOUND`) : pour une mission, c'est un MissionNotFoundError ; un
- * conflit de modification porte le slug de la mission.
- */
+/** Le 404 de l'API est générique (`NOT_FOUND`) : pour une mission, c'est un MissionNotFoundError. */
 async function missionCall<T>(slug: string, call: () => Promise<T>): Promise<T> {
   try {
     return await call()
   } catch (error) {
     if (error instanceof ContextNotFoundError) throw new MissionNotFoundError(slug)
-    if (error instanceof MissionConflictError) throw new MissionConflictError(slug, error.updatedAt)
     throw error
   }
 }
@@ -100,8 +95,8 @@ export class HttpMissionRepository implements MissionRepository {
     )
   }
 
-  validate(slug: string): Promise<MissionDetail> {
-    return this.action(slug, 'validate')
+  validate(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.guardedAction(slug, 'validate', expectedUpdatedAt)
   }
 
   async reject(slug: string, reason: string | null): Promise<void> {
@@ -115,17 +110,17 @@ export class HttpMissionRepository implements MissionRepository {
     )
   }
 
-  release(slug: string): Promise<MissionDetail> {
-    return this.action(slug, 'release')
+  release(slug: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
+    return this.guardedAction(slug, 'release', expectedUpdatedAt)
   }
 
-  drop(slug: string, reason: string): Promise<MissionDetail> {
+  drop(slug: string, reason: string, expectedUpdatedAt?: string): Promise<MissionDetail> {
     return missionCall(slug, async () =>
       toMissionDetail(
         await unwrap(
           this.api.POST('/api/missions/{slug}/drop', {
             params: { path: { slug } },
-            body: { reason },
+            body: { reason, ...(expectedUpdatedAt === undefined ? {} : { expectedUpdatedAt }) },
           }),
         ),
       ),
@@ -136,14 +131,31 @@ export class HttpMissionRepository implements MissionRepository {
     return this.action(slug, 'reopen')
   }
 
-  private action(slug: string, action: 'validate' | 'release' | 'reopen'): Promise<MissionDetail> {
+  private action(slug: string, action: 'reopen'): Promise<MissionDetail> {
+    const path = { reopen: '/api/missions/{slug}/reopen' } as const
+    return missionCall(slug, async () =>
+      toMissionDetail(await unwrap(this.api.POST(path[action], { params: { path: { slug } } }))),
+    )
+  }
+
+  private guardedAction(
+    slug: string,
+    action: 'validate' | 'release',
+    expectedUpdatedAt: string | undefined,
+  ): Promise<MissionDetail> {
     const path = {
       validate: '/api/missions/{slug}/validate',
       release: '/api/missions/{slug}/release',
-      reopen: '/api/missions/{slug}/reopen',
     } as const
     return missionCall(slug, async () =>
-      toMissionDetail(await unwrap(this.api.POST(path[action], { params: { path: { slug } } }))),
+      toMissionDetail(
+        await unwrap(
+          this.api.POST(path[action], {
+            params: { path: { slug } },
+            body: expectedUpdatedAt === undefined ? {} : { expectedUpdatedAt },
+          }),
+        ),
+      ),
     )
   }
 }

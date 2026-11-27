@@ -378,6 +378,24 @@ export interface MissionDetail {
   readonly linkedContexts: readonly MissionLinkedContext[]
   /** Journal du cycle de vie, du plus ancien au plus récent. */
   readonly events: readonly MissionEvent[]
+  /**
+   * Nom affiché de chaque utilisateur cité (auteur, validation, acteurs des événements, sessions),
+   * par identifiant, comme `WorkspaceDetail.createdByName`. Un identifiant absent s'affiche tel quel.
+   */
+  readonly userNames: Readonly<Record<string, string>>
+}
+
+/** Identifiants d'utilisateurs cités par une mission et son journal (sans doublon). */
+export function missionUserIds(mission: Mission, events: readonly MissionEvent[]): string[] {
+  const ids = [
+    mission.origin.createdBy,
+    mission.origin.session?.userId,
+    mission.validation?.by,
+    mission.claim?.session.userId,
+    mission.freshness?.checkedBy.userId,
+    ...events.map((event) => ('userId' in event.actor ? event.actor.userId : undefined)),
+  ]
+  return [...new Set(ids.filter((id): id is string => id !== undefined))]
 }
 
 /** Bloc « Origine » de la file filtrée par lot. */

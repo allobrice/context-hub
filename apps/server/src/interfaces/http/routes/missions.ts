@@ -17,6 +17,7 @@ import {
   BatchIdSchema,
   CreateMissionInputSchema,
   DropMissionInputSchema,
+  MissionActionInputSchema,
   MissionBatchSchema,
   MissionDetailSchema,
   MissionEventSchema,
@@ -74,6 +75,10 @@ const HeartbeatResultSchema = z
 
 const body = <T extends z.ZodType>(schema: T) => ({
   body: { content: { 'application/json': { schema } }, required: true },
+})
+/** Corps facultatif : sans corps JSON, les données validées valent `{}`. */
+const optionalBody = <T extends z.ZodType>(schema: T) => ({
+  body: { content: { 'application/json': { schema } }, required: false },
 })
 
 const readResponses = { 500: ERROR_RESPONSES[500], 400: invalid, 401: unauthorized, 404: notFound }
@@ -136,24 +141,43 @@ const updateRoute = createRoute({
   },
 })
 
-function actionRoute(action: string, summary: string, input?: z.ZodType) {
+function actionRoute(action: string, summary: string) {
   return createRoute({
     method: 'post',
     path: `/api/missions/{slug}/${action}`,
     tags: [TAG],
     summary,
-    request: { params: SlugParams, ...(input === undefined ? {} : body(input)) },
+    request: { params: SlugParams },
     responses: { ...actionResponses, 200: json(MissionDetailSchema, 'Mission après l’action') },
   })
 }
 
-const validateRoute = actionRoute('validate', 'Valide une mission à valider : elle devient prête')
-const releaseRoute = actionRoute('release', 'Libère une mission en cours : elle redevient prête')
+/** Action humaine gardée : `expectedUpdatedAt` facultatif, 409 si la mission a changé depuis. */
+function guardedActionRoute(action: string, summary: string) {
+  return createRoute({
+    method: 'post',
+    path: `/api/missions/{slug}/${action}`,
+    tags: [TAG],
+    summary: `${summary} (garde \`expectedUpdatedAt\` facultative)`,
+    request: { params: SlugParams, ...optionalBody(MissionActionInputSchema) },
+    responses: { ...actionResponses, 200: json(MissionDetailSchema, 'Mission après l’action') },
+  })
+}
+
+const validateRoute = guardedActionRoute(
+  'validate',
+  'Valide une mission à valider : elle devient prête',
+)
+const releaseRoute = guardedActionRoute(
+  'release',
+  'Libère une mission en cours : elle redevient prête',
+)
 const dropRoute = createRoute({
   method: 'post',
   path: '/api/missions/{slug}/drop',
   tags: [TAG],
-  summary: 'Abandonne une mission prête ou en cours (raison obligatoire)',
+  summary:
+    'Abandonne une mission prête ou en cours (raison obligatoire, garde `expectedUpdatedAt` facultative)',
   request: { params: SlugParams, ...body(DropMissionInputSchema) },
   responses: { ...actionResponses, 200: json(MissionDetailSchema, 'Mission abandonnée') },
 })
@@ -221,7 +245,14 @@ export function registerMissionRoutes(app: OpenAPIHono<AppEnv>, missions: Missio
   )
 
   app.openapi(validateRoute, async (c) =>
-    c.json(await missions.validate(c.var.viewer, c.req.valid('param').slug), 200),
+    c.json(
+      await missions.validate(
+        c.var.viewer,
+        c.req.valid('param').slug,
+        c.req.valid('json').expectedUpdatedAt,
+      ),
+      200,
+    ),
   )
 
   app.openapi(rejectRoute, async (c) =>
@@ -232,12 +263,24 @@ export function registerMissionRoutes(app: OpenAPIHono<AppEnv>, missions: Missio
   )
 
   app.openapi(releaseRoute, async (c) =>
-    c.json(await missions.release(c.var.viewer, c.req.valid('param').slug), 200),
+    c.json(
+      await missions.release(
+        c.var.viewer,
+        c.req.valid('param').slug,
+        c.req.valid('json').expectedUpdatedAt,
+      ),
+      200,
+    ),
   )
 
   app.openapi(dropRoute, async (c) =>
     c.json(
-      await missions.drop(c.var.viewer, c.req.valid('param').slug, c.req.valid('json').reason),
+      await missions.drop(
+        c.var.viewer,
+        c.req.valid('param').slug,
+        c.req.valid('json').reason,
+        c.req.valid('json').expectedUpdatedAt,
+      ),
       200,
     ),
   )

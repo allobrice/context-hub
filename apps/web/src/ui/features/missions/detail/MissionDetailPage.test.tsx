@@ -1,8 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { LCP_PROMPT } from '@context-hub/domain/fixtures/missions.ts'
+import { DEMO_NOW } from '@context-hub/domain/fixtures/now.ts'
 import { MissionNotFoundError } from '@context-hub/domain/missions/errors.ts'
 
 import { createTestServices, renderApp } from '../../../../test/renderApp.tsx'
@@ -133,6 +134,34 @@ describe('Mission : détail prête (maquette 35)', () => {
     expect(history()[0]).toBe('Abandonnée par Brice')
   })
 
+  it('Abandonner une mission modifiée entre-temps : refusé, message dans le dialog', async () => {
+    const services = createTestServices()
+    renderApp(READY, { services })
+    await title('Lazy-load du carrousel de la home')
+    await userEvent.click(screen.getByRole('button', { name: 'Abandonner…' }))
+    const dialog = screen.getByRole('alertdialog', { name: 'Abandonner la mission ?' })
+    await userEvent.type(within(dialog).getByLabelText('Raison (requise)'), 'Déjà corrigé')
+
+    // Pendant que le dialog est ouvert, quelqu'un d'autre modifie la mission.
+    const { mission } = await services.missions.get('perf-lcp-carrousel')
+    await services.missions.update('perf-lcp-carrousel', {
+      title: mission.title,
+      summary: mission.summary,
+      prompt: mission.prompt,
+      priority: 'P3',
+      tags: mission.tags,
+      expectedUpdatedAt: mission.updatedAt,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Abandonner la mission' }))
+
+    expect(
+      await within(dialog).findByText(
+        'La mission a été modifiée entre-temps : rechargez-la avant de réessayer.',
+      ),
+    ).toBeInTheDocument()
+    expect((await services.missions.get('perf-lcp-carrousel')).mission.status).toBe('ready')
+  })
+
   it('Modifier ouvre le formulaire d’édition', async () => {
     renderApp(READY)
     await title('Lazy-load du carrousel de la home')
@@ -170,6 +199,23 @@ describe('Mission : à valider (maquette 34)', () => {
     expect(region('Prendre depuis Claude Code')).toBeInTheDocument()
   })
 
+  it('Valider ne redemande pas le détail renvoyé ; la sidebar est rechargée', async () => {
+    const services = createTestServices()
+    const get = vi.spyOn(services.missions, 'get')
+    const overview = vi.spyOn(services.overview, 'getOverview')
+    renderApp(DRAFT, { services })
+    await title('Hydratation différée du footer')
+    const overviewCalls = overview.mock.calls.length
+    await userEvent.click(screen.getByRole('button', { name: 'Valider la mission' }))
+    await waitFor(() => {
+      expect(meta()).toHaveTextContent(/^Prête/)
+    })
+    await waitFor(() => {
+      expect(overview.mock.calls.length).toBeGreaterThan(overviewCalls)
+    })
+    expect(get).toHaveBeenCalledTimes(1)
+  })
+
   it('Rejeter (raison facultative) supprime la mission et revient à la file', async () => {
     const { location, services } = renderApp(DRAFT)
     await title('Hydratation différée du footer')
@@ -197,6 +243,19 @@ describe('Mission : à valider (maquette 34)', () => {
 })
 
 describe('Mission : en cours (maquette 37)', () => {
+  it('réservation échue (horloge après l’échéance) : annoncée comme telle, plus « dans 0 min »', async () => {
+    const services = createTestServices()
+    // Échéance de la fixture : dans 29 min ; 40 min plus tard, aucun balayage n'a encore eu lieu.
+    const later = new Date(Date.parse(DEMO_NOW) + 40 * 60 * 1000)
+    renderApp(IN_PROGRESS, { services: { ...services, clock: { now: () => later } } })
+    await title('Précharger TT Chocolates et passer en font-display: swap')
+    const hold = region('Prise en charge')
+    expect(hold).toHaveTextContent(
+      'Réservation échue (sera libérée à la prochaine prise) : la mission redeviendra prête.',
+    )
+    expect(hold).not.toHaveTextContent('dans 0 min')
+  })
+
   it('prise en charge, résultat attendu et historique fusionné', async () => {
     renderApp(IN_PROGRESS)
     await title('Précharger TT Chocolates et passer en font-display: swap')

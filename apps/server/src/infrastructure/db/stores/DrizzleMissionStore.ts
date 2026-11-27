@@ -630,6 +630,10 @@ export class DrizzleMissionStore implements MissionStore {
     return deferred(() => userNameIn(this.db, userId))
   }
 
+  userNames(userIds: readonly string[]): Promise<Readonly<Record<string, string>>> {
+    return deferred(() => Object.fromEntries(userNamesIn(this.db, userIds)))
+  }
+
   findBySlug(viewer: Viewer, slug: string): Promise<Mission | null> {
     return deferred(() => {
       const row = findVisibleIn(this.db, viewer, slug)
@@ -676,11 +680,15 @@ export class DrizzleMissionStore implements MissionStore {
   }
 
   apply(write: ApplyWrite): Promise<ApplyResult> {
-    const { viewer, slug, command, actor, tokenHash, at } = write
+    const { viewer, slug, command, actor, tokenHash, expectedUpdatedAt, at } = write
     return deferred(() =>
       this.db.transaction((tx): ApplyResult => {
         const row = findVisibleIn(tx, viewer, slug)
         if (row === undefined) return { kind: 'not-found' }
+        // Garde lue dans la même transaction que l'écriture : pas de fenêtre entre les deux.
+        if (expectedUpdatedAt !== undefined && row.updatedAt !== expectedUpdatedAt) {
+          return { kind: 'conflict', updatedAt: row.updatedAt }
+        }
         const mission = load(tx, row)
         // Le jeton d'abord : sans lui, la session n'apprend rien des règles appliquées.
         if (!holdsToken(row, mission, actor, tokenHash)) return { kind: 'token-mismatch' }

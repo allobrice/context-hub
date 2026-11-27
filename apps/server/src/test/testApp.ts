@@ -52,6 +52,8 @@ export interface TestApp {
   /** Cas d'usage des workspaces (fermeture automatique, appelée par le job de `main.ts`). */
   readonly workspaces: ReturnType<typeof composeServer>['workspaces']
   readonly missions: ReturnType<typeof composeServer>['missions']
+  /** Tâches de maintenance câblées par `composition.ts` (celles que lance `main.ts`). */
+  readonly maintenance: ReturnType<typeof composeServer>['maintenance']
   close(): Promise<void>
 }
 
@@ -110,7 +112,7 @@ export async function createTestApp({
     at: database.clock.now(),
   })
   const { logger, logs } = captureLogger()
-  const { app, mcp, workspaces, missions } = composeServer(database.db, {
+  const { app, mcp, workspaces, missions, maintenance } = composeServer(database.db, {
     clock: database.clock,
     logger,
     webOrigin: WEB_ORIGIN,
@@ -124,6 +126,7 @@ export async function createTestApp({
   return {
     database,
     logs,
+    maintenance,
     request: (path, { method = 'GET', body, rawBody, token = TEST_TOKEN, headers = {} } = {}) => {
       const payload = rawBody ?? (body === undefined ? undefined : JSON.stringify(body))
       const init: RequestInit = {

@@ -12,6 +12,7 @@ import type {
   MissionSummary,
   Priority,
 } from '@context-hub/domain/missions/types.ts'
+import { isLeaseExpired } from '@context-hub/domain/sessions/lease.ts'
 
 import type { BadgeTone } from '../../../components/Badge/Badge.tsx'
 import { formatRelativeDate, plural } from '../../../lib/format.ts'
@@ -111,8 +112,10 @@ export function statusSubline(mission: MissionSummary, now: Date): string {
         ? 'à revérifier avant de prendre'
         : 'en attente d’une session'
     case 'in_progress':
-      return mission.claim === null
-        ? 'en cours'
+      if (mission.claim === null) return 'en cours'
+      // Échue mais pas encore balayée : la session ne travaille plus, la mission sera libérée.
+      return isLeaseExpired(mission.claim, now)
+        ? `${mission.claim.session.sessionLabel} · réservation échue`
         : `${mission.claim.session.sessionLabel} · réservée ${elapsedLabel(mission.claim.acquiredAt, now)}`
     case 'done':
       return closed('terminée')

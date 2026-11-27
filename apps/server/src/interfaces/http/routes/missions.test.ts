@@ -3,7 +3,7 @@
  * fraîcheur et l'achèvement passent par le MCP : les tests les déclenchent par le cas d'usage
  * (`api.missions`), puis vérifient l'effet à travers les routes.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiErrorSchema } from '@context-hub/domain/schemas/errors.ts'
 import {
@@ -18,7 +18,7 @@ import { promptTokens } from '@context-hub/domain/missions/types.ts'
 import { ManualClock } from '../../../test/manualClock.ts'
 import { MISSION_NOW, PROMPT } from '../../../test/missionFixtures.ts'
 import { CAMILLE_TOKEN, createTestApp, WEB_ORIGIN, type TestApp } from '../../../test/testApp.ts'
-import { BRICE } from '../../../test/testDatabase.ts'
+import { BRICE, renameUser } from '../../../test/testDatabase.ts'
 
 type MissionInput = Parameters<TestApp['missions']['createByHuman']>[1]
 
@@ -421,7 +421,7 @@ describe('PATCH /api/missions/{slug}', () => {
     expect(stale.status).toBe(409)
     expect(await error(stale)).toMatchObject({
       code: 'MISSION_CONFLICT',
-      details: { updatedAt: updated.mission.updatedAt },
+      details: { slug, updatedAt: updated.mission.updatedAt },
     })
   })
 
@@ -511,6 +511,63 @@ describe('actions humaines', () => {
       status: 'dropped',
       dropReason: 'Doublon',
     })
+  })
+
+  it('garde `expectedUpdatedAt` : 409 MISSION_CONFLICT si la mission a changé depuis, sans effet', async () => {
+    // Libération : l'humain voit web-1 ; entre-temps web-1 libère et web-2 reprend.
+    const held = await createInProgress()
+    const seen = (await getMission(held)).mission.updatedAt
+    clock.advanceMinutes(1)
+    expect((await post(`/api/missions/${held}/release`)).status).toBe(200)
+    clock.advanceMinutes(1)
+    await take(held, WEB_2)
+    const stale = await post(`/api/missions/${held}/release`, { expectedUpdatedAt: seen })
+    expect(stale.status).toBe(409)
+    const current = (await getMission(held)).mission
+    expect(await error(stale)).toMatchObject({
+      code: 'MISSION_CONFLICT',
+      details: { slug: held, updatedAt: current.updatedAt },
+    })
+    expect(current).toMatchObject({
+      status: 'in_progress',
+      claim: { session: { sessionLabel: 'web-2' } },
+    })
+    const fresh = await post(`/api/missions/${held}/release`, {
+      expectedUpdatedAt: current.updatedAt,
+    })
+    expect(fresh.status).toBe(200)
+
+    // Validation et abandon : modifiées entre-temps (« Modifier »).
+    for (const [create, action, extra] of [
+      [createDraft, 'validate', {}],
+      [createReady, 'drop', { reason: 'Doublon' }],
+    ] as const) {
+      const slug = await create()
+      const before = (await getMission(slug)).mission.updatedAt
+      clock.advanceMinutes(1)
+      const edited = await api.request(`/api/missions/${slug}`, {
+        method: 'PATCH',
+        body: { priority: 'P1', expectedUpdatedAt: before },
+      })
+      expect(edited.status).toBe(200)
+      const refused = await post(`/api/missions/${slug}/${action}`, {
+        ...extra,
+        expectedUpdatedAt: before,
+      })
+      expect(refused.status).toBe(409)
+      expect((await error(refused)).code).toBe('MISSION_CONFLICT')
+    }
+  })
+
+  it('userNames : nom réel des humains cités (validation, acteurs), pas leur identifiant', async () => {
+    renameUser(api.database, 'brice', 'Brice Le G.')
+    const slug = await createDraft()
+    const { mission, events, userNames } = await detail(
+      await post(`/api/missions/${slug}/validate`),
+    )
+    expect(mission.validation?.by).toBe('brice')
+    expect(events.at(-1)).toMatchObject({ type: 'validated', actor: { userId: 'brice' } })
+    expect(userNames).toMatchObject({ brice: 'Brice Le G.' })
   })
 
   it('reopen : terminée → prête, résultat effacé', async () => {
@@ -627,5 +684,16 @@ describe('réservation expirée', () => {
       expect.objectContaining({ type: 'released', detail: 'réservation expirée' }),
       expect.objectContaining({ type: 'taken' }),
     ])
+  })
+
+  it('tâche `missions` de la maintenance : passe par MissionService.expireDue (horloge du service)', async () => {
+    const slug = await createInProgress()
+    const task = api.maintenance.find(({ name }) => name === 'missions')
+    const expireDue = vi.spyOn(api.missions, 'expireDue')
+    expect(await task?.run()).toEqual({ expired: 0, released: 0 })
+    clock.advanceMinutes(31)
+    expect(await task?.run()).toEqual({ expired: 0, released: 1 })
+    expect(expireDue).toHaveBeenCalledTimes(2)
+    expect((await getMission(slug)).mission).toMatchObject({ status: 'ready', claim: null })
   })
 })
